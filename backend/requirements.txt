@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pymongo
+che168
+python-telegram-bot
+requests
+beautifulsoup4
+selenium 
