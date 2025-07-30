@@ -10,8 +10,6 @@ import hashlib
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-
 
 app = FastAPI()
 
@@ -46,39 +44,56 @@ def scrape_and_cache_cars():
     """Scrapes car data from the website and caches it."""
     url = "https://www.che168.com/china/list/"
     
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Remote(
+        command_executor='http://selenium:4444/wd/hub',
+        options=webdriver.ChromeOptions()
+    )
     
     try:
         driver.get(url)
+        
+        # Save screenshot
+        driver.save_screenshot("screenshot.png")
+        print("Screenshot saved as screenshot.png")
+        
+        # Save page source
+        with open("page_source.html", "w", encoding="utf-8") as f:
+            f.write(driver.page_source)
+        print("Page source saved as page_source.html")
+        
         soup = BeautifulSoup(driver.page_source, "html.parser")
     finally:
         driver.quit()
 
     car_list = []
 
-    for car_item in soup.find_all("li", class_="cards-li"):
-        title_tag = car_item.find("a", class_="carinfo")
-        if not title_tag:
-            continue
-            
-        title = title_tag.get("title")
-        price_tag = car_item.find("span", class_="price")
-        price = price_tag.text.strip() if price_tag else "N/A"
-        image_tag = car_item.find("img")
-        image_url = image_tag.get("src") if image_tag else ""
+    # Find car listing containers
+    car_containers = soup.find_all("div", class_="css-175oi2r r-1awozwy r-1777fci r-d0pm55 r-156q2ks r-13qz1uu")
+    
+    for car_container in car_containers:
+        # Find title (car name)
+        title_element = car_container.find("div", class_="css-1rynq56 r-8akbws r-krxsd3 r-dnmrzs r-1udh08x r-1udbk01")
+        title = title_element.text.strip() if title_element else "N/A"
+        
+        # Find price
+        price_element = car_container.find("div", class_="css-1rynq56", style=lambda x: x and "color: rgb(255, 68, 52)" in x)
+        if not price_element:
+            price_element = car_container.find("div", class_="css-1rynq56", style=lambda x: x and "color: rgb(255, 102, 0)" in x)
+        
+        price = price_element.text.strip() if price_element else "N/A"
+        
+        # Find image
+        image_element = car_container.find("img")
+        image_url = image_element.get("src") if image_element else ""
         if image_url and not image_url.startswith("http"):
             image_url = "https:" + image_url
 
-        car_list.append({
-            "title": title,
-            "price": price,
-            "image_url": image_url
-        })
+        if title != "N/A" and price != "N/A":
+            car_list.append({
+                "title": title,
+                "price": price,
+                "image_url": image_url
+            })
     
     if car_list:
         scrape_cache.delete_many({})
@@ -116,7 +131,7 @@ def get_scraped_cars():
     if cached_cars:
         return {
             "source": "cache",
-            "data": cached_cars
+            "data": json.loads(json.dumps(cached_cars, default=str))
         }
 
     car_list = scrape_and_cache_cars()
@@ -136,47 +151,50 @@ def get_cars(
     page_size: int = 10,
     sort_by: Optional[str] = None,
     sort_order: str = "asc",
-    brandName: Optional[str] = None,
-    seriesName: Optional[str] = None,
-    volume_from: Optional[float] = None,
-    volume_to: Optional[float] = None,
+    title: Optional[str] = None,
+    price_from: Optional[str] = None,
+    price_to: Optional[str] = None,
 ):
-    # Simple caching mechanism
-    last_update_doc = db.system.find_one({"_id": "last_update"})
-    if not last_update_doc or last_update_doc["timestamp"] < datetime.utcnow() - timedelta(hours=1):
-        # Fetch data from mock function
-        all_series_list = get_mock_cars()
-        cars_collection.delete_many({})
-        cars_collection.insert_many(all_series_list)
-        # Update last update timestamp
-        db.system.update_one({"_id": "last_update"}, {"$set": {"timestamp": datetime.utcnow()}}, upsert=True)
+    # Get cached scraped data
+    cached_cars = list(scrape_cache.find({}, {"_id": 0}))
+    
+    # If no cached data, scrape fresh data
+    if not cached_cars:
+        car_list = scrape_and_cache_cars()
+        cached_cars = list(scrape_cache.find({}, {"_id": 0}))
+    
+    # Apply filters
+    filtered_cars = cached_cars
+    
+    if title:
+        filtered_cars = [car for car in filtered_cars if title.lower() in car.get("title", "").lower()]
+    
+    if price_from:
+        # Extract numeric price for comparison
+        filtered_cars = [car for car in filtered_cars if float(car.get("price", "0").replace("万", "")) >= float(price_from)]
+    
+    if price_to:
+        # Extract numeric price for comparison
+        filtered_cars = [car for car in filtered_cars if float(car.get("price", "0").replace("万", "")) <= float(price_to)]
 
-    query = {}
-    if brandName:
-        query["brandName"] = {"$regex": brandName, "$options": "i"}
-    if seriesName:
-        query["seriesName"] = {"$regex": seriesName, "$options": "i"}
-    if volume_from is not None:
-        query["volume"] = {"$gte": volume_from}
-    if volume_to is not None:
-        if "volume" in query:
-            query["volume"]["$lte"] = volume_to
-        else:
-            query["volume"] = {"$lte": volume_to}
-
-    cursor = cars_collection.find(query, {"_id": 0})
-
+    # Apply sorting
     if sort_by:
-        from pymongo import ASCENDING, DESCENDING
-        order = ASCENDING if sort_order == "asc" else DESCENDING
-        cursor = cursor.sort(sort_by, order)
+        reverse = sort_order == "desc"
+        if sort_by == "title":
+            filtered_cars.sort(key=lambda x: x.get("title", ""), reverse=reverse)
+        elif sort_by == "price":
+            filtered_cars.sort(key=lambda x: float(x.get("price", "0").replace("万", "")), reverse=reverse)
 
-    total_cars = cars_collection.count_documents(query)
-    cars = list(cursor.skip((page - 1) * page_size).limit(page_size))
+    total_cars = len(filtered_cars)
+    
+    # Apply pagination
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+    paginated_cars = filtered_cars[start_index:end_index]
 
     return {
         "total": total_cars,
         "page": page,
         "page_size": page_size,
-        "data": json.loads(json.dumps(cars, default=str))
+        "data": json.loads(json.dumps(paginated_cars, default=str))
     } 

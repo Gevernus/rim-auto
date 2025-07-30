@@ -1,31 +1,97 @@
 services:
+  traefik:
+    image: "traefik:v2.5"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com" # Change this
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik-public-certificates:/letsencrypt"
+    networks:
+      - my_network
+
   backend:
     platform: linux/amd64
     build:
       context: ./backend
       dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.docker.network=my_network"
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
     depends_on:
       - mongo
+      - selenium
     environment:
       - TELEGRAM_BOT_TOKEN=7339549951:AAGGxOzdLf21mekkQ7Qo2s1Ug_ki1GOe2nY
+    networks:
+      - my_network
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`casa-de-costura.ru`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.docker.network=my_network"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
     volumes:
       - ./frontend/src:/app/src
+    networks:
+      - my_network
+
+  selenium:
+    image: seleniarm/standalone-chromium:latest
+    platform: linux/arm64
+    ports:
+      - "4444:4444"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my_network
   mongo:
     image: mongo:latest
+    command: mongod --quiet --logpath /dev/null
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - my_network
 
 volumes:
-  mongo-data: 
+  mongo-data:
+  traefik-public-certificates:
+
+networks:
+  my_network:
+    driver: bridge 
