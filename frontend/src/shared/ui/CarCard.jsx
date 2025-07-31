@@ -48,7 +48,7 @@ const CarCard = ({
     }
   };
 
-  const defaultImage = '/placeholder-car.jpg';
+  const defaultImage = '/placeholder-car.svg';
   const imageUrl = !imageError && vehicle.images?.[0] ? vehicle.images[0] : defaultImage;
 
   return (

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { carsApi, systemApi } from '../api/client.js';
+import { adaptApiResponse, adaptVehicle } from '../api/dataAdapter.js';
 
 export const useCars = (params = {}) => {
-  const [cars, setCars] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -17,10 +18,14 @@ export const useCars = (params = {}) => {
       setError(null);
       
       const response = await carsApi.getCars({ ...params, ...fetchParams });
-      const { data, total, page, page_size } = response.data;
+      const adaptedData = adaptApiResponse(response.data);
       
-      setCars(data);
-      setPagination({ total, page, page_size });
+      setVehicles(adaptedData.vehicles);
+      setPagination({ 
+        total: adaptedData.total, 
+        page: adaptedData.page, 
+        page_size: adaptedData.page_size 
+      });
     } catch (err) {
       console.error('Error fetching cars:', err);
       setError(err.message || 'Ошибка загрузки автомобилей');
@@ -32,7 +37,8 @@ export const useCars = (params = {}) => {
   const refreshCache = async () => {
     try {
       setLoading(true);
-      await carsApi.refreshCache();
+      const response = await carsApi.refreshCache(); // Используем правильный метод
+      console.log('Cache refresh result:', response.data);
       await fetchCars();
     } catch (err) {
       console.error('Error refreshing cache:', err);
@@ -42,8 +48,12 @@ export const useCars = (params = {}) => {
     }
   };
 
-  const searchCars = async (query) => {
-    await fetchCars({ title: query });
+  const searchCars = async (query, filters = {}) => {
+    await fetchCars({ title: query, ...filters });
+  };
+
+  const filterCars = async (filters) => {
+    await fetchCars(filters);
   };
 
   useEffect(() => {
@@ -51,13 +61,58 @@ export const useCars = (params = {}) => {
   }, []);
 
   return {
-    cars,
+    vehicles, // Переименовал с cars на vehicles для соответствия frontend типам
     loading,
     error,
     pagination,
     fetchCars,
     refreshCache,
-    searchCars
+    searchCars,
+    filterCars
+  };
+};
+
+// Новый хук для получения одного автомобиля по ID
+export const useVehicle = (id) => {
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Поскольку backend не имеет endpoint для одного автомобиля,
+        // получаем все и ищем по ID (временное решение)
+        const response = await carsApi.getCars({ title: id.replace('che168_', '') });
+        const adaptedData = adaptApiResponse(response.data);
+        
+        // Ищем автомобиль с нужным ID или берем первый
+        const foundVehicle = adaptedData.vehicles.find(v => v.id === id) || adaptedData.vehicles[0];
+        setVehicle(foundVehicle || null);
+        
+      } catch (err) {
+        console.error('Error fetching vehicle:', err);
+        setError(err.message || 'Ошибка загрузки автомобиля');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicle();
+  }, [id]);
+
+  return {
+    vehicle,
+    loading,
+    error
   };
 };
 

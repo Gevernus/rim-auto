@@ -17,10 +17,7 @@ export default defineConfig({
       usePolling: true, // Нужно для работы hot reload в Docker
       interval: 3000, // Увеличиваем интервал опроса файлов для экономии ресурсов
     },
-    hmr: {
-      port: 3000,
-      host: '0.0.0.0',
-    },
+    hmr: false, // Отключаем HMR чтобы избежать WebSocket ошибок
   },
   // Настройки для продакшена  
   build: {

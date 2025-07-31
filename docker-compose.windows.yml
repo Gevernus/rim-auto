@@ -23,6 +23,12 @@ services:
       - TELEGRAM_BOT_TOKEN=7339549951:AAGGxOzdLf21mekkQ7Qo2s1Ug_ki1GOe2nY
     networks:
       - my_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   frontend:
     build:
@@ -45,12 +51,18 @@ services:
       - my_network
     depends_on:
       - backend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
 
-  # Кроссплатформенный Selenium (ARM для Mac, x86_64 для Linux)
+  # Windows-специфичный Selenium (x86_64)
   selenium:
-    image: seleniarm/standalone-chromium:latest  # ARM версия для Mac
-    platform: linux/arm64  # Для Apple Silicon
-    container_name: selenium-chromium-mac
+    image: selenium/standalone-chrome:latest
+    platform: linux/amd64
+    container_name: selenium-chrome-windows
     shm_size: 2gb
     ports:
       - "4444:4444"

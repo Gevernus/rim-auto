@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Базовая конфигурация API клиента
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 // Создание экземпляра axios
 const apiClient = axios.create({
@@ -159,6 +159,24 @@ export const calculatorApi = {
   // Полный расчет стоимости
   calculateTotal: (carData, destination) => 
     api.post('/calculator/total', { carData, destination }),
+};
+
+// Методы для работы с изображениями
+export const imagesApi = {
+  // Получить статистику изображений
+  getStats: () => api.get('/images/stats'),
+  
+  // Очистить папку с изображениями
+  cleanup: () => api.post('/images/cleanup'),
+};
+
+// Методы для отладки
+export const debugApi = {
+  // Получить HTML источник страницы
+  getPageSource: () => api.get('/debug/page-source'),
+  
+  // Протестировать селекторы
+  testSelectors: () => api.get('/debug/selectors-test'),
 };
 
 export default apiClient; 

@@ -1,28 +1,23 @@
 import { useState } from 'react';
 import { Popup } from '../../../shared/ui';
 
-const PricePopup = ({ filters, onUpdate, onClose, options }) => {
-  const [priceFrom, setPriceFrom] = useState(filters.priceRange.from || '');
-  const [priceTo, setPriceTo] = useState(filters.priceRange.to || '');
+const PricePopup = ({ priceRange, onApply, onClose }) => {
+  const [priceFrom, setPriceFrom] = useState(priceRange.from || '');
+  const [priceTo, setPriceTo] = useState(priceRange.to || '');
 
   const handleApply = () => {
-    onUpdate({
-      priceRange: {
-        from: priceFrom,
-        to: priceTo
-      }
+    onApply({
+      from: priceFrom,
+      to: priceTo
     });
-    onClose();
   };
 
   const handleReset = () => {
     setPriceFrom('');
     setPriceTo('');
-    onUpdate({
-      priceRange: {
-        from: '',
-        to: ''
-      }
+    onApply({
+      from: '',
+      to: ''
     });
   };
 
@@ -50,7 +45,7 @@ const PricePopup = ({ filters, onUpdate, onClose, options }) => {
   };
 
   return (
-    <Popup isOpen={true} onClose={onClose} className="p-4 min-w-80">
+    <Popup isOpen={true} onClose={onClose} className="p-4">
       <div className="space-y-4">
         <h4 className="font-medium text-text-primary dark:text-dark-text-primary">
           Цена
@@ -66,7 +61,7 @@ const PricePopup = ({ filters, onUpdate, onClose, options }) => {
               <button
                 key={index}
                 onClick={() => selectPriceRange(range)}
-                className="text-left px-2 py-1 text-sm rounded hover:bg-surface dark:hover:bg-dark-surface transition-colors text-text-primary dark:text-dark-text-primary"
+                className="text-left px-2 py-1 text-sm rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-text-primary dark:text-dark-text-primary border border-border dark:border-dark-border"
               >
                 {range.label}
               </button>
@@ -77,50 +72,64 @@ const PricePopup = ({ filters, onUpdate, onClose, options }) => {
         {/* Ручной ввод */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-text-secondary dark:text-dark-text-secondary mb-1">
+            <label className="block text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
               От (¥)
             </label>
             <input
               type="number"
-              placeholder="0"
               value={priceFrom}
               onChange={(e) => setPriceFrom(e.target.value)}
-              className="w-full p-2 text-sm border border-form-border dark:border-dark-form-border rounded-md bg-form-bg dark:bg-dark-form-bg text-form-text dark:text-dark-form-text"
+              placeholder="0"
+              className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
             />
           </div>
           
           <div>
-            <label className="block text-xs text-text-secondary dark:text-dark-text-secondary mb-1">
+            <label className="block text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
               До (¥)
             </label>
             <input
               type="number"
-              placeholder="∞"
               value={priceTo}
               onChange={(e) => setPriceTo(e.target.value)}
-              className="w-full p-2 text-sm border border-form-border dark:border-dark-form-border rounded-md bg-form-bg dark:bg-dark-form-bg text-form-text dark:text-dark-form-text"
+              placeholder="∞"
+              className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
             />
           </div>
         </div>
 
-        {/* Информация о диапазоне в данных */}
-        <div className="text-xs text-text-muted dark:text-dark-text-muted">
-          Диапазон в каталоге: {formatPrice(options.minPrice)} - {formatPrice(options.maxPrice)}
-        </div>
+        {/* Предпросмотр выбранного диапазона */}
+        {(priceFrom || priceTo) && (
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">
+              Диапазон: {formatPrice(priceFrom) || '¥0'} - {formatPrice(priceTo) || '∞'}
+            </span>
+          </div>
+        )}
 
-        <div className="flex gap-2 pt-2">
-          <button
-            onClick={handleApply}
-            className="flex-1 px-3 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-          >
-            Применить
-          </button>
+        {/* Кнопки действий */}
+        <div className="flex justify-between pt-3 border-t border-border dark:border-dark-border">
           <button
             onClick={handleReset}
-            className="px-3 py-2 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
+            className="px-3 py-1 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary"
           >
             Сбросить
           </button>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="px-3 py-1 text-sm border border-border dark:border-dark-border rounded text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleApply}
+              className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700"
+            >
+              Применить
+            </button>
+          </div>
         </div>
       </div>
     </Popup>

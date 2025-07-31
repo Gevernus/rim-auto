@@ -1,1 +1,1 @@
-export { CarPage } from './CarPage'; 
+export { default as CarPage } from './CarPage'; 
