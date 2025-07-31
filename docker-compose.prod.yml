@@ -1,0 +1,109 @@
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--accesslog.fields.defaultmode=keep"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=gevernus@mail.ru"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+    restart: unless-stopped
+    networks:
+      - web
+
+  backend:
+    platform: linux/amd64
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rim-auto-backend
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=7339549951:AAGGxOzdLf21mekkQ7Qo2s1Ug_ki1GOe2nY
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+    ports:
+      - "8000:8000"
+    networks:
+      - web
+    depends_on:
+      - mongo
+      - selenium
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - VITE_API_URL=https://casa-de-costura.ru/api
+    container_name: rim-auto-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.priority=5"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    ports:
+      - "3000:3000"
+    networks:
+      - web
+    depends_on:
+      - backend
+
+  selenium:
+    image: seleniarm/standalone-chromium:latest
+    platform: linux/arm64
+    container_name: rim-auto-selenium
+    restart: unless-stopped
+    ports:
+      - "4444:4444"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - web
+
+  mongo:
+    image: mongo:latest
+    container_name: rim-auto-mongo
+    command: mongod --quiet --logpath /dev/null
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: va56dtw2!d
+    ports:
+      - "27017:27017"
+    networks:
+      - web
+    volumes:
+      - mongo_data:/data/db
+      - ./backups:/backups
+
+volumes:
+  mongo_data:
+
+networks:
+  web:
+    driver: bridge 

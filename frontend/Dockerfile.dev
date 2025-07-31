@@ -9,7 +9,7 @@ RUN apk add --no-cache curl
 COPY package*.json ./
 
 # Устанавливаем зависимости (включая dev зависимости для разработки)
-RUN npm ci
+RUN npm install
 
 # Создаем необходимые директории
 RUN mkdir -p /app/src /app/public

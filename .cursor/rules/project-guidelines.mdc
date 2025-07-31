@@ -1,0 +1,377 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Cursor Coding Rules and Migration Strategy
+
+## Meta: Developer Profile
+description: You are a Senior Front-End Developer and an expert in ReactJS, NextJS, JavaScript, TypeScript, HTML, CSS and modern UI/UX frameworks (e.g., TailwindCSS 4, Shadcn, Radix). You provide thoughtful, structured, and DRY solutions. You always reason step-by-step and follow best practices. You never leave code incomplete.
+
+---
+
+## Meta: Code Implementation Guidelines
+description: 
+- Follow the user's requirements carefully and exactly.
+- Think step-by-step and provide pseudocode first.
+- Confirm plan before generating final code.
+- Code must follow DRY principle, be clean, bug-free, and fully functional.
+- Prioritize readable and accessible code over performance.
+- No TODOs or missing pieces. Code must be complete and final.
+- Use early returns for clarity.
+- Use TailwindCSS 4 with @theme directive — avoid inline styles or CSS files.
+- Use `class:` conditionals instead of ternary where possible.
+- Always use descriptive names for variables and handlers (e.g., `handleClick`).
+- Include accessibility attributes (`aria-*`, `tabindex="0"`, `onKeyDown`) on interactive elements.
+- Prefer `const` over function declarations when possible, and define types.
+- Use platform-independent abstractions from `shared/lib/platform/` instead of direct DOM/localStorage/window APIs.
+
+---
+
+## Meta: Coding Environment
+description: This project uses:
+- ReactJS (Web and upcoming React Native)
+- Vite (build tool)
+- NodeJS + Express
+- MongoDB + Mongoose
+- TailwindCSS 4 with @theme directive and @custom-variant dark
+- React Hook Form
+- HTML, CSS
+- JavaScript, TypeScript
+- Platform-independent abstractions for cross-platform compatibility
+
+---
+
+# ARCHITECTURE RULES: Platform-Independent Design
+
+## Rule: Use platform abstractions
+description: Always use platform-independent abstractions instead of direct API calls. This ensures easy migration to React Native.
+required:
+  - Use `getStorageItem()` instead of `localStorage.getItem()`
+  - Use `getSystemTheme()` instead of `window.matchMedia()`
+  - Use `setThemeAttribute()` instead of `document.documentElement.classList.add()`
+  - Import from `shared/lib/platform/` or `shared/config/platform`
+example:
+  ```javascript
+  // ❌ Bad - Direct API usage
+  localStorage.setItem('theme', 'dark');
+  window.matchMedia('(prefers-color-scheme: dark)');
+  document.documentElement.setAttribute('data-theme', 'dark');
+  
+  // ✅ Good - Platform abstractions
+  import { setStorageItem, getSystemTheme, setThemeAttribute, getRootElement } from 'shared/lib/platform';
+  setStorageItem('theme', 'dark');
+  getSystemTheme();
+  setThemeAttribute(getRootElement(), 'dark');
+  ```
+
+---
+
+
+
+---
+
+# MIGRATION RULES: React WebApp → React Native
+
+## Rule: Separate UI and business logic
+description: Move business logic into hooks and services. Components should remain as "dumb" presentational units.
+recommended:
+  - React Hooks (`useState`, `useEffect`, custom hooks)
+  - State managers like Zustand or Redux Toolkit
+  - Folder structure: `/features`, `/shared/hooks`, `/shared/services`
+
+---
+
+## Rule: Use feature-based structure (FSD)
+description: Follow a modular, feature-sliced design for scalability and easier migration to RN.
+recommended:
+  - Feature Sliced Design (FSD)
+  - React.lazy / dynamic imports for code splitting
+  - Barrel files (`index.ts`) for simplified imports
+
+---
+
+## Rule: Use Tailwind with platform preparation
+description: Use Tailwind 4 for web with data-theme attribute, but structure for easy NativeWind migration.
+recommended:
+  - TailwindCSS 4 with @theme directive and data-theme attribute (web)
+  - NativeWind (React Native migration)
+  - Platform-independent design tokens
+  - Semantic color variables for cross-platform consistency
+  - Avoid web-specific Tailwind features
+
+---
+
+## Rule: Build reusable UI components
+description: Create shared UI components with platform-neutral interfaces for later RN replacement.
+recommended:
+  - `Button`, `Input`, `Card`, `Modal`, `Checkbox`, `Tabs`, `ThemeToggle`
+  - Place in `shared/ui`
+  - Avoid HTML-specific behaviors
+  - Use semantic props instead of className when possible
+
+---
+
+## Rule: Abstract navigation
+description: Encapsulate navigation logic so you can swap `react-router` with `react-navigation` later.
+recommended:
+  - `react-router-dom` (Web)
+  - `react-navigation` (React Native)
+  - Custom utility: `navigateToX()` in `shared/lib/navigation.js`
+
+---
+
+## Rule: Abstract API client
+description: Wrap HTTP requests to reuse between Web and RN.
+recommended:
+  - Axios 
+  - `shared/api/client.js`
+---
+
+## Rule: Write platform-agnostic hooks
+description: Avoid DOM dependencies inside hooks. Hooks must work in Web and RN.
+required:
+  - Use platform abstractions instead of direct API calls
+  - Reusable logic hooks (`useToggle`, `useAuth`, `useTheme`, etc.)
+  - No direct use of `window`, `document`, `localStorage`
+example:
+  ```javascript
+  // ❌ Bad - Direct DOM usage in hook
+  const useLocalTheme = () => {
+    const [theme, setTheme] = useState(localStorage.getItem('theme'));
+    return theme;
+  };
+  
+  // ✅ Good - Platform abstraction in hook
+  import { getStorageItem } from 'shared/lib/platform';
+  const useLocalTheme = () => {
+    const [theme, setTheme] = useState(getStorageItem('theme'));
+    return theme;
+  };
+  ```
+
+---
+
+## Rule: Data-theme attribute migration
+description: The data-theme attribute system is designed for easy migration to React Native.
+required:
+  - Web: Uses `data-theme="dark"` attribute on HTML element
+  - React Native: Will use NativeWind theme context or StyleSheet
+  - Platform abstractions handle the differences automatically
+  - Semantic variables work the same in both platforms
+example:
+  ```javascript
+  // Web (current)
+  document.documentElement.setAttribute('data-theme', 'dark');
+  
+  // React Native (future)
+  // NativeWind will handle theme switching through context
+  // Semantic variables will work the same way
+  ```
+
+---
+
+## Rule: Use platform abstraction layer
+description: All platform-specific operations must go through the abstraction layer in `shared/lib/platform/`.
+required:
+  - Storage operations: `shared/lib/platform/storage.js`
+  - Theme detection: `shared/lib/platform/theme.js`
+  - DOM operations: `shared/lib/platform/dom.js` (data-theme attribute management)
+  - Platform detection: `shared/config/platform.js`
+example:
+  ```javascript
+  // Platform structure
+  shared/lib/platform/
+  ├── storage.js    // localStorage ↔ AsyncStorage
+  ├── theme.js      // window.matchMedia ↔ Appearance
+  ├── dom.js        // data-theme attribute ↔ NativeWind
+  └── index.js      // Exports
+  ```
+
+---
+
+## Rule: Avoid DOM-only UI libraries
+description: Do not use libraries that won't work in RN.
+recommended:
+  - ❌ Avoid: `react-tooltip`, `react-select`, `react-datepicker`, etc.
+  - ✅ Prefer custom or RN-compatible UI components
+  - ✅ Use headless UI libraries when possible
+
+---
+
+## Rule: Use cross-platform animation strategy
+description: Keep animations abstracted or simple, and migrate to compatible libraries later.
+recommended:
+  - CSS transitions with Tailwind (web)
+  - `react-native-reanimated` (RN)
+  - Avoid complex `framer-motion` dependencies
+
+---
+
+---
+## Rule: Theme system architecture
+description: Use the modern three-state theme system (light/dark/system) with data-theme attribute and semantic variables.
+required:
+  - Use `THEME_OPTIONS` constants for theme states
+  - Import theme utilities from `shared/lib/theme.js`
+  - Use `useTheme()` hook for theme state management
+  - Use semantic color variables for automatic theme adaptation
+  - Apply `dark:` classes for custom color overrides
+
+
+
+---
+
+## Rule: Tailwind 4 best practices
+description: Follow Tailwind 4 patterns with @theme directive, data-theme attribute, and semantic design tokens.
+required:
+  - Use @theme directive for design tokens in CSS
+  - Use @custom-variant for data-theme attribute configuration
+  - Use semantic color variables +  dark: prefix  for automatic theme adaptation  
+  - Use OKLCH color space for better color accuracy
+example:
+  ```css
+  /* ✅ Tailwind 4 CSS structure with data-theme */
+  @import "tailwindcss";
+  @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+  
+  @theme {
+    --color-primary-500: oklch(0.62 0.21 259.8);
+    --color-surface: oklch(0.98 0.00 0.00);
+    --color-text-primary: oklch(0.21 0.01 285.9);
+  }
+  
+  [data-theme="dark"] {
+    @theme {
+      --color-surface: oklch(0.21 0.01 285.9);
+      --color-text-primary: oklch(0.98 0.00 0.00);
+    }
+  }
+  ```
+
+---
+## Rule: Component theme integration
+description: All components should support the theme system using hybrid approach with semantic variables and dark: classes.
+required:
+  - Use `useTheme()` hook for theme-aware components when needed
+  - Use semantic variables with dark: classes for consistent theming
+  - Use dark- prefixed variables for explicit dark theme control
+  - Ensure smooth theme transitions with transition-colors
+  - Use consistent patterns across components
+example:
+  ```javascript
+  // ✅ Theme-aware component with hybrid approach
+  import { useTheme } from 'shared/hooks/useTheme';
+  
+  const MyComponent = () => {
+    const { isDark, isSystem } = useTheme();
+    
+    return (
+      <div className="bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary transition-colors">
+        <h1 className="text-text-primary dark:text-dark-text-primary font-bold">
+          Title
+        </h1>
+        <p className="text-text-secondary dark:text-dark-text-secondary">
+          Description text
+        </p>
+        {isSystem && (
+          <span className="text-sm text-text-muted dark:text-dark-text-muted">
+            Following system theme
+          </span>
+        )}
+        <button className="bg-button-primary hover:bg-primary-700 text-white transition-colors">
+          Action
+        </button>
+        
+        {/* Custom styling where needed */}
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-border dark:border-dark-border">
+          <span className="text-primary-600">Special content</span>
+        </div>
+      </div>
+    );
+  };
+  ```
+
+
+---
+
+## Rule: Hybrid theme system - semantic variables with dark classes
+description: Use semantic CSS variables for automatic adaptation combined with dark: classes using dark- prefixed variables.
+required:
+  - Use semantic variables for automatic theme adaptation (bg-surface, text-text-primary)
+  - Use dark: classes with dark- prefixed variables for explicit control (dark:bg-dark-surface)
+  - Combine both approaches for maximum flexibility
+  - Use semantic variables in component classes for consistency
+example:
+  ```javascript
+  // ✅ Hybrid approach - semantic + dark: classes
+  <div className="bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary border-border dark:border-dark-border">
+    <h1 className="text-text-primary dark:text-dark-text-primary">Title</h1>
+    <p className="text-text-secondary dark:text-dark-text-secondary">Description</p>
+    <button className="bg-button-primary text-white">Action</button>
+  </div>
+
+  // ✅ Mix with standard gray scale for custom requirements
+  <div className="bg-surface dark:bg-dark-surface">
+    <div className="bg-gray-100 dark:bg-gray-800 p-4">
+      <span className="text-gray-700 dark:text-gray-300">Custom colored content</span>
+    </div>
+  </div>
+
+  // ✅ Unchanged colors (brand/status colors)
+  <button className="bg-primary-600 hover:bg-primary-700 text-white">
+    Primary action (same in both themes)
+  </button>
+  <div className="bg-error-500 text-white">Error (same in both themes)</div>
+  
+  // ✅ Standard gray scale when semantic variables are not needed
+  <div className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+    Custom layout with specific gray tones
+  </div>
+  ```
+## Rule: Semantic variables priority
+description: Always use semantic variables first, fallback to gray scale only when semantic variables don't fit.
+required:
+  - Use semantic variables for all common UI patterns (text, backgrounds, borders)
+  - Only use gray scale (gray-100, gray-500, etc.) for custom/specific designs
+  - Semantic variables automatically adapt to theme changes
+  - Gray scale requires manual dark: classes
+example:
+  ```javascript
+  // ✅ Good - Semantic variables (automatic theme adaptation)
+  <div className="bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary">
+    <h1 className="text-text-primary dark:text-dark-text-primary">Title</h1>
+    <p className="text-text-secondary dark:text-dark-text-secondary">Description</p>
+  </div>
+
+  // ❌ Bad - Gray scale (requires manual dark: classes)
+  <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+    <h1 className="text-gray-900 dark:text-white">Title</h1>
+    <p className="text-gray-600 dark:text-gray-400">Description</p>
+  </div>
+  ```
+## Rule: Component semantic consistency
+description: All UI components must use semantic variables for consistent theming.
+required:
+  - Shared UI components in `shared/ui/` must use semantic variables
+  - Page components must use semantic variables
+  - Widget components must use semantic variables
+  - No hardcoded gray colors in any component
+  - Use semantic variables for: text, backgrounds, borders, icons
+example:
+  ```javascript
+  // ✅ Good - Consistent semantic usage
+  const Button = ({ children, className }) => (
+    <button className="bg-button-primary text-white hover:bg-primary-700 transition-colors">
+      {children}
+    </button>
+  );
+
+  const Card = ({ children, className }) => (
+    <div className="bg-surface dark:bg-dark-surface border border-border dark:border-dark-border rounded-lg">
+      {children}
+    </div>
+  );
+---
+
