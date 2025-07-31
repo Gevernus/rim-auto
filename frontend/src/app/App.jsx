@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { setNavigateFunction } from '../shared/lib/navigation';
 import { ThemeProvider } from '../shared/lib/ThemeProvider';
+import { useTelegramAuth } from '../features/auth';
 
 // Страницы
 import { CatalogPage } from '../pages/catalog';
@@ -26,17 +27,31 @@ const NavigationProvider = ({ children }) => {
   return children;
 };
 
+// Компонент для инициализации авторизации
+const AuthProvider = ({ children }) => {
+  const { initialize } = useTelegramAuth();
+  
+  useEffect(() => {
+    // Инициализируем авторизацию при запуске приложения
+    initialize();
+  }, []); // Пустой массив зависимостей - вызываем только один раз
+
+  return children;
+};
+
 // Компонент макета с хедером и футером
 const Layout = ({ children }) => {
   return (
     <NavigationProvider>
-      <div className="min-h-screen flex flex-col bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary transition-colors">
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary transition-colors">
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
+      </AuthProvider>
     </NavigationProvider>
   );
 };

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/platform';
 
 // Базовая конфигурация API клиента
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -16,7 +17,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Добавляем токен авторизации если есть
-    const token = localStorage.getItem('authToken');
+    const token = getStorageItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -46,9 +47,16 @@ apiClient.interceptors.response.use(
   (error) => {
     // Обработка ошибок авторизации
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      // В Docker окружении перенаправляем на логин
-      window.location.href = '/login';
+      removeStorageItem('authToken');
+      removeStorageItem('telegramInitData');
+      
+      // В веб-окружении перенаправляем на страницу авторизации
+      if (typeof window !== 'undefined') {
+        // Не перенаправляем если это уже страница авторизации
+        if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
+          window.location.href = '/cars'; // Перенаправляем на главную страницу каталога
+        }
+      }
     }
     
     // Логирование ошибок
@@ -179,4 +187,7 @@ export const debugApi = {
   testSelectors: () => api.get('/debug/selectors-test'),
 };
 
-export default apiClient; 
+export default apiClient;
+
+// Экспорт apiClient для прямого использования
+export { apiClient }; 

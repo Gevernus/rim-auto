@@ -1,12 +1,25 @@
 import { useState } from 'react';
 import { Button, ThemeToggle } from '../../shared/ui';
 import { useAppNavigation, useAppLocation, routes } from '../../shared/lib/navigation';
+import { useTelegramAuth } from '../../features/auth';
+import { TelegramLoginButton, UserProfile } from '../../features/auth';
 import logo from '../../assets/logo.jpg';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { navigateTo } = useAppNavigation();
   const { pathname } = useAppLocation();
+  
+  // Авторизация
+  const {
+    isAuthenticated,
+    user,
+    telegramUser,
+    isLoading: authLoading,
+    handleTelegramWebAuth,
+    logout,
+    isTelegramWebApp
+  } = useTelegramAuth();
 
   // Основное меню
   const mainNavigation = [
@@ -41,6 +54,13 @@ const Header = () => {
 
   const handleOrderClick = () => {
     navigateTo(routes.order);
+  };
+
+  const handleTelegramAuth = async (telegramData) => {
+    const result = await handleTelegramWebAuth(telegramData);
+    if (result.success) {
+      setIsMobileMenuOpen(false);
+    }
   };
 
   return (
@@ -84,11 +104,31 @@ const Header = () => {
           </div>
 
           {/* Десктопные действия */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden xl:flex items-center space-x-4">
             <ThemeToggle />
-            <Button onClick={handleOrderClick}>
-              Заказать авто
-            </Button>
+            
+            {/* Авторизация */}
+            {isAuthenticated ? (
+              <UserProfile
+                user={user}
+                telegramUser={telegramUser}
+                onLogout={logout}
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                {!isTelegramWebApp && (
+                  <TelegramLoginButton
+                    onAuth={handleTelegramAuth}
+                    disabled={authLoading}
+                    buttonSize="medium"
+                    compact={true}
+                  />
+                )}
+                <Button onClick={handleOrderClick}>
+                  Заказать авто
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Мобильное меню */}
@@ -136,6 +176,34 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div className="xl:hidden border-t border-border dark:border-dark-border animate-slide-up">
             <div className="px-2 pt-2 pb-3 space-y-1">
+              {/* Авторизация в мобильном меню */}
+              {isAuthenticated ? (
+                <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
+                  <UserProfile
+                    user={user}
+                    telegramUser={telegramUser}
+                    onLogout={logout}
+                  />
+                </div>
+              ) : (
+                <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
+                  {!isTelegramWebApp && (
+                    <TelegramLoginButton
+                      onAuth={handleTelegramAuth}
+                      disabled={authLoading}
+                      buttonSize="medium"
+                      compact={true}
+                      className="w-full mb-2"
+                    />
+                  )}
+                  {isTelegramWebApp && (
+                    <p className="text-sm text-text-muted dark:text-dark-text-muted text-center">
+                      Авторизация через Telegram WebApp
+                    </p>
+                  )}
+                </div>
+              )}
+              
               {/* Основное меню */}
               <div className="mb-4">
                 <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
