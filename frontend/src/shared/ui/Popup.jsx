@@ -37,7 +37,7 @@ const Popup = ({
         return 'right-0';
       case 'start':
       default:
-        return 'left-0 right-0';
+        return 'left-0'; // Убираем right-0 чтобы попап не растягивался на всю ширину
     }
   };
 

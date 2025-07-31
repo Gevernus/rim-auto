@@ -36,12 +36,26 @@ const adaptPrice = (backendPrice) => {
  * @returns {string} Уникальный ID
  */
 const generateId = (title, index) => {
+  if (!title || title.length < 3) {
+    // Если название слишком короткое, используем индекс
+    return `che168_vehicle_${index}_${Date.now()}`;
+  }
+  
+  // Создаем более стабильный ID на основе названия
   const baseId = title
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .substring(0, 20);
-  return `che168_${baseId}_${index}`;
+    .replace(/\s+/g, '_')
+    .substring(0, 30);
+  
+  // Добавляем хеш для уникальности
+  const hash = title.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  
+  // Добавляем индекс для дополнительной уникальности
+  return `che168_${baseId}_${Math.abs(hash)}_${index}`;
 };
 
 /**

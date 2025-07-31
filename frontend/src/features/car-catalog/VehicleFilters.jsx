@@ -15,7 +15,8 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
     getAvailableBrands,
     getAvailableModels,
     hasActiveFilters,
-    getApiFilters
+    getApiFilters,
+    filterDataLoading
   } = useVehicleFilters();
 
   // Локальное состояние для попапов
@@ -176,136 +177,170 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
         <div>
           <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
             Марка
+            {filterDataLoading && (
+              <span className="ml-2 text-xs text-primary-600">Загрузка...</span>
+            )}
           </label>
           <select
             value={filters.brand}
             onChange={(e) => handleBrandChange(e.target.value)}
-            className="w-full p-3 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            disabled={filterDataLoading}
+            className="w-full p-3 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value="">Все марки</option>
-            {getAvailableBrands.map(brand => (
+            <option value="">
+              {filterDataLoading ? 'Загрузка марок...' : 'Все марки'}
+            </option>
+            {!filterDataLoading && getAvailableBrands.map(brand => (
               <option key={brand} value={brand}>
                 {brand}
               </option>
             ))}
           </select>
+          {getAvailableBrands.length === 0 && !filterDataLoading && (
+            <p className="mt-1 text-xs text-text-muted dark:text-dark-text-muted">
+              Нет доступных марок для выбранных стран
+            </p>
+          )}
         </div>
 
         {/* Модель автомобиля */}
         <div>
           <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
             Модель
+            {filterDataLoading && filters.brand && (
+              <span className="ml-2 text-xs text-primary-600">Загрузка...</span>
+            )}
           </label>
           <select
             value={filters.model}
             onChange={(e) => handleModelChange(e.target.value)}
-            disabled={!filters.brand}
+            disabled={!filters.brand || filterDataLoading}
             className="w-full p-3 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value="">Все модели</option>
-            {filters.brand && getAvailableModels.map(model => (
+            <option value="">
+              {!filters.brand 
+                ? 'Сначала выберите марку' 
+                : filterDataLoading 
+                  ? 'Загрузка моделей...' 
+                  : 'Все модели'
+              }
+            </option>
+            {filters.brand && !filterDataLoading && getAvailableModels.map(model => (
               <option key={model} value={model}>
                 {model}
               </option>
             ))}
           </select>
+          {filters.brand && getAvailableModels.length === 0 && !filterDataLoading && (
+            <p className="mt-1 text-xs text-text-muted dark:text-dark-text-muted">
+              Нет доступных моделей для марки {filters.brand}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Третья строка - Кнопки попапов */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          onClick={() => setIsYearPopupOpen(true)}
-          className="p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-        >
-          <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Год выпуска</span>
-          <div className="mt-1">
-            {filters.yearRange.from || filters.yearRange.to ? (
-              <span className="text-primary-600">
-                {filters.yearRange.from || '...'} - {filters.yearRange.to || '...'}
-              </span>
-            ) : (
-              <span className="text-text-muted dark:text-dark-text-muted">Любой год</span>
-            )}
-          </div>
-        </button>
+        {/* Кнопка года с попапом */}
+        <div className="relative">
+          <button
+            onClick={() => setIsYearPopupOpen(true)}
+            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Год выпуска</span>
+            <div className="mt-1">
+              {filters.yearRange.from || filters.yearRange.to ? (
+                <span className="text-primary-600">
+                  {filters.yearRange.from || '...'} - {filters.yearRange.to || '...'}
+                </span>
+              ) : (
+                <span className="text-text-muted dark:text-dark-text-muted">Любой год</span>
+              )}
+            </div>
+          </button>
+          
+          {isYearPopupOpen && (
+            <YearPopup
+              yearRange={filters.yearRange}
+              onApply={(range) => {
+                updateNestedFilter('yearRange', 'from', range.from);
+                updateNestedFilter('yearRange', 'to', range.to);
+                setIsYearPopupOpen(false);
+                setTimeout(handleFiltersUpdate, 0);
+              }}
+              onClose={() => setIsYearPopupOpen(false)}
+            />
+          )}
+        </div>
 
-        <button
-          onClick={() => setIsPricePopupOpen(true)}
-          className="p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-        >
-          <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Цена</span>
-          <div className="mt-1">
-            {filters.priceRange.from || filters.priceRange.to ? (
-              <span className="text-primary-600">
-                {filters.priceRange.from ? `¥${parseInt(filters.priceRange.from).toLocaleString()}` : '...'} - 
-                {filters.priceRange.to ? `¥${parseInt(filters.priceRange.to).toLocaleString()}` : '...'}
-              </span>
-            ) : (
-              <span className="text-text-muted dark:text-dark-text-muted">Любая цена</span>
-            )}
-          </div>
-        </button>
+        {/* Кнопка цены с попапом */}
+        <div className="relative">
+          <button
+            onClick={() => setIsPricePopupOpen(true)}
+            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Цена</span>
+            <div className="mt-1">
+              {filters.priceRange.from || filters.priceRange.to ? (
+                <span className="text-primary-600">
+                  {filters.priceRange.from ? `¥${parseInt(filters.priceRange.from).toLocaleString()}` : '...'} - 
+                  {filters.priceRange.to ? `¥${parseInt(filters.priceRange.to).toLocaleString()}` : '...'}
+                </span>
+              ) : (
+                <span className="text-text-muted dark:text-dark-text-muted">Любая цена</span>
+              )}
+            </div>
+          </button>
+          
+          {isPricePopupOpen && (
+            <PricePopup
+              priceRange={filters.priceRange}
+              onApply={(range) => {
+                updateNestedFilter('priceRange', 'from', range.from);
+                updateNestedFilter('priceRange', 'to', range.to);
+                setIsPricePopupOpen(false);
+                setTimeout(handleFiltersUpdate, 0);
+              }}
+              onClose={() => setIsPricePopupOpen(false)}
+            />
+          )}
+        </div>
 
-        <button
-          onClick={() => setIsParametersPopupOpen(true)}
-          className="p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-        >
-          <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Параметры</span>
-          <div className="mt-1">
-            {filters.parameters.fuelType || filters.parameters.transmission ? (
-              <span className="text-primary-600">
-                {[filters.parameters.fuelType, filters.parameters.transmission]
-                  .filter(Boolean)
-                  .join(', ')}
-              </span>
-            ) : (
-              <span className="text-text-muted dark:text-dark-text-muted">Любые параметры</span>
-            )}
-          </div>
-        </button>
+        {/* Кнопка параметров с попапом */}
+        <div className="relative">
+          <button
+            onClick={() => setIsParametersPopupOpen(true)}
+            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Параметры</span>
+            <div className="mt-1">
+              {filters.parameters.fuelType || filters.parameters.transmission ? (
+                <span className="text-primary-600">
+                  {[filters.parameters.fuelType, filters.parameters.transmission]
+                    .filter(Boolean)
+                    .join(', ')}
+                </span>
+              ) : (
+                <span className="text-text-muted dark:text-dark-text-muted">Любые параметры</span>
+              )}
+            </div>
+          </button>
+          
+          {isParametersPopupOpen && (
+            <ParametersPopup
+              parameters={filters.parameters}
+              onApply={(params) => {
+                updateNestedFilter('parameters', 'fuelType', params.fuelType);
+                updateNestedFilter('parameters', 'transmission', params.transmission);
+                updateNestedFilter('parameters', 'driveType', params.driveType);
+                setIsParametersPopupOpen(false);
+                setTimeout(handleFiltersUpdate, 0);
+              }}
+              onClose={() => setIsParametersPopupOpen(false)}
+            />
+          )}
+        </div>
       </div>
-
-      {/* Попапы */}
-      {isYearPopupOpen && (
-        <YearPopup
-          yearRange={filters.yearRange}
-          onApply={(range) => {
-            updateNestedFilter('yearRange', 'from', range.from);
-            updateNestedFilter('yearRange', 'to', range.to);
-            setIsYearPopupOpen(false);
-            setTimeout(handleFiltersUpdate, 0);
-          }}
-          onClose={() => setIsYearPopupOpen(false)}
-        />
-      )}
-
-      {isPricePopupOpen && (
-        <PricePopup
-          priceRange={filters.priceRange}
-          onApply={(range) => {
-            updateNestedFilter('priceRange', 'from', range.from);
-            updateNestedFilter('priceRange', 'to', range.to);
-            setIsPricePopupOpen(false);
-            setTimeout(handleFiltersUpdate, 0);
-          }}
-          onClose={() => setIsPricePopupOpen(false)}
-        />
-      )}
-
-      {isParametersPopupOpen && (
-        <ParametersPopup
-          parameters={filters.parameters}
-          onApply={(params) => {
-            updateNestedFilter('parameters', 'fuelType', params.fuelType);
-            updateNestedFilter('parameters', 'transmission', params.transmission);
-            updateNestedFilter('parameters', 'driveType', params.driveType);
-            setIsParametersPopupOpen(false);
-            setTimeout(handleFiltersUpdate, 0);
-          }}
-          onClose={() => setIsParametersPopupOpen(false)}
-        />
-      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useFilterData } from '../../../shared/hooks/useCars';
 
-// Константы для работы с фильтрами
+// Константы для работы с фильтрами (оставляем для fallback)
 const BRAND_TO_COUNTRY = {
   'Toyota': 'japan', 'Honda': 'japan', 'Nissan': 'japan', 'Mazda': 'japan', 'Subaru': 'japan', 'Lexus': 'japan',
   'Hyundai': 'korea', 'KIA': 'korea', 'Genesis': 'korea',
@@ -11,12 +12,6 @@ const BRAND_TO_COUNTRY = {
   '奔驰': 'germany', '宝马': 'germany', '奥迪': 'germany', '大众': 'germany',
   '丰田': 'japan', '本田': 'japan', '日产': 'japan', '现代': 'korea', '起亚': 'korea'
 };
-
-// Популярные бренды (будем получать из API в будущем)
-const POPULAR_BRANDS = [
-  'BYD', '比亚迪', 'Tesla', '特斯拉', 'NIO', '蔚来', 'XPeng', '小鹏', 
-  'BMW', '宝马', 'Mercedes-Benz', '奔驰', 'Audi', '奥迪'
-];
 
 // Начальное состояние фильтров
 const initialFilters = {
@@ -41,6 +36,9 @@ const initialFilters = {
 
 export const useVehicleFilters = () => {
   const [filters, setFilters] = useState(initialFilters);
+  
+  // Используем новый хук для получения данных фильтров
+  const { brands, models, loading: filterDataLoading, fetchModelsForBrand } = useFilterData();
 
   // Обновление фильтра
   const updateFilter = useCallback((key, value) => {
@@ -78,44 +76,63 @@ export const useVehicleFilters = () => {
       brand,
       model: '' // Сбрасываем модель при изменении бренда
     }));
-  }, []);
+    
+    // Загружаем модели для выбранного бренда
+    if (brand) {
+      fetchModelsForBrand(brand);
+    }
+  }, [fetchModelsForBrand]);
 
   // Сброс фильтров
   const resetFilters = useCallback(() => {
     setFilters(initialFilters);
   }, []);
 
-  // Получение брендов для выбранных стран (статические данные)
+  // Получение брендов с фильтрацией по странам
   const getAvailableBrands = useMemo(() => {
-    if (filters.countries.length === 0 || filters.countries.includes('all')) {
-      return POPULAR_BRANDS;
+    console.log('🔍 Фильтрация брендов, текущие страны:', filters.countries);
+    console.log('🔍 Доступные бренды из API:', brands);
+    
+    // Если нет данных из API, используем статические
+    if (!brands || brands.length === 0) {
+      console.log('⚠️ Используем статические бренды');
+      if (filters.countries.length === 0 || filters.countries.includes('all')) {
+        return Object.keys(BRAND_TO_COUNTRY);
+      }
+      
+      return Object.entries(BRAND_TO_COUNTRY)
+        .filter(([brand, country]) => filters.countries.includes(country))
+        .map(([brand]) => brand);
     }
 
-    return Object.entries(BRAND_TO_COUNTRY)
-      .filter(([brand, country]) => filters.countries.includes(country))
-      .map(([brand]) => brand);
-  }, [filters.countries]);
+    // Если выбраны все страны или не выбрана ни одна, показываем все бренды
+    if (filters.countries.length === 0 || filters.countries.includes('all')) {
+      console.log('✅ Показываем все бренды из API');
+      return brands;
+    }
 
-  // Получение моделей для выбранного бренда (заглушка - в реальности будет из API)
-  const getAvailableModels = useMemo(() => {
-    if (!filters.brand) return [];
+    // Фильтруем бренды по выбранным странам
+    const filteredBrands = brands.filter(brand => {
+      const country = BRAND_TO_COUNTRY[brand];
+      return country && filters.countries.includes(country);
+    });
     
-    // Заглушка для моделей - в реальности это будет API запрос
-    const modelMap = {
-      'BYD': ['Han', 'Tang', 'Song', 'Qin'],
-      '比亚迪': ['汉', '唐', '宋', '秦'],
-      'Tesla': ['Model 3', 'Model Y', 'Model S'],
-      '特斯拉': ['Model 3', 'Model Y', 'Model S'],
-      'NIO': ['ES8', 'ES6', 'ET7'],
-      '蔚来': ['ES8', 'ES6', 'ET7'],
-      'XPeng': ['P7', 'G3', 'P5'],
-      '小鹏': ['P7', 'G3', 'P5'],
-      'BMW': ['X3', 'X5', 'iX3', '3 Series'],
-      '宝马': ['X3', 'X5', 'iX3', '3系']
-    };
+    console.log('✅ Отфильтрованные бренды:', filteredBrands);
+    return filteredBrands;
+  }, [brands, filters.countries]);
 
-    return modelMap[filters.brand] || [];
-  }, [filters.brand]);
+  // Получение моделей для выбранного бренда
+  const getAvailableModels = useMemo(() => {
+    console.log('🔍 Получение моделей для бренда:', filters.brand);
+    console.log('🔍 Доступные модели из API:', models);
+    
+    if (!filters.brand) {
+      return [];
+    }
+    
+    // Используем модели из API
+    return models;
+  }, [filters.brand, models]);
 
   // Проверка активности фильтров
   const hasActiveFilters = useMemo(() => {
@@ -160,6 +177,7 @@ export const useVehicleFilters = () => {
       apiFilters.sort_order = 'asc';
     }
 
+    console.log('🔍 API фильтры:', apiFilters);
     return apiFilters;
   }, [filters]);
 
@@ -173,6 +191,7 @@ export const useVehicleFilters = () => {
     getAvailableBrands,
     getAvailableModels,
     hasActiveFilters,
-    getApiFilters
+    getApiFilters,
+    filterDataLoading
   };
 }; 

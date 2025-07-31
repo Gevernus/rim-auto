@@ -5,6 +5,7 @@ export { ImageGallery } from './ImageGallery';
 export { Breadcrumbs } from './Breadcrumbs';
 export { Modal } from './Modal';
 export { Popup } from './Popup';
+export { Pagination } from './Pagination';
 export { Loading } from './Loading';
 export { Input } from './Input';
 export { CarCard } from './CarCard';

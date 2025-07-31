@@ -4,6 +4,7 @@ import { useCars, useSystemHealth } from '../../shared/hooks/useCars';
 import { useAppNavigation, routes } from '../../shared/lib/navigation';
 import { VehicleFilters } from '../../features/car-catalog';
 import { CitySelector, DeliveryInfo } from '../../features/delivery';
+import { Pagination } from '../../shared/ui';
 import { imagesApi, debugApi } from '../../shared/api/client.js';
 
 const CatalogPage = () => {
@@ -15,6 +16,7 @@ const CatalogPage = () => {
   const [loadingImageStats, setLoadingImageStats] = useState(false);
   const [showDevPanel, setShowDevPanel] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
+  const [currentFilters, setCurrentFilters] = useState({}); // Сохраняем текущие фильтры
   const { navigateTo } = useAppNavigation();
 
   // Загружаем статистику изображений
@@ -86,6 +88,17 @@ const CatalogPage = () => {
     loadImageStats();
   }, []);
 
+  // Отладочная информация
+  useEffect(() => {
+    if (vehicles.length > 0) {
+      console.log('📋 Доступные автомобили в каталоге:', vehicles.map(v => ({
+        id: v.id,
+        title: v.title,
+        english_title: v.english_title
+      })));
+    }
+  }, [vehicles]);
+
   // Обработчик изменения фильтров
   const handleFiltersChange = (filters) => {
     // Преобразуем frontend фильтры в backend параметры
@@ -107,21 +120,39 @@ const CatalogPage = () => {
       backendFilters.price_to = filters.priceRange.to / 10000; // Конвертируем в 万
     }
 
+    // Сохраняем текущие фильтры для пагинации
+    setCurrentFilters(backendFilters);
     filterCars(backendFilters);
   };
 
+  // Обработчик изменения страницы
+  const handlePageChange = (page) => {
+    const filtersWithPage = {
+      ...currentFilters,
+      page: page
+    };
+    
+    console.log('📄 Переход на страницу:', page, 'с фильтрами:', filtersWithPage);
+    filterCars(filtersWithPage);
+  };
+
   // Обработчик клика на автомобиль
-  const handleVehicleClick = (vehicleId) => {
-    navigateTo(routes.car.path.replace(':id', vehicleId));
+  const handleVehicleClick = (vehicle) => {
+    console.log('🚗 Клик на автомобиль:', {
+      id: vehicle.id,
+      title: vehicle.title,
+      english_title: vehicle.english_title
+    });
+    navigateTo(routes.car(vehicle.id));
   };
 
   // Обработчик добавления/удаления из избранного
-  const handleFavoriteToggle = (vehicleId) => {
+  const handleFavoriteToggle = (vehicle) => {
     setFavoriteVehicleIds(prev => {
-      if (prev.includes(vehicleId)) {
-        return prev.filter(id => id !== vehicleId);
+      if (prev.includes(vehicle.id)) {
+        return prev.filter(id => id !== vehicle.id);
       } else {
-        return [...prev, vehicleId];
+        return [...prev, vehicle.id];
       }
     });
   };
@@ -339,13 +370,22 @@ const CatalogPage = () => {
 
         {/* Пагинация */}
         {pagination.total > pagination.page_size && (
-          <div className="flex justify-center">
-            <div className="flex items-center gap-2">
-              <span className="text-text-secondary dark:text-dark-text-secondary">
-                Страница {pagination.page} из {Math.ceil(pagination.total / pagination.page_size)}
-              </span>
-              {/* TODO: Добавить кнопки пагинации когда backend поддержит их */}
+          <div className="flex flex-col items-center gap-4">
+            {/* Информация о результатах */}
+            <div className="text-center">
+              <p className="text-text-secondary dark:text-dark-text-secondary">
+                Показано {((pagination.page - 1) * pagination.page_size) + 1}-{Math.min(pagination.page * pagination.page_size, pagination.total)} из {pagination.total} автомобилей
+              </p>
             </div>
+            
+            {/* Кнопки пагинации */}
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={Math.ceil(pagination.total / pagination.page_size)}
+              onPageChange={handlePageChange}
+              loading={loading}
+              className="mb-4"
+            />
           </div>
         )}
       </div>

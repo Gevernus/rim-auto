@@ -38,11 +38,11 @@ const CarPage = () => {
   const breadcrumbItems = [
     {
       label: 'Автомобили',
-      href: routes.catalog.path
+      href: routes.cars
     },
     {
       label: vehicle?.brand || 'Загрузка...',
-      href: routes.catalog.path
+      href: routes.cars
     },
     {
       label: vehicle?.title || 'Загрузка...',

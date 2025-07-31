@@ -39,14 +39,14 @@ const ParametersPopup = ({ parameters, onApply, onClose }) => {
   const driveTypes = ['FWD', 'RWD', 'AWD', '4WD'];
 
   return (
-    <Popup isOpen={true} onClose={onClose} className="p-4 min-w-80">
+    <Popup isOpen={true} onClose={onClose} className="p-4 w-96" align="start">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="font-medium text-text-primary dark:text-dark-text-primary">
             Параметры
           </h4>
           {getActiveParametersCount() > 0 && (
-            <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 px-2 py-1 rounded">
+            <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">
               {getActiveParametersCount()} выбрано
             </span>
           )}
@@ -57,90 +57,87 @@ const ParametersPopup = ({ parameters, onApply, onClose }) => {
           <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
             Тип топлива
           </label>
-          <select
-            value={localParameters.fuelType}
-            onChange={(e) => handleParameterChange('fuelType', e.target.value)}
-            className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
-          >
-            <option value="">Любой</option>
+          <div className="grid grid-cols-2 gap-2">
             {fuelTypes.map(type => (
-              <option key={type} value={type}>
-                {type === 'Electric' ? 'Электрический' : 
-                 type === 'Hybrid' ? 'Гибрид' :
-                 type === 'Petrol' ? 'Бензин' :
-                 type === 'Diesel' ? 'Дизель' : type}
-              </option>
+              <label key={type} className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="fuelType"
+                  value={type}
+                  checked={localParameters.fuelType === type}
+                  onChange={() => handleParameterChange('fuelType', type)}
+                  className="w-4 h-4 text-primary-600 bg-white dark:bg-dark-surface border-border dark:border-dark-border focus:ring-primary-500"
+                />
+                <span className="ml-2 text-sm text-text-primary dark:text-dark-text-primary">
+                  {type}
+                </span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
-
+        
         {/* Коробка передач */}
         <div>
           <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
             Коробка передач
           </label>
-          <select
-            value={localParameters.transmission}
-            onChange={(e) => handleParameterChange('transmission', e.target.value)}
-            className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
-          >
-            <option value="">Любая</option>
+          <div className="grid grid-cols-2 gap-2">
             {transmissions.map(type => (
-              <option key={type} value={type}>
-                {type === 'Automatic' ? 'Автоматическая' :
-                 type === 'Manual' ? 'Механическая' :
-                 type === 'CVT' ? 'Вариатор' :
-                 type === 'Single-speed' ? 'Односкоростная' : type}
-              </option>
+              <label key={type} className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="transmission"
+                  value={type}
+                  checked={localParameters.transmission === type}
+                  onChange={() => handleParameterChange('transmission', type)}
+                  className="w-4 h-4 text-primary-600 bg-white dark:bg-dark-surface border-border dark:border-dark-border focus:ring-primary-500"
+                />
+                <span className="ml-2 text-sm text-text-primary dark:text-dark-text-primary">
+                  {type}
+                </span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
-
+        
         {/* Привод */}
         <div>
           <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
-            Тип привода
+            Привод
           </label>
-          <select
-            value={localParameters.driveType}
-            onChange={(e) => handleParameterChange('driveType', e.target.value)}
-            className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
-          >
-            <option value="">Любой</option>
+          <div className="grid grid-cols-2 gap-2">
             {driveTypes.map(type => (
-              <option key={type} value={type}>
-                {type === 'FWD' ? 'Передний' :
-                 type === 'RWD' ? 'Задний' :
-                 type === 'AWD' ? 'Полный' :
-                 type === '4WD' ? 'Полный (4WD)' : type}
-              </option>
+              <label key={type} className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="driveType"
+                  value={type}
+                  checked={localParameters.driveType === type}
+                  onChange={() => handleParameterChange('driveType', type)}
+                  className="w-4 h-4 text-primary-600 bg-white dark:bg-dark-surface border-border dark:border-dark-border focus:ring-primary-500"
+                />
+                <span className="ml-2 text-sm text-text-primary dark:text-dark-text-primary">
+                  {type}
+                </span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
-
+        
         {/* Кнопки действий */}
-        <div className="flex justify-between pt-3 border-t border-border dark:border-dark-border">
+        <div className="flex gap-2 pt-2">
+          <button
+            onClick={handleApply}
+            className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors"
+          >
+            Применить
+          </button>
           <button
             onClick={handleReset}
-            className="px-3 py-1 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary"
+            className="px-4 py-2 border border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Сбросить
           </button>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="px-3 py-1 text-sm border border-border dark:border-dark-border rounded text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Отмена
-            </button>
-            <button
-              onClick={handleApply}
-              className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700"
-            >
-              Применить
-            </button>
-          </div>
         </div>
       </div>
     </Popup>

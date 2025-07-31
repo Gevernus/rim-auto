@@ -29,7 +29,7 @@ const YearPopup = ({ yearRange, onApply, onClose }) => {
   }
 
   return (
-    <Popup isOpen={true} onClose={onClose} className="p-4">
+    <Popup isOpen={true} onClose={onClose} className="p-4 w-96" align="start">
       <div className="space-y-4">
         <h4 className="font-medium text-text-primary dark:text-dark-text-primary">
           Год выпуска
@@ -37,13 +37,13 @@ const YearPopup = ({ yearRange, onApply, onClose }) => {
         
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
+            <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
               От
             </label>
             <select
               value={yearFrom}
               onChange={(e) => setYearFrom(e.target.value)}
-              className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+              className="w-full p-2 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Любой</option>
               {years.map(year => (
@@ -55,13 +55,13 @@ const YearPopup = ({ yearRange, onApply, onClose }) => {
           </div>
           
           <div>
-            <label className="block text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
+            <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
               До
             </label>
             <select
               value={yearTo}
               onChange={(e) => setYearTo(e.target.value)}
-              className="w-full p-2 text-sm border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+              className="w-full p-2 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Любой</option>
               {years.map(year => (
@@ -72,56 +72,20 @@ const YearPopup = ({ yearRange, onApply, onClose }) => {
             </select>
           </div>
         </div>
-
-        {/* Быстрый выбор диапазонов */}
-        <div className="space-y-2">
-          <label className="block text-xs text-text-secondary dark:text-dark-text-secondary">
-            Быстрый выбор
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: 'Новые (2022-2024)', from: '2022', to: currentYear.toString() },
-              { label: 'Свежие (2020-2021)', from: '2020', to: '2021' },
-              { label: 'Современные (2018-2019)', from: '2018', to: '2019' },
-              { label: 'Доступные (до 2017)', from: '', to: '2017' }
-            ].map((range, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setYearFrom(range.from);
-                  setYearTo(range.to);
-                }}
-                className="text-left px-2 py-1 text-xs rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-text-primary dark:text-dark-text-primary border border-border dark:border-dark-border"
-              >
-                {range.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Кнопки действий */}
-        <div className="flex justify-between pt-3 border-t border-border dark:border-dark-border">
+        
+        <div className="flex gap-2 pt-2">
+          <button
+            onClick={handleApply}
+            className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors"
+          >
+            Применить
+          </button>
           <button
             onClick={handleReset}
-            className="px-3 py-1 text-sm text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary"
+            className="px-4 py-2 border border-border dark:border-dark-border text-text-primary dark:text-dark-text-primary rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Сбросить
           </button>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="px-3 py-1 text-sm border border-border dark:border-dark-border rounded text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Отмена
-            </button>
-            <button
-              onClick={handleApply}
-              className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700"
-            >
-              Применить
-            </button>
-          </div>
         </div>
       </div>
     </Popup>
