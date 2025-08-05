@@ -11,7 +11,16 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 // Создание экземпляра axios
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // Увеличиваем timeout для парсинга
+  timeout: 30000, // Базовый timeout
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Создание экземпляра для длительных операций
+const longOperationClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 300000, // 5 минут для парсинга
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,6 +28,31 @@ const apiClient = axios.create({
 
 // Интерцептор для добавления токена авторизации
 apiClient.interceptors.request.use(
+  (config) => {
+    const token = getItemSync('authToken');
+    
+    // Проверяем debug режим
+    const isDebugMode = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
+    
+    if (token) {
+      if (isDebugMode) {
+        // В debug режиме добавляем специальный заголовок
+        config.headers['X-Debug-Token'] = token;
+        config.headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Интерцептор для длительных операций
+longOperationClient.interceptors.request.use(
   (config) => {
     const token = getItemSync('authToken');
     
@@ -74,6 +108,38 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Интерцептор ответов для длительных операций
+longOperationClient.interceptors.response.use(
+  (response) => {
+    // Логирование ответов в dev режиме
+    if (import.meta.env.DEV) {
+      console.log('Long Operation API Response:', response.status, response.config.url);
+    }
+    
+    return response;
+  },
+  (error) => {
+    // Обработка ошибок авторизации
+    if (error.response?.status === 401) {
+      removeItemSync('authToken');
+      removeItemSync('telegramInitData');
+      
+      // В веб-окружении перенаправляем на страницу авторизации
+      if (typeof window !== 'undefined') {
+        // Не перенаправляем если это уже страница авторизации
+        if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
+          window.location.href = '/cars'; // Перенаправляем на главную страницу каталога
+        }
+      }
+    }
+    
+    // Логирование ошибок
+    console.error('Long Operation API Error:', error.response?.status, error.config?.url, error.message);
+    
+    return Promise.reject(error);
+  }
+);
+
 // Базовые методы API
 export const api = {
   get: (url, config = {}) => apiClient.get(url, config),
@@ -113,8 +179,11 @@ export const carsApi = {
   // Парсинг новых автомобилей с che168.com
   scrapeCars: () => api.get('/scrape-cars'),
   
-  // Обновление кэша автомобилей
-  refreshCache: () => api.post('/refresh-cache'),
+  // Обновление кэша автомобилей с увеличенным таймаутом и возможностью отмены
+  refreshCache: (signal = null) => {
+    const config = signal ? { signal } : {};
+    return longOperationClient.post('/refresh-cache', {}, config);
+  },
   
   // Поиск автомобилей по названию
   searchCars: (query, filters = {}) => {
@@ -193,6 +262,9 @@ export const debugApi = {
   
   // Протестировать селекторы
   testSelectors: () => api.get('/debug/selectors-test'),
+  
+  // Протестировать пользовательский селектор
+  testCustomSelector: (selector) => api.post('/debug/test-selector', { selector }),
 };
 
 export default apiClient;

@@ -34,13 +34,18 @@ export const useCars = (params = {}) => {
     }
   };
 
-  const refreshCache = async () => {
+  const refreshCache = async (signal = null) => {
     try {
       setLoading(true);
-      const response = await carsApi.refreshCache(); // Используем правильный метод
+      const response = await carsApi.refreshCache(signal); // Передаем signal для отмены
       console.log('Cache refresh result:', response.data);
       await fetchCars();
     } catch (err) {
+      // Проверяем, была ли операция отменена
+      if (err.name === 'AbortError') {
+        console.log('Cache refresh was cancelled');
+        return;
+      }
       console.error('Error refreshing cache:', err);
       setError(err.message || 'Ошибка обновления кэша');
     } finally {

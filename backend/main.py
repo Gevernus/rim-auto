@@ -795,6 +795,20 @@ def test_selectors():
         
         # Тестируем различные селекторы
         selectors_to_test = [
+            # Основные селекторы для карточек автомобилей
+            "li.cxc-card",
+            "li.cards-li",
+            "li.list-photo-li",
+            ".cxc-card",
+            ".cards-li",
+            ".list-photo-li",
+            
+            # Комбинированные селекторы
+            "li.cards-li.cxc-card",
+            "li.list-photo-li.cxc-card",
+            "li.cards-li.list-photo-li",
+            
+            # Альтернативные селекторы
             "div[class*='viewlist_li']",
             "li[class*='list-item']", 
             "div[class*='list-item']",
@@ -803,7 +817,13 @@ def test_selectors():
             "div[class*='pic-box']",
             "div[class*='result']",
             ".list-item",
-            "article"
+            "article",
+            
+            # Дополнительные селекторы из интересных классов
+            ".vehicle-search-list",
+            ".vehicle-second-list",
+            ".tp-cards-tofu",
+            ".right-sidebar-car"
         ]
         
         results = {}
@@ -822,18 +842,83 @@ def test_selectors():
         for div in all_divs:
             classes = div.get('class', [])
             for cls in classes:
-                if 'list' in cls.lower() or 'item' in cls.lower() or 'car' in cls.lower():
+                if any(keyword in cls.lower() for keyword in ['list', 'item', 'car', 'card', 'photo', 'wrap']):
                     unique_classes.add(cls)
+        
+        # Анализ структуры найденных карточек
+        car_cards = soup.select("li.cxc-card")
+        card_analysis = {}
+        if car_cards:
+            sample_card = car_cards[0]
+            card_analysis = {
+                "total_cards": len(car_cards),
+                "sample_id": sample_card.get('id', ''),
+                "sample_classes": sample_card.get('class', []),
+                "sample_attributes": {k: v for k, v in sample_card.attrs.items() if k not in ['class', 'id']},
+                "has_link": bool(sample_card.find('a')),
+                "has_image": bool(sample_card.find('img')),
+                "has_price": bool(sample_card.find(text=lambda text: text and '万' in text))
+            }
         
         return {
             "status": "ok",
             "selector_results": results,
             "interesting_classes": sorted(list(unique_classes)),
-            "total_divs": len(all_divs)
+            "total_divs": len(all_divs),
+            "card_analysis": card_analysis
         }
         
     except Exception as e:
         return {
             "status": "error",
             "message": str(e)
-    } 
+        }
+
+@app.post("/api/debug/test-selector")
+def test_custom_selector(data: dict):
+    """Тестирует пользовательский селектор на последней сохраненной странице."""
+    try:
+        selector = data.get("selector", "")
+        if not selector:
+            return {
+                "status": "error",
+                "message": "Selector is required"
+            }
+        
+        if not os.path.exists("debug_page_source.html"):
+            return {
+                "status": "not_found",
+                "message": "No debug page source found. Run scraping first."
+            }
+        
+        with open("debug_page_source.html", "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        soup = BeautifulSoup(content, "html.parser")
+        elements = soup.select(selector)
+        
+        # Анализ найденных элементов
+        analysis = {
+            "count": len(elements),
+            "sample_classes": [elem.get('class', []) for elem in elements[:5]],
+            "sample_text": [elem.get_text()[:200].strip() for elem in elements[:5]],
+            "sample_ids": [elem.get('id', '') for elem in elements[:5]],
+            "sample_attributes": []
+        }
+        
+        # Анализ атрибутов первых 3 элементов
+        for elem in elements[:3]:
+            attrs = {k: v for k, v in elem.attrs.items() if k not in ['class', 'id']}
+            analysis["sample_attributes"].append(attrs)
+        
+        return {
+            "status": "ok",
+            "selector": selector,
+            "analysis": analysis
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        } 

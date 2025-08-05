@@ -17,6 +17,12 @@ const CatalogPage = () => {
   const [showDevPanel, setShowDevPanel] = useState(false);
   const [debugInfo, setDebugInfo] = useState(null);
   const [currentFilters, setCurrentFilters] = useState({}); // Сохраняем текущие фильтры
+  const [cacheRefreshProgress, setCacheRefreshProgress] = useState(null); // Прогресс обновления кэша
+  const [abortController, setAbortController] = useState(null); // Контроллер для отмены операции
+  const [customSelector, setCustomSelector] = useState(''); // Пользовательский селектор
+  const [customSelectorResult, setCustomSelectorResult] = useState(null); // Результат пользовательского селектора
+  const [pageSourceData, setPageSourceData] = useState(null); // Данные HTML источника
+  const [showPageSourceModal, setShowPageSourceModal] = useState(false); // Показать модальное окно с HTML
   const { navigateTo } = useAppNavigation();
 
   // Загружаем статистику изображений
@@ -60,16 +66,8 @@ const CatalogPage = () => {
     try {
       const response = await debugApi.getPageSource();
       if (response.data.status === 'ok') {
-        const newWindow = window.open('', '_blank');
-        newWindow.document.write(`
-          <html>
-            <head><title>Page Source Debug</title></head>
-            <body>
-              <h2>HTML Source (${response.data.full_length} chars total, showing first 50KB)</h2>
-              <pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px;">${response.data.content}</pre>
-            </body>
-          </html>
-        `);
+        setPageSourceData(response.data);
+        setShowPageSourceModal(true);
       } else {
         alert(response.data.message);
       }
@@ -79,14 +77,110 @@ const CatalogPage = () => {
   };
 
   // Обновление кэша с перезагрузкой статистики
-  const handleRefreshCache = () => {
-    refreshCache();
-    setTimeout(loadImageStats, 3000); // Обновляем статистику после парсинга
+  const handleRefreshCache = async () => {
+    if (!confirm('Вы уверены что хотите обновить кэш? Это может занять несколько минут.')) return;
+    
+    // Создаем новый AbortController
+    const controller = new AbortController();
+    setAbortController(controller);
+    
+    try {
+      setCacheRefreshProgress({
+        status: 'starting',
+        message: 'Начинаем обновление кэша...'
+      });
+      
+      // Запускаем обновление кэша с возможностью отмены
+      await refreshCache(controller.signal);
+      
+      setCacheRefreshProgress({
+        status: 'success',
+        message: 'Кэш успешно обновлен!'
+      });
+      
+      // Обновляем статистику изображений через 3 секунды
+      setTimeout(() => {
+        loadImageStats();
+        setCacheRefreshProgress(null);
+        setAbortController(null);
+      }, 3000);
+      
+    } catch (err) {
+      console.error('Error refreshing cache:', err);
+      
+      // Проверяем, была ли операция отменена
+      if (err.name === 'AbortError') {
+        setCacheRefreshProgress({
+          status: 'cancelled',
+          message: 'Операция была отменена'
+        });
+        setTimeout(() => {
+          setCacheRefreshProgress(null);
+          setAbortController(null);
+        }, 3000);
+        return;
+      }
+      
+      let errorMessage = 'Ошибка обновления кэша';
+      
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = 'Операция превысила время ожидания (5 минут). Возможно, сервер перегружен.';
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Ошибка сервера при обновлении кэша';
+      } else if (err.response?.status === 503) {
+        errorMessage = 'Сервис временно недоступен';
+      } else if (err.message) {
+        errorMessage = `Ошибка: ${err.message}`;
+      }
+      
+      setCacheRefreshProgress({
+        status: 'error',
+        message: errorMessage
+      });
+      
+      // Сбрасываем ошибку через 10 секунд
+      setTimeout(() => {
+        setCacheRefreshProgress(null);
+        setAbortController(null);
+      }, 10000);
+    }
+  };
+
+  // Отмена операции обновления кэша
+  const handleCancelRefresh = () => {
+    if (abortController) {
+      abortController.abort();
+      setCacheRefreshProgress({
+        status: 'cancelling',
+        message: 'Отмена операции...'
+      });
+    }
+  };
+
+  // Тестирование пользовательского селектора
+  const handleTestCustomSelector = async () => {
+    if (!customSelector.trim()) return;
+    
+    try {
+      const response = await debugApi.testCustomSelector(customSelector);
+      setCustomSelectorResult(response.data);
+    } catch (err) {
+      alert('Ошибка тестирования селектора: ' + err.message);
+    }
   };
 
   useEffect(() => {
     loadImageStats();
   }, []);
+
+  // Очистка AbortController при размонтировании
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
 
   // Отладочная информация
   useEffect(() => {
@@ -268,13 +362,44 @@ const CatalogPage = () => {
                       <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
                         Перепарсить автомобили и скачать новые изображения
                       </p>
+                      {cacheRefreshProgress && (
+                        <div className="mt-2">
+                          <div className={`text-sm font-medium ${
+                            cacheRefreshProgress.status === 'error' 
+                              ? 'text-red-600 dark:text-red-400' 
+                              : cacheRefreshProgress.status === 'success'
+                              ? 'text-green-600 dark:text-green-400'
+                              : cacheRefreshProgress.status === 'cancelled'
+                              ? 'text-gray-600 dark:text-gray-400'
+                              : 'text-blue-600 dark:text-blue-400'
+                          }`}>
+                            {cacheRefreshProgress.message}
+                          </div>
+                          {cacheRefreshProgress.status === 'starting' && (
+                            <div className="mt-2">
+                              <div className="w-full bg-yellow-200 dark:bg-yellow-700 rounded-full h-2">
+                                <div className="bg-yellow-600 dark:bg-yellow-400 h-2 rounded-full animate-pulse"></div>
+                              </div>
+                              <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                Операция может занять до 5 минут...
+                              </p>
+                              <button
+                                onClick={handleCancelRefresh}
+                                className="mt-2 px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                              >
+                                Отменить
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={handleRefreshCache}
-                      disabled={loading}
-                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors disabled:opacity-50"
+                      disabled={loading || cacheRefreshProgress?.status === 'starting'}
+                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {loading ? 'Парсинг...' : 'Обновить кэш'}
+                      {cacheRefreshProgress?.status === 'starting' ? 'Обновление...' : 'Обновить кэш'}
                     </button>
                   </div>
                 </div>
@@ -304,35 +429,119 @@ const CatalogPage = () => {
                     </div>
                   </div>
                   
+                  {/* Тестирование пользовательского селектора */}
+                  <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900 rounded">
+                    <h5 className="font-medium text-purple-800 dark:text-purple-200 mb-2">Тестирование пользовательского селектора:</h5>
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={customSelector}
+                        onChange={(e) => setCustomSelector(e.target.value)}
+                        placeholder="Введите CSS селектор (например: li.cxc-card)"
+                        className="flex-1 px-3 py-1 text-sm border border-purple-300 dark:border-purple-600 rounded bg-white dark:bg-purple-800 text-purple-900 dark:text-purple-100"
+                      />
+                      <button
+                        onClick={handleTestCustomSelector}
+                        disabled={!customSelector.trim()}
+                        className="px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors disabled:opacity-50"
+                      >
+                        Тест
+                      </button>
+                    </div>
+                    
+                    {/* Результат пользовательского селектора */}
+                    {customSelectorResult && (
+                      <div className="mt-3 p-2 bg-purple-200 dark:bg-purple-700 rounded">
+                        <h6 className="font-medium text-purple-800 dark:text-purple-200 mb-1">
+                          Результат: {customSelectorResult.selector}
+                        </h6>
+                        <div className="text-xs space-y-1">
+                          <p><strong>Найдено элементов:</strong> {customSelectorResult.analysis.count}</p>
+                          {customSelectorResult.analysis.count > 0 && (
+                            <>
+                              <p><strong>ID образцов:</strong> {customSelectorResult.analysis.sample_ids.slice(0, 3).join(', ')}</p>
+                              <p><strong>Классы образцов:</strong></p>
+                              <div className="max-h-20 overflow-y-auto">
+                                {customSelectorResult.analysis.sample_classes.slice(0, 3).map((classes, idx) => (
+                                  <div key={idx} className="text-xs bg-purple-300 dark:bg-purple-600 px-1 rounded mb-1">
+                                    {classes.join(', ')}
+                                  </div>
+                                ))}
+                              </div>
+                              <p><strong>Текст образцов:</strong></p>
+                              <div className="max-h-20 overflow-y-auto">
+                                {customSelectorResult.analysis.sample_text.slice(0, 3).map((text, idx) => (
+                                  <div key={idx} className="text-xs bg-purple-300 dark:bg-purple-600 px-1 rounded mb-1">
+                                    {text.substring(0, 100)}...
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
                   {debugInfo && (
                     <div className="mt-4 p-3 bg-purple-100 dark:bg-purple-800 rounded">
                       <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-2">Результаты тестирования:</h4>
                       <div className="text-sm text-purple-700 dark:text-purple-300">
                         <p><strong>Статус:</strong> {debugInfo.status}</p>
+                        
+                        {/* Анализ карточек */}
+                        {debugInfo.card_analysis && (
+                          <div className="mt-3 p-2 bg-purple-200 dark:bg-purple-700 rounded">
+                            <h5 className="font-medium text-purple-800 dark:text-purple-200 mb-1">Анализ карточек автомобилей:</h5>
+                            <div className="text-xs space-y-1">
+                              <p><strong>Найдено карточек:</strong> {debugInfo.card_analysis.total_cards}</p>
+                              <p><strong>ID образца:</strong> {debugInfo.card_analysis.sample_id}</p>
+                              <p><strong>Классы образца:</strong> {debugInfo.card_analysis.sample_classes?.join(', ')}</p>
+                              <p><strong>Содержит ссылку:</strong> {debugInfo.card_analysis.has_link ? '✅' : '❌'}</p>
+                              <p><strong>Содержит изображение:</strong> {debugInfo.card_analysis.has_image ? '✅' : '❌'}</p>
+                              <p><strong>Содержит цену:</strong> {debugInfo.card_analysis.has_price ? '✅' : '❌'}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Результаты селекторов */}
                         {debugInfo.selector_results && (
-                          <div className="mt-2">
+                          <div className="mt-3">
                             <p><strong>Результаты селекторов:</strong></p>
-                            <div className="max-h-40 overflow-y-auto">
+                            <div className="max-h-40 overflow-y-auto space-y-1">
                               {Object.entries(debugInfo.selector_results).map(([selector, result]) => (
-                                <div key={selector} className="mt-1">
-                                  <code className="text-xs bg-purple-200 dark:bg-purple-700 px-1 rounded">
+                                <div key={selector} className="flex items-center justify-between">
+                                  <code className="text-xs bg-purple-200 dark:bg-purple-700 px-1 rounded flex-1 mr-2">
                                     {selector}
                                   </code>
-                                  : {result.count} элементов
+                                  <span className={`text-xs px-2 py-1 rounded ${
+                                    result.count > 0 
+                                      ? 'bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-200' 
+                                      : 'bg-red-200 dark:bg-red-700 text-red-800 dark:text-red-200'
+                                  }`}>
+                                    {result.count} элементов
+                                  </span>
                                 </div>
                               ))}
                             </div>
                           </div>
                         )}
+                        
+                        {/* Интересные классы */}
                         {debugInfo.interesting_classes && debugInfo.interesting_classes.length > 0 && (
-                          <div className="mt-2">
-                            <p><strong>Интересные классы:</strong></p>
-                            <div className="text-xs">
-                              {debugInfo.interesting_classes.slice(0, 10).join(', ')}
-                              {debugInfo.interesting_classes.length > 10 && '...'}
+                          <div className="mt-3">
+                            <p><strong>Интересные классы ({debugInfo.interesting_classes.length}):</strong></p>
+                            <div className="text-xs max-h-20 overflow-y-auto">
+                              {debugInfo.interesting_classes.slice(0, 15).join(', ')}
+                              {debugInfo.interesting_classes.length > 15 && '...'}
                             </div>
                           </div>
                         )}
+                        
+                        {/* Общая статистика */}
+                        <div className="mt-3 text-xs">
+                          <p><strong>Всего div/li элементов:</strong> {debugInfo.total_divs}</p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -389,6 +598,53 @@ const CatalogPage = () => {
           </div>
         )}
       </div>
+      
+      {/* Модальное окно для отображения HTML источника */}
+      {showPageSourceModal && pageSourceData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-11/12 h-5/6 max-w-6xl flex flex-col">
+            {/* Заголовок модального окна */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                HTML Source Debug ({pageSourceData.full_length} chars total)
+              </h3>
+              <button
+                onClick={() => setShowPageSourceModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Содержимое модального окна */}
+            <div className="flex-1 overflow-hidden">
+              <div className="h-full overflow-auto p-4">
+                <pre className="text-xs font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                  {pageSourceData.content}
+                </pre>
+              </div>
+            </div>
+            
+            {/* Футер модального окна */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                <span>Показано первые {pageSourceData.content.length} символов из {pageSourceData.full_length}</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(pageSourceData.content);
+                    alert('HTML скопирован в буфер обмена');
+                  }}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition-colors"
+                >
+                  Копировать
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
