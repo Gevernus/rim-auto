@@ -10,6 +10,7 @@ import { CatalogPage } from '../pages/catalog';
 import { CarPage } from '../pages/car';
 import { OrderPage } from '../pages/order';
 import { AboutPage } from '../pages/about';
+import { AuthDebugPage } from '../pages/debug/AuthDebugPage';
 
 // Виджеты
 import { Header } from '../widgets/header';
@@ -130,6 +131,10 @@ const router = createBrowserRouter([
   {
     path: "/order",
     element: <Layout><OrderPage /></Layout>,
+  },
+  {
+    path: "/auth-debug",
+    element: <Layout><AuthDebugPage /></Layout>,
   },
   
   // Перенаправление с корневого пути на автомобили

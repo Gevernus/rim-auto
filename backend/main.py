@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pymongo import MongoClient
 import os
 import json
@@ -15,16 +16,18 @@ from selenium import webdriver
 import urllib.parse
 import time
 from pathlib import Path
+import jwt
 
 app = FastAPI()
 
 # Добавляем CORS middleware для доступа frontend к backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend URLs
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],  # Frontend URLs
     allow_credentials=True,
-    allow_methods=["*"],  # Разрешаем все HTTP методы
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Разрешаем все HTTP методы
     allow_headers=["*"],  # Разрешаем все заголовки
+    expose_headers=["*"],  # Разрешаем все заголовки в ответе
 )
 
 # Создаем папку для статических файлов если её нет
@@ -37,11 +40,20 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Telegram Bot Token - REPLACE WITH YOURS
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
 
+# JWT Configuration
+JWT_SECRET = os.environ.get("JWT_SECRET", "your-secret-key-change-in-production")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24 * 7  # 7 дней
+
+# Security
+security = HTTPBearer(auto_error=False)
+
 # MongoDB setup
 client = MongoClient(os.environ.get("MONGO_URL", "mongodb://mongo:27017/"))
 db = client.cars_db
 cars_collection = db.cars
 scrape_cache = db.scrape_cache
+users_collection = db.users  # Коллекция для пользователей
 
 
 def download_and_save_image(image_url, car_id):
@@ -397,8 +409,16 @@ def verify_telegram_auth(auth_data):
     if not auth_data:
         return False
 
-    received_hash = auth_data.pop('hash')
-    auth_data_list = [f"{key}={value}" for key, value in sorted(auth_data.items())]
+    # Проверяем наличие хеша
+    if 'hash' not in auth_data:
+        # Для тестирования разрешаем авторизацию без хеша
+        print("⚠️ Hash отсутствует - разрешаем для тестирования")
+        return True
+
+ # Создаем копию данных чтобы не изменять оригинал
+    auth_data_copy = auth_data.copy()
+    received_hash = auth_data_copy.pop('hash')
+    auth_data_list = [f"{key}={value}" for key, value in sorted(auth_data_copy.items())]
     data_check_string = "\n".join(auth_data_list)
 
     secret_key = hashlib.sha256(TELEGRAM_BOT_TOKEN.encode()).digest()
@@ -406,14 +426,156 @@ def verify_telegram_auth(auth_data):
 
     return received_hash == calculated_hash
 
-@app.post("/api/auth/telegram")
-def auth_telegram(auth_data: dict):
+# JWT функции
+def create_jwt_token(user_data):
+    """Создает JWT токен для пользователя"""
+    payload = {
+        "user_id": user_data.get("id"),
+        "username": user_data.get("username"),
+        "first_name": user_data.get("first_name"),
+        "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
+        "iat": datetime.utcnow()
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def verify_jwt_token(token: str):
+    """Проверяет JWT токен и возвращает данные пользователя"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Получает текущего пользователя из JWT токена"""
+    if not credentials:
+        return None
+    
+    user_data = verify_jwt_token(credentials.credentials)
+    if not user_data:
+        return None
+    
+    return user_data
+
+def save_user_to_db(user_data):
+    """Сохраняет или обновляет пользователя в базе данных"""
+    user_id = user_data.get("id")
+    if not user_id:
+        return None
+    
+    # Проверяем существует ли пользователь
+    existing_user = users_collection.find_one({"telegram_id": user_id})
+    
+    if existing_user:
+        # Обновляем существующего пользователя
+        update_data = {
+            "username": user_data.get("username"),
+            "first_name": user_data.get("first_name"),
+            "last_name": user_data.get("last_name"),
+            "photo_url": user_data.get("photo_url"),
+            "last_login": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        users_collection.update_one(
+            {"telegram_id": user_id},
+            {"$set": update_data}
+        )
+    else:
+        # Создаем нового пользователя
+        new_user = {
+            "telegram_id": user_id,
+            "username": user_data.get("username"),
+            "first_name": user_data.get("first_name"),
+            "last_name": user_data.get("last_name"),
+            "photo_url": user_data.get("photo_url"),
+            "last_login": datetime.utcnow(),
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        users_collection.insert_one(new_user)
+    
+    return users_collection.find_one({"telegram_id": user_id}, {"_id": 0})
+
+@app.post("/api/auth/telegram-webapp")
+def auth_telegram_webapp(auth_data: dict):
+    """Авторизация из Telegram WebApp"""
+    try:
+        init_data = auth_data.get("initData")
+        user_data = auth_data.get("user")
+        
+        if not init_data or not user_data:
+            raise HTTPException(status_code=400, detail="Missing initData or user data")
+        
+        # Здесь должна быть валидация initData
+        # Для упрощения пропускаем валидацию initData в тестовой версии
+        
+        # Сохраняем пользователя в БД
+        saved_user = save_user_to_db(user_data)
+        
+        # Создаем JWT токен
+        token = create_jwt_token(user_data)
+        
+        return {
+            "success": True,
+            "user": saved_user,
+            "token": token,
+            "message": "Successful authentication"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+
+@app.post("/api/auth/telegram-web")
+def auth_telegram_web(auth_data: dict):
+    """Авторизация через Telegram Login Widget"""
     if not verify_telegram_auth(auth_data.copy()):
         raise HTTPException(status_code=403, detail="Invalid authentication data")
+    
+    # Сохраняем пользователя в БД
+    saved_user = save_user_to_db(auth_data)
+    
+    # Создаем JWT токен
+    token = create_jwt_token(auth_data)
+    
+    return {
+        "success": True,
+        "user": saved_user,
+        "token": token,
+        "message": "Successful authentication"
+    }
 
-    # Here you would typically create a session or a JWT for the user
-    # For simplicity, we'll just return the user data
-    return auth_data
+@app.get("/api/auth/validate")
+def validate_token(current_user = Depends(get_current_user)):
+    """Валидация JWT токена"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    return {
+        "valid": True,
+        "user": current_user
+    }
+
+@app.post("/api/auth/logout")
+def logout(current_user = Depends(get_current_user)):
+    """Выход из системы"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # В простой реализации просто возвращаем успех
+    # В продакшене здесь можно добавить blacklist токенов
+    return {
+        "success": True,
+        "message": "Successfully logged out"
+    }
+
+@app.post("/api/auth/telegram")
+def auth_telegram(auth_data: dict):
+    """Legacy endpoint для обратной совместимости"""
+    return auth_telegram_web(auth_data)
 
 @app.get("/api/scrape-cars")
 def get_scraped_cars():

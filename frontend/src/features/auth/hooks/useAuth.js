@@ -5,7 +5,10 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getStorageItem, setStorageItem, removeStorageItem } from '../../../shared/lib/platform';
+import { storage } from '../../../shared/lib/storage.js';
+
+// Синхронные функции для быстрого чтения в initialize
+const getItemSync = (key) => localStorage.getItem(key);
 
 // Store для состояния авторизации
 const useAuthStore = create(
@@ -29,7 +32,7 @@ const useAuthStore = create(
         
         // Сохраняем токен в storage
         if (token) {
-          setStorageItem('authToken', token);
+          storage.setItem('authToken', token);
         }
       },
 
@@ -41,7 +44,7 @@ const useAuthStore = create(
         
         // Сохраняем данные Telegram
         if (initData) {
-          setStorageItem('telegramInitData', initData);
+          storage.setItem('telegramInitData', initData);
         }
       },
 
@@ -55,19 +58,22 @@ const useAuthStore = create(
         });
         
         // Очищаем storage
-        removeStorageItem('authToken');
-        removeStorageItem('telegramInitData');
+        storage.removeItem('authToken');
+        storage.removeItem('telegramInitData');
       },
 
       setLoading: (isLoading) => set({ isLoading }),
 
       // Инициализация из storage
       initialize: () => {
-        const token = getStorageItem('authToken');
-        const telegramInitData = getStorageItem('telegramInitData');
+        const token = getItemSync('authToken');
+        const telegramInitData = getItemSync('telegramInitData');
         
         if (token) {
-          set({ authToken: token });
+          set({ 
+            authToken: token,
+            isAuthenticated: true // Добавляем это поле
+          });
         }
         
         if (telegramInitData) {

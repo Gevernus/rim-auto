@@ -109,11 +109,7 @@ const Header = () => {
             
             {/* Авторизация */}
             {isAuthenticated ? (
-              <UserProfile
-                user={user}
-                telegramUser={telegramUser}
-                onLogout={logout}
-              />
+              <UserProfile />
             ) : (
               <div className="flex items-center gap-2">
                 {!isTelegramWebApp && (
@@ -124,11 +120,11 @@ const Header = () => {
                     compact={true}
                   />
                 )}
-                <Button onClick={handleOrderClick}>
-                  Заказать авто
-                </Button>
               </div>
             )}
+            <Button onClick={handleOrderClick}>
+              Заказать авто
+            </Button>
           </div>
 
           {/* Мобильное меню */}
@@ -179,11 +175,7 @@ const Header = () => {
               {/* Авторизация в мобильном меню */}
               {isAuthenticated ? (
                 <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
-                  <UserProfile
-                    user={user}
-                    telegramUser={telegramUser}
-                    onLogout={logout}
-                  />
+                  <UserProfile compact={true} />
                 </div>
               ) : (
                 <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">

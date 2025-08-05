@@ -3,15 +3,17 @@
  * Обрабатывает бесшовную авторизацию из WebApp и веб-авторизацию
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { apiClient } from '../../../shared/api/client';
 import { 
   isTelegramWebApp, 
   getTelegramInitData, 
-  getTelegramUser,
-  showTelegramAlert 
-} from '../../../shared/lib/platform';
-import { apiClient } from '../../../shared/api/client';
+  getTelegramUser, 
+  showTelegramAlert,
+  enableDebugMode,
+  disableDebugMode
+} from '../../../shared/lib/platform/telegram';
 
 export const useTelegramAuth = () => {
   const auth = useAuth();
@@ -33,6 +35,35 @@ export const useTelegramAuth = () => {
 
       // Сохраняем данные Telegram пользователя
       auth.setTelegramUser(telegramUser, initData);
+
+      // Проверяем debug режим
+      const isDebugMode = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
+      
+      if (isDebugMode) {
+        // В debug режиме создаем локальный токен без обращения к backend
+        const debugUser = {
+          id: telegramUser.id,
+          name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`,
+          username: telegramUser.username,
+          avatar: telegramUser.photo_url,
+          telegram_id: telegramUser.id,
+          is_debug: true
+        };
+        
+        // Создаем debug токен с правильным base64 кодированием
+        const debugTokenData = {
+          user: debugUser,
+          debug: true,
+          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
+        };
+        
+        const debugToken = btoa(unescape(encodeURIComponent(JSON.stringify(debugTokenData))));
+        
+        // Устанавливаем debug пользователя и токен
+        auth.setUser(debugUser, debugToken);
+        console.log('✅ Debug авторизация успешна:', debugUser);
+        return;
+      }
 
       // Отправляем данные на backend для проверки и получения токена
       const response = await apiClient.post('/auth/telegram-webapp', {
@@ -67,6 +98,17 @@ export const useTelegramAuth = () => {
         // Устанавливаем пользователя и токен
         auth.setUser(response.data.user, response.data.token);
         auth.setTelegramUser(telegramData);
+        
+        console.log('✅ Авторизация успешна:', response.data);
+        
+        // Проверяем состояние после небольшой задержки
+        setTimeout(() => {
+          console.log('✅ Состояние auth после авторизации:', {
+            isAuthenticated: auth.isAuthenticated,
+            user: auth.user,
+            token: auth.authToken
+          });
+        }, 200);
         
         return { success: true };
       } else {
@@ -103,6 +145,41 @@ export const useTelegramAuth = () => {
     if (!auth.authToken) return false;
 
     try {
+      // Проверяем debug режим
+      const isDebugMode = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
+      
+      if (isDebugMode) {
+        // В debug режиме проверяем токен локально
+        try {
+          // Безопасное декодирование base64
+          const decodedToken = decodeURIComponent(escape(atob(auth.authToken)));
+          const tokenData = JSON.parse(decodedToken);
+          
+          // Проверяем структуру токена
+          if (!tokenData.user || !tokenData.debug || !tokenData.exp) {
+            console.error('❌ Неверная структура debug токена');
+            auth.logout();
+            return false;
+          }
+          
+          const isExpired = tokenData.exp < Math.floor(Date.now() / 1000);
+          
+          if (isExpired) {
+            console.log('❌ Debug токен истек');
+            auth.logout();
+            return false;
+          }
+          
+          console.log('✅ Debug токен валиден');
+          return true;
+        } catch (error) {
+          console.error('❌ Ошибка парсинга debug токена:', error);
+          // Если токен поврежден - выходим
+          auth.logout();
+          return false;
+        }
+      }
+
       const response = await apiClient.get('/auth/validate');
       return response.data.valid;
     } catch (error) {

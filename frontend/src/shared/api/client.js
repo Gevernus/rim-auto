@@ -1,5 +1,9 @@
 import axios from 'axios';
-import { getStorageItem, setStorageItem, removeStorageItem } from '../lib/platform';
+import { storage } from '../lib/storage.js';
+
+// Синхронные функции для интерцепторов (быстрый доступ)
+const getItemSync = (key) => localStorage.getItem(key);
+const removeItemSync = (key) => localStorage.removeItem(key);
 
 // Базовая конфигурация API клиента
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -13,18 +17,22 @@ const apiClient = axios.create({
   },
 });
 
-// Интерцептор запросов
+// Интерцептор для добавления токена авторизации
 apiClient.interceptors.request.use(
   (config) => {
-    // Добавляем токен авторизации если есть
-    const token = getStorageItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    const token = getItemSync('authToken');
     
-    // Логирование запросов в dev режиме
-    if (import.meta.env.DEV) {
-      console.log('API Request:', config.method?.toUpperCase(), config.url);
+    // Проверяем debug режим
+    const isDebugMode = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
+    
+    if (token) {
+      if (isDebugMode) {
+        // В debug режиме добавляем специальный заголовок
+        config.headers['X-Debug-Token'] = token;
+        config.headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
     }
     
     return config;
@@ -47,8 +55,8 @@ apiClient.interceptors.response.use(
   (error) => {
     // Обработка ошибок авторизации
     if (error.response?.status === 401) {
-      removeStorageItem('authToken');
-      removeStorageItem('telegramInitData');
+      removeItemSync('authToken');
+      removeItemSync('telegramInitData');
       
       // В веб-окружении перенаправляем на страницу авторизации
       if (typeof window !== 'undefined') {

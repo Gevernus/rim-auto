@@ -5,4 +5,5 @@ che168
 python-telegram-bot
 requests
 beautifulsoup4
-selenium 
+selenium
+PyJWT==2.8.0 
