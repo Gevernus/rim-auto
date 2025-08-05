@@ -3,6 +3,7 @@ import { useVehicleFilters } from './hooks/useVehicleFilters';
 import { YearPopup } from './components/YearPopup';
 import { PricePopup } from './components/PricePopup';
 import { ParametersPopup } from './components/ParametersPopup';
+import { useEffect } from 'react';
 
 const VehicleFilters = ({ onFiltersChange, className, loading }) => {
   const {
@@ -26,14 +27,22 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
 
   // Передаем изменения фильтров родительскому компоненту
   const handleFiltersUpdate = () => {
+    console.log('🔍 handleFiltersUpdate вызван');
     if (onFiltersChange) {
       const apiFilters = getApiFilters();
+      console.log('📋 Передаем фильтры родителю:', apiFilters);
       onFiltersChange(apiFilters);
     }
   };
 
+  // Автоматически вызываем фильтрацию при изменении фильтров
+  useEffect(() => {
+    handleFiltersUpdate();
+  }, [filters]); // Зависимость от filters
+
   // Обработчик чекбоксов стран
   const handleCountryChange = (country) => {
+    console.log('🔍 handleCountryChange:', country);
     let newCountries;
     if (country === 'all') {
       newCountries = filters.countries.includes('all') ? [] : ['all'];
@@ -47,32 +56,37 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
       }
     }
     
+    console.log('📋 Новые страны:', newCountries);
     updateCountriesFilter(newCountries);
-    setTimeout(handleFiltersUpdate, 0);
+    // Используем useEffect вместо setTimeout
   };
 
   // Обработчик изменения марки
   const handleBrandChange = (brand) => {
+    console.log('🔍 handleBrandChange:', brand);
     updateBrandFilter(brand);
-    setTimeout(handleFiltersUpdate, 0);
+    // Используем useEffect вместо setTimeout
   };
 
   // Обработчик изменения модели
   const handleModelChange = (model) => {
+    console.log('🔍 handleModelChange:', model);
     updateFilter('model', model);
-    setTimeout(handleFiltersUpdate, 0);
+    // Используем useEffect вместо setTimeout
   };
 
   // Обработчик изменения состояния автомобиля
   const handleConditionChange = (condition) => {
+    console.log('🔍 handleConditionChange:', condition);
     updateFilter('vehicleCondition', condition);
-    setTimeout(handleFiltersUpdate, 0);
+    // Используем useEffect вместо setTimeout
   };
 
   // Обработчик сброса фильтров
   const handleReset = () => {
+    console.log('🔍 handleReset вызван');
     resetFilters();
-    setTimeout(handleFiltersUpdate, 0);
+    // Используем useEffect вместо setTimeout
   };
 
   // Список стран для фильтрации
@@ -263,10 +277,11 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
             <YearPopup
               yearRange={filters.yearRange}
               onApply={(range) => {
+                console.log('🔍 YearPopup onApply:', range);
                 updateNestedFilter('yearRange', 'from', range.from);
                 updateNestedFilter('yearRange', 'to', range.to);
                 setIsYearPopupOpen(false);
-                setTimeout(handleFiltersUpdate, 0);
+                handleFiltersUpdate();
               }}
               onClose={() => setIsYearPopupOpen(false)}
             />
@@ -296,10 +311,11 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
             <PricePopup
               priceRange={filters.priceRange}
               onApply={(range) => {
+                console.log('🔍 PricePopup onApply:', range);
                 updateNestedFilter('priceRange', 'from', range.from);
                 updateNestedFilter('priceRange', 'to', range.to);
                 setIsPricePopupOpen(false);
-                setTimeout(handleFiltersUpdate, 0);
+                handleFiltersUpdate();
               }}
               onClose={() => setIsPricePopupOpen(false)}
             />
@@ -330,11 +346,12 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
             <ParametersPopup
               parameters={filters.parameters}
               onApply={(params) => {
+                console.log('🔍 ParametersPopup onApply:', params);
                 updateNestedFilter('parameters', 'fuelType', params.fuelType);
                 updateNestedFilter('parameters', 'transmission', params.transmission);
                 updateNestedFilter('parameters', 'driveType', params.driveType);
                 setIsParametersPopupOpen(false);
-                setTimeout(handleFiltersUpdate, 0);
+                handleFiltersUpdate();
               }}
               onClose={() => setIsParametersPopupOpen(false)}
             />

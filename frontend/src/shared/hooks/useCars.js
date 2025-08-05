@@ -14,11 +14,15 @@ export const useCars = (params = {}) => {
 
   const fetchCars = async (fetchParams = {}) => {
     try {
+      console.log('🔍 fetchCars вызван с параметрами:', fetchParams);
       setLoading(true);
       setError(null);
       
       const response = await carsApi.getCars({ ...params, ...fetchParams });
+      console.log('📋 Ответ от API:', response.data);
+      
       const adaptedData = adaptApiResponse(response.data);
+      console.log('📋 Адаптированные данные:', adaptedData);
       
       setVehicles(adaptedData.vehicles);
       setPagination({ 
@@ -27,7 +31,7 @@ export const useCars = (params = {}) => {
         page_size: adaptedData.page_size 
       });
     } catch (err) {
-      console.error('Error fetching cars:', err);
+      console.error('❌ Error fetching cars:', err);
       setError(err.message || 'Ошибка загрузки автомобилей');
     } finally {
       setLoading(false);
@@ -58,6 +62,7 @@ export const useCars = (params = {}) => {
   };
 
   const filterCars = async (filters) => {
+    console.log('🔍 filterCars вызван с параметрами:', filters);
     await fetchCars(filters);
   };
 

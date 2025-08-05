@@ -159,6 +159,9 @@ export const carsApi = {
       title,
       price_from,
       price_to,
+      year_from,
+      year_to,
+      country,
       sort_by,
       sort_order
     } = params;
@@ -170,6 +173,9 @@ export const carsApi = {
         title,
         price_from,
         price_to,
+        year_from,
+        year_to,
+        country,
         sort_by,
         sort_order
       }

@@ -195,28 +195,12 @@ const CatalogPage = () => {
 
   // Обработчик изменения фильтров
   const handleFiltersChange = (filters) => {
-    // Преобразуем frontend фильтры в backend параметры
-    const backendFilters = {
-      page: 1, // Сбрасываем страницу при изменении фильтров
-      page_size: 12
-    };
-
-    // Добавляем фильтры если они заданы
-    if (filters.brand) {
-      backendFilters.title = filters.brand;
-    }
+    // Используем фильтры напрямую из VehicleFilters
+    console.log('🔍 Получены фильтры от VehicleFilters:', filters);
     
-    if (filters.priceRange?.from) {
-      backendFilters.price_from = filters.priceRange.from / 10000; // Конвертируем в 万
-    }
-    
-    if (filters.priceRange?.to) {
-      backendFilters.price_to = filters.priceRange.to / 10000; // Конвертируем в 万
-    }
-
     // Сохраняем текущие фильтры для пагинации
-    setCurrentFilters(backendFilters);
-    filterCars(backendFilters);
+    setCurrentFilters(filters);
+    filterCars(filters);
   };
 
   // Обработчик изменения страницы

@@ -99,8 +99,18 @@ const extractModel = (title, brand) => {
  * @returns {number} Год выпуска
  */
 const extractYear = (title) => {
-  const yearMatch = title.match(/20[0-9]{2}/);
-  return yearMatch ? parseInt(yearMatch[0]) : new Date().getFullYear();
+  // Ищем 4-значные числа, которые могут быть годами (1990-2024)
+  const yearMatch = title.match(/\b(20[0-2][0-9]|19[9][0-9])\b/);
+  if (yearMatch) {
+    const year = parseInt(yearMatch[0]);
+    // Проверяем, что год в разумных пределах
+    if (year >= 1990 && year <= 2024) {
+      return year;
+    }
+  }
+  
+  // Если год не найден, возвращаем текущий год
+  return new Date().getFullYear();
 };
 
 /**
@@ -163,38 +173,249 @@ const generateDefaults = (index) => ({
  * @returns {Object} Адаптированные данные в формате frontend
  */
 export const adaptVehicle = (backendCar, index = 0) => {
-  if (!backendCar || !backendCar.title) {
+  if (!backendCar) {
     return null;
   }
 
-  const brand = extractBrand(backendCar.title);
-  const model = extractModel(backendCar.title, brand);
-  const year = extractYear(backendCar.title);
-  const defaults = generateDefaults(index);
+  console.log('🔧 Адаптируем автомобиль:', backendCar);
 
-  return {
-    id: generateId(backendCar.title, index),
-    title: backendCar.title,
-    english_title: `${year} ${brand} ${model}`,
-    brand,
-    model,
-    trim: 'Standard',
-    year,
-    engine: 'N/A',
-    transmission: 'Automatic',
-    fuel_type: 'Petrol',
-    mileage: defaults.mileage,
-    price: adaptPrice(backendCar.price),
-    location: defaults.location,
-    seller: defaults.seller,
-    specifications: defaults.specifications,
-    features: defaults.features,
-    history: defaults.history,
-    market_data: defaults.market_data,
-    images: backendCar.local_image_url ? 
-      [`http://localhost:8000${backendCar.local_image_url}`] : 
-      (backendCar.image_url ? [backendCar.image_url] : ['/placeholder-car.svg'])
-  };
+  // Проверяем формат данных
+  const isNewFormat = backendCar.brand && backendCar.specs && backendCar.price && typeof backendCar.price === 'object';
+  const isOldFormat = backendCar.title && !backendCar.brand;
+  const isSimplifiedFormat = backendCar.brand && backendCar.price_value !== undefined;
+
+  if (isNewFormat) {
+    // Новый структурированный формат (с specs и price объектом)
+    console.log('✅ Используем новый структурированный формат');
+    
+    const defaults = generateDefaults(index);
+    
+    // Формируем URL изображений
+    let images = ['/placeholder-car.svg']; // По умолчанию
+    
+    if (backendCar.images) {
+      if (backendCar.images.local_url) {
+        images = [`http://localhost:8000${backendCar.images.local_url}`];
+        console.log('🖼️ Используем локальное изображение:', images[0]);
+      } else if (backendCar.images.original_url) {
+        images = [backendCar.images.original_url];
+        console.log('🖼️ Используем оригинальное изображение:', images[0]);
+      }
+    }
+
+    return {
+      id: backendCar.id || generateId(backendCar.title, index),
+      title: backendCar.title,
+      english_title: `${backendCar.year || 'N/A'} ${backendCar.brand} ${backendCar.model}`,
+      brand: backendCar.brand,
+      model: backendCar.model,
+      trim: 'Standard',
+      year: backendCar.year,
+      engine: backendCar.specs?.engine_volume || 'N/A',
+      transmission: backendCar.specs?.transmission || 'Automatic',
+      fuel_type: backendCar.specs?.fuel_type || 'Petrol',
+      mileage: defaults.mileage,
+      price: {
+        amount: backendCar.price.amount_cny || 0,
+        currency: 'CNY',
+        formatted: `¥${(backendCar.price.amount_cny || 0).toLocaleString()}`,
+        negotiable: true
+      },
+      location: defaults.location,
+      seller: defaults.seller,
+      specifications: {
+        ...defaults.specifications,
+        engine_volume: backendCar.specs?.engine_volume,
+        transmission: backendCar.specs?.transmission,
+        fuel_type: backendCar.specs?.fuel_type,
+        drive_type: backendCar.specs?.drive_type
+      },
+      features: defaults.features,
+      history: defaults.history,
+      market_data: defaults.market_data,
+      images: images
+    };
+  } else if (isSimplifiedFormat) {
+    // Упрощенный формат (с price_value)
+    console.log('✅ Используем упрощенный формат');
+    
+    const defaults = generateDefaults(index);
+    
+    // Формируем URL изображений
+    let images = ['/placeholder-car.svg']; // По умолчанию
+    
+    if (backendCar.local_image_url) {
+      images = [`http://localhost:8000${backendCar.local_image_url}`];
+      console.log('🖼️ Используем локальное изображение:', images[0]);
+    } else if (backendCar.image_url) {
+      images = [backendCar.image_url];
+      console.log('🖼️ Используем оригинальное изображение:', images[0]);
+    }
+
+    return {
+      id: backendCar.id || generateId(backendCar.title, index),
+      title: backendCar.title,
+      english_title: `${backendCar.year || 'N/A'} ${backendCar.brand} ${backendCar.model}`,
+      brand: backendCar.brand,
+      model: backendCar.model,
+      trim: 'Standard',
+      year: backendCar.year,
+      engine: 'N/A', // Будет дополнено на фронтенде
+      transmission: 'Automatic', // Будет дополнено на фронтенде
+      fuel_type: 'Petrol', // Будет дополнено на фронтенде
+      mileage: defaults.mileage,
+      price: {
+        amount: (backendCar.price_value || 0) * 10000, // Конвертируем в юани
+        currency: 'CNY',
+        formatted: `¥${((backendCar.price_value || 0) * 10000).toLocaleString()}`,
+        negotiable: true
+      },
+      location: defaults.location,
+      seller: defaults.seller,
+      specifications: {
+        ...defaults.specifications,
+        // Дополним спецификации на основе названия
+        engine_volume: extractEngineVolume(backendCar.title),
+        transmission: extractTransmission(backendCar.title),
+        fuel_type: extractFuelType(backendCar.title),
+        drive_type: extractDriveType(backendCar.title)
+      },
+      features: defaults.features,
+      history: defaults.history,
+      market_data: defaults.market_data,
+      images: images
+    };
+  } else if (isOldFormat) {
+    // Старый формат (для обратной совместимости)
+    console.log('⚠️ Используем старый формат данных');
+    
+    const brand = extractBrand(backendCar.title);
+    const model = extractModel(backendCar.title, brand);
+    const year = extractYear(backendCar.title);
+    const defaults = generateDefaults(index);
+
+    return {
+      id: generateId(backendCar.title, index),
+      title: backendCar.title,
+      english_title: `${year} ${brand} ${model}`,
+      brand,
+      model,
+      trim: 'Standard',
+      year,
+      engine: 'N/A',
+      transmission: 'Automatic',
+      fuel_type: 'Petrol',
+      mileage: defaults.mileage,
+      price: adaptPrice(backendCar.price),
+      location: defaults.location,
+      seller: defaults.seller,
+      specifications: defaults.specifications,
+      features: defaults.features,
+      history: defaults.history,
+      market_data: defaults.market_data,
+      images: backendCar.local_image_url ? 
+        [`http://localhost:8000${backendCar.local_image_url}`] : 
+        (backendCar.image_url ? [backendCar.image_url] : ['/placeholder-car.svg'])
+    };
+  } else {
+    // Попробуем обработать как новый формат с вложенными объектами
+    console.log('🔍 Пробуем обработать как новый формат с вложенными объектами');
+    
+    const defaults = generateDefaults(index);
+    
+    // Извлекаем год из названия если не задан
+    const year = backendCar.year || extractYear(backendCar.title);
+    
+    // Обрабатываем цену
+    let priceAmount = 0;
+    if (backendCar.price && typeof backendCar.price === 'object') {
+      priceAmount = backendCar.price.amount_cny || backendCar.price.value * 10000 || 0;
+    } else if (backendCar.price_value) {
+      priceAmount = backendCar.price_value * 10000;
+    }
+    
+    // Формируем URL изображений
+    let images = ['/placeholder-car.svg'];
+    if (backendCar.images && backendCar.images.local_url) {
+      images = [`http://localhost:8000${backendCar.images.local_url}`];
+    } else if (backendCar.local_image_url) {
+      images = [`http://localhost:8000${backendCar.local_image_url}`];
+    } else if (backendCar.images && backendCar.images.original_url) {
+      images = [backendCar.images.original_url];
+    } else if (backendCar.image_url) {
+      images = [backendCar.image_url];
+    }
+
+    return {
+      id: backendCar.id || generateId(backendCar.title, index),
+      title: backendCar.title,
+      english_title: `${year || 'N/A'} ${backendCar.brand || 'Unknown'} ${backendCar.model || 'Unknown'}`,
+      brand: backendCar.brand || 'Unknown',
+      model: backendCar.model || 'Unknown',
+      trim: 'Standard',
+      year: year,
+      engine: 'N/A',
+      transmission: 'Automatic',
+      fuel_type: 'Petrol',
+      mileage: defaults.mileage,
+      price: {
+        amount: priceAmount,
+        currency: 'CNY',
+        formatted: `¥${priceAmount.toLocaleString()}`,
+        negotiable: true
+      },
+      location: defaults.location,
+      seller: defaults.seller,
+      specifications: {
+        ...defaults.specifications,
+        engine_volume: extractEngineVolume(backendCar.title),
+        transmission: extractTransmission(backendCar.title),
+        fuel_type: extractFuelType(backendCar.title),
+        drive_type: extractDriveType(backendCar.title)
+      },
+      features: defaults.features,
+      history: defaults.history,
+      market_data: defaults.market_data,
+      images: images
+    };
+  }
+};
+
+// Вспомогательные функции для извлечения дополнительных параметров
+const extractEngineVolume = (title) => {
+  const volumeMatch = title.match(/(\d+\.?\d*)[LT]/);
+  return volumeMatch ? `${volumeMatch[1]}L` : null;
+};
+
+const extractTransmission = (title) => {
+  if (title.includes('自动') || title.includes('DCT') || title.includes('CVT') || title.includes('AT')) {
+    return 'Automatic';
+  } else if (title.includes('手动') || title.includes('MT')) {
+    return 'Manual';
+  }
+  return 'Automatic';
+};
+
+const extractFuelType = (title) => {
+  if (title.includes('混动') || title.includes('HV') || title.includes('双擎')) {
+    return 'Hybrid';
+  } else if (title.includes('电动') || title.includes('EV')) {
+    return 'Electric';
+  } else if (title.includes('柴油')) {
+    return 'Diesel';
+  }
+  return 'Petrol';
+};
+
+const extractDriveType = (title) => {
+  if (title.includes('四驱') || title.includes('4WD') || title.includes('AWD') || title.includes('4MATIC')) {
+    return 'AWD';
+  } else if (title.includes('前驱') || title.includes('FWD')) {
+    return 'FWD';
+  } else if (title.includes('后驱') || title.includes('RWD')) {
+    return 'RWD';
+  }
+  return 'FWD';
 };
 
 /**
@@ -203,13 +424,27 @@ export const adaptVehicle = (backendCar, index = 0) => {
  * @returns {Array} Массив адаптированных автомобилей
  */
 export const adaptVehicleList = (backendCars) => {
+  console.log('🔧 adaptVehicleList получил данные:', backendCars);
+  
   if (!Array.isArray(backendCars)) {
+    console.log('❌ backendCars не является массивом:', typeof backendCars);
     return [];
   }
 
-  return backendCars
-    .map((car, index) => adaptVehicle(car, index))
+  const adaptedVehicles = backendCars
+    .map((car, index) => {
+      const adapted = adaptVehicle(car, index);
+      if (adapted) {
+        console.log(`✅ Адаптирован автомобиль ${index + 1}:`, adapted.title);
+      } else {
+        console.log(`❌ Не удалось адаптировать автомобиль ${index + 1}`);
+      }
+      return adapted;
+    })
     .filter(car => car !== null);
+
+  console.log(`🎉 Успешно адаптировано ${adaptedVehicles.length} из ${backendCars.length} автомобилей`);
+  return adaptedVehicles;
 };
 
 /**
@@ -218,7 +453,10 @@ export const adaptVehicleList = (backendCars) => {
  * @returns {Object} Адаптированный ответ с vehicles
  */
 export const adaptApiResponse = (backendResponse) => {
+  console.log('🔧 adaptApiResponse получил ответ:', backendResponse);
+  
   if (!backendResponse || !backendResponse.data) {
+    console.log('❌ Некорректный ответ от API');
     return {
       vehicles: [],
       total: 0,
@@ -228,11 +466,15 @@ export const adaptApiResponse = (backendResponse) => {
   }
 
   const { data, total, page, page_size } = backendResponse;
+  console.log(`📊 Обрабатываем ${data.length} автомобилей, страница ${page}, всего ${total}`);
 
-  return {
+  const result = {
     vehicles: adaptVehicleList(data),
     total: total || 0,
     page: page || 1,
     page_size: page_size || 10
   };
+
+  console.log('✅ Финальный результат adaptApiResponse:', result);
+  return result;
 }; 
