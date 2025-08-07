@@ -11,6 +11,9 @@ import { CarPage } from '../pages/car';
 import { OrderPage } from '../pages/order';
 import { AboutPage } from '../pages/about';
 import { AuthDebugPage } from '../pages/debug/AuthDebugPage';
+import { CreditPage } from '../pages/credit';
+import { LeasingPage } from '../pages/leasing';
+import { AdminPage } from '../pages/admin';
 
 // Виджеты
 import { Header } from '../widgets/header';
@@ -116,11 +119,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/credit",
-    element: <Layout><ComingSoonPage title="Кредит получить" /></Layout>,
+    element: <Layout><CreditPage /></Layout>,
   },
   {
     path: "/leasing",
-    element: <Layout><ComingSoonPage title="Лизинг получить" /></Layout>,
+    element: <Layout><LeasingPage /></Layout>,
   },
   
   // Дополнительные страницы
@@ -135,6 +138,10 @@ const router = createBrowserRouter([
   {
     path: "/auth-debug",
     element: <Layout><AuthDebugPage /></Layout>,
+  },
+  {
+    path: "/admin",
+    element: <Layout><AdminPage /></Layout>,
   },
   
   // Перенаправление с корневого пути на автомобили

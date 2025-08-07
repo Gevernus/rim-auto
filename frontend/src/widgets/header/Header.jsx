@@ -40,6 +40,11 @@ const Header = () => {
     { name: 'Лизинг получить', href: routes.leasing },
   ];
 
+  // Админ меню (только для авторизованных пользователей)
+  const adminNavigation = [
+    { name: 'Админ панель', href: routes.admin },
+  ];
+
   const isActive = (href) => pathname === href;
 
   const handleLogoClick = () => {
@@ -165,6 +170,20 @@ const Header = () => {
                 {item.name}
               </button>
             ))}
+            {/* Админ меню для авторизованных пользователей */}
+            {isAuthenticated && adminNavigation.map((item) => (
+              <button
+                key={item.name}
+                onClick={() => handleNavClick(item.href)}
+                className={`px-2 py-1 text-xs font-medium transition-colors ${
+                  isActive(item.href)
+                    ? 'text-primary-600'
+                    : 'text-text-muted dark:text-dark-text-muted hover:text-text-secondary dark:hover:text-dark-text-secondary'
+                }`}
+              >
+                {item.name}
+              </button>
+            ))}
           </nav>
         </div>
 
@@ -235,6 +254,28 @@ const Header = () => {
                   </button>
                 ))}
               </div>
+
+              {/* Админ меню для авторизованных пользователей */}
+              {isAuthenticated && (
+                <div className="mb-4">
+                  <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
+                    Администрирование
+                  </h3>
+                  {adminNavigation.map((item) => (
+                    <button
+                      key={item.name}
+                      onClick={() => handleNavClick(item.href)}
+                      className={`block px-3 py-2 text-sm font-medium w-full text-left rounded-md transition-colors ${
+                        isActive(item.href)
+                          ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'text-text-muted dark:text-dark-text-muted hover:text-text-secondary dark:hover:text-dark-text-secondary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary'
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Информация о компании в мобильном меню */}
               <div className="px-3 py-2 border-t border-border dark:border-dark-border">

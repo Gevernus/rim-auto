@@ -273,6 +273,28 @@ export const debugApi = {
   testCustomSelector: (selector) => api.post('/debug/test-selector', { selector }),
 };
 
+// Методы для работы с заявками
+export const applicationsApi = {
+  // Отправить заявку на кредит
+  submitCreditApplication: (applicationData) => api.post('/applications/credit', applicationData),
+  
+  // Отправить заявку на лизинг
+  submitLeasingApplication: (applicationData) => api.post('/applications/leasing', applicationData),
+  
+  // Получить статистику заявок
+  getStats: () => api.get('/applications/stats'),
+  
+  // Получить список кредитных заявок
+  getCreditApplications: (params = {}) => api.get('/applications/credit', { params }),
+  
+  // Получить список лизинговых заявок
+  getLeasingApplications: (params = {}) => api.get('/applications/leasing', { params }),
+  
+  // Обновить статус заявки
+  updateApplicationStatus: (applicationType, applicationId, status) => 
+    api.put(`/applications/${applicationType}/${applicationId}/status`, { status }),
+};
+
 export default apiClient;
 
 // Экспорт apiClient для прямого использования
