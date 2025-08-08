@@ -36,6 +36,7 @@ services:
     restart: unless-stopped
     environment:
       - TELEGRAM_BOT_TOKEN=7339549951:AAGGxOzdLf21mekkQ7Qo2s1Ug_ki1GOe2nY
+      - MONGO_URL=mongodb://admin:va56dtw2!d@mongo:27017/?authSource=admin
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/api`)"
