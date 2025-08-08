@@ -25,7 +25,7 @@ app = FastAPI()
 # Добавляем CORS middleware для доступа frontend к backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],  # Frontend URLs
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://casa-de-costura.ru", "*"],  # Frontend URLs
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Разрешаем все HTTP методы
     allow_headers=["*"],  # Разрешаем все заголовки

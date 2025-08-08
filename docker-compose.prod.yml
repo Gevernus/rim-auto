@@ -39,10 +39,17 @@ services:
       - MONGO_URL=mongodb://admin:va56dtw2!d@mongo:27017/?authSource=admin
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=web"
       - "traefik.http.routers.backend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      # Route static files to backend as well
+      - "traefik.http.routers.backend-static.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/static`)"
+      - "traefik.http.routers.backend-static.entrypoints=websecure"
+      - "traefik.http.routers.backend-static.tls.certresolver=myresolver"
+      - "traefik.http.routers.backend-static.priority=10"
+      - "traefik.http.routers.backend-static.service=backend"
     # No host port published; Traefik handles routing inside the `web` network
     volumes:
       - car_images:/app/static/images
@@ -65,6 +72,7 @@ services:
       - VITE_API_URL=https://casa-de-costura.ru/api
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=web"
       - "traefik.http.routers.frontend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.priority=5"
