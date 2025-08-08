@@ -92,31 +92,14 @@ def download_and_save_image(image_url, car_id):
         if file_path.exists():
             return f"/static/images/{filename}"
         
-        # Улучшенные заголовки для обхода блокировки
+        # Скачиваем изображение
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Referer': 'https://www.che168.com/',
             'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'image',
-            'Sec-Fetch-Mode': 'no-cors',
-            'Sec-Fetch-Site': 'cross-site',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
         }
         
-        # Добавляем Referer в зависимости от источника
-        if 'picsum.photos' in image_url:
-            headers['Referer'] = 'https://picsum.photos/'
-        elif 'che168.com' in image_url:
-            headers['Referer'] = 'https://www.che168.com/'
-        else:
-            headers['Referer'] = 'https://www.google.com/'
-        
-        # Увеличиваем таймаут
-        response = requests.get(image_url, headers=headers, timeout=60, stream=True)
+        response = requests.get(image_url, headers=headers, timeout=30, stream=True)
         response.raise_for_status()
         
         # Проверяем что это действительно изображение
@@ -135,63 +118,8 @@ def download_and_save_image(image_url, car_id):
         # Возвращаем локальный URL
         return f"/static/images/{filename}"
         
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 403:
-            print(f"403 Forbidden для {image_url} - попробуем альтернативный источник")
-            # Попробуем альтернативный источник изображений
-            return download_alternative_image(car_id)
-        else:
-            print(f"HTTP ошибка скачивания изображения {image_url}: {e}")
-            return None
     except Exception as e:
         print(f"Ошибка скачивания изображения {image_url}: {e}")
-        return None
-
-def download_alternative_image(car_id):
-    """
-    Скачивает изображение из альтернативного источника
-    """
-    try:
-        # Используем другой сервис для изображений
-        alternative_urls = [
-            f"https://via.placeholder.com/800x600/4A90E2/FFFFFF?text=Car+{car_id}",
-            f"https://dummyimage.com/800x600/4A90E2/FFFFFF&text=Car+{car_id}",
-            f"https://placehold.co/800x600/4A90E2/FFFFFF?text=Car+{car_id}"
-        ]
-        
-        for alt_url in alternative_urls:
-            try:
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                    'Referer': 'https://www.google.com/'
-                }
-                
-                response = requests.get(alt_url, headers=headers, timeout=30, stream=True)
-                response.raise_for_status()
-                
-                # Создаем безопасное имя файла
-                safe_filename = "".join(c for c in str(car_id) if c.isalnum() or c in ('-', '_'))
-                filename = f"{safe_filename}_alt.jpg"
-                file_path = STATIC_DIR / filename
-                
-                # Сохраняем файл
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                
-                print(f"Альтернативное изображение сохранено: {filename}")
-                return f"/static/images/{filename}"
-                
-            except Exception as e:
-                print(f"Ошибка с альтернативным URL {alt_url}: {e}")
-                continue
-        
-        print(f"Не удалось скачать изображение для {car_id} ни из одного источника")
-        return None
-        
-    except Exception as e:
-        print(f"Ошибка в download_alternative_image: {e}")
         return None
 
 def get_mock_cars():
@@ -230,16 +158,13 @@ def scrape_and_cache_cars():
         options=options
     )
     
-    # Устанавливаем таймауты
-    driver.set_page_load_timeout(60)
-    driver.implicitly_wait(30)
-    
     try:
         print(f"Переходим на сайт: {url}")
         driver.get(url)
         
         # Ждем загрузки страницы
-        time.sleep(10)  # Увеличиваем паузу для полной загрузки
+        driver.implicitly_wait(15)
+        time.sleep(5)  # Дополнительная пауза для полной загрузки
         
         # Убираем детектирование автоматизации
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -257,25 +182,13 @@ def scrape_and_cache_cars():
         
         # Попробуем прокрутить страницу для загрузки динамического контента
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(5)
+        time.sleep(3)
         
         # Обновляем soup после прокрутки
         soup = BeautifulSoup(driver.page_source, "html.parser")
         
-    except Exception as e:
-        print(f"❌ Ошибка при работе с Selenium: {e}")
-        # Пытаемся сохранить скриншот даже при ошибке
-        try:
-            driver.save_screenshot("error_screenshot.png")
-            print("Error screenshot saved as error_screenshot.png")
-        except:
-            pass
-        raise e
     finally:
-        try:
-            driver.quit()
-        except Exception as e:
-            print(f"⚠️ Ошибка при закрытии драйвера: {e}")
+        driver.quit()
 
     car_list = []
 
@@ -376,8 +289,7 @@ def scrape_and_cache_cars():
         
         for i in range(10):
             car_id = f"test_car_{i}"
-            # Используем более надежный источник изображений
-            test_image_url = f"https://via.placeholder.com/800x600/4A90E2/FFFFFF?text=Test+Car+{i+1}"
+            test_image_url = f"https://picsum.photos/seed/{i+100}/800/600"
             
             # Скачиваем тестовое изображение
             print(f"📸 Скачиваем тестовое изображение {i+1}/10...")
@@ -1728,6 +1640,7 @@ def structure_car_data(car_data):
         # Изображения (как есть)
         "image_url": car_data.get("image_url", ""),
         "local_image_url": car_data.get("local_image_url", ""),
+		"images": [car_data.get("local_image_url", "")] if car_data.get("local_image_url") else [],
         
         # Метаданные
         "source": "che168",

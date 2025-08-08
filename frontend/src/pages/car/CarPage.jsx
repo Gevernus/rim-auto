@@ -114,7 +114,7 @@ const CarPage = () => {
           {/* Левая колонка - Изображения */}
           <div className="lg:col-span-2">
             <ImageGallery 
-              images={vehicle.images} 
+              images={vehicle.images && vehicle.images.length > 0 ? vehicle.images : []} 
               alt={vehicle.title}
               className="mb-6"
             />

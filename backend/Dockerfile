@@ -1,5 +1,17 @@
 FROM python:3.12-slim
 
+# Установка необходимых системных пакетов для сетевых операций
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    wget \
+    iputils-ping \
+    dnsutils \
+    net-tools \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY requirements.txt .
