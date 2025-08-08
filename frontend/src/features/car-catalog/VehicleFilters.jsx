@@ -40,63 +40,63 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
     handleFiltersUpdate();
   }, [filters]); // Зависимость от filters
 
-  // Обработчик чекбоксов стран
+  // Обработчик изменения экспортируемой страны
   const handleCountryChange = (country) => {
     console.log('🔍 handleCountryChange:', country);
-    let newCountries;
-    if (country === 'all') {
-      newCountries = filters.countries.includes('all') ? [] : ['all'];
-    } else {
-      if (filters.countries.includes('all')) {
-        newCountries = [country];
-      } else if (filters.countries.includes(country)) {
-        newCountries = filters.countries.filter(c => c !== country);
-      } else {
-        newCountries = [...filters.countries, country];
-      }
-    }
-    
-    console.log('📋 Новые страны:', newCountries);
-    updateCountriesFilter(newCountries);
-    // Используем useEffect вместо setTimeout
+    updateCountriesFilter(country === 'all' ? ['all'] : [country]);
   };
 
   // Обработчик изменения марки
   const handleBrandChange = (brand) => {
     console.log('🔍 handleBrandChange:', brand);
     updateBrandFilter(brand);
-    // Используем useEffect вместо setTimeout
   };
 
   // Обработчик изменения модели
   const handleModelChange = (model) => {
     console.log('🔍 handleModelChange:', model);
     updateFilter('model', model);
-    // Используем useEffect вместо setTimeout
   };
 
   // Обработчик изменения состояния автомобиля
   const handleConditionChange = (condition) => {
     console.log('🔍 handleConditionChange:', condition);
     updateFilter('vehicleCondition', condition);
-    // Используем useEffect вместо setTimeout
+  };
+
+  // Обработчик изменения наличия
+  const handleAvailabilityChange = (availability) => {
+    console.log('🔍 handleAvailabilityChange:', availability);
+    updateFilter('availability', availability);
   };
 
   // Обработчик сброса фильтров
   const handleReset = () => {
     console.log('🔍 handleReset вызван');
     resetFilters();
-    // Используем useEffect вместо setTimeout
   };
 
-  // Список стран для фильтрации
+  // Список экспортируемых стран
   const countries = [
-    { id: 'all', name: 'Все страны', flag: '🌍' },
-    { id: 'china', name: 'Китай', flag: '🇨🇳' },
-    { id: 'japan', name: 'Япония', flag: '🇯🇵' },
-    { id: 'korea', name: 'Корея', flag: '🇰🇷' },
-    { id: 'germany', name: 'Германия', flag: '🇩🇪' },
-    { id: 'usa', name: 'США', flag: '🇺🇸' }
+    { value: 'all', label: 'Все страны' },
+    { value: 'japan', label: 'Япония' },
+    { value: 'korea', label: 'Корея' },
+    { value: 'uae', label: 'О.А.Э.' },
+    { value: 'china', label: 'Китай' }
+  ];
+
+  // Опции наличия
+  const availabilityOptions = [
+    { value: 'all', label: 'Все' },
+    { value: 'in_stock', label: 'В наличии' },
+    { value: 'on_order', label: 'Под заказ' }
+  ];
+
+  // Состояния автомобиля
+  const conditionOptions = [
+    { value: 'all', label: 'Любое' },
+    { value: 'new', label: 'Новые' },
+    { value: 'used', label: 'С пробегом' }
   ];
 
   if (loading) {
@@ -104,10 +104,11 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
       <div className={`bg-white dark:bg-dark-surface border border-border dark:border-dark-border rounded-lg p-6 ${className}`}>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
-          <div className="space-y-3">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </div>
       </div>
@@ -115,7 +116,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
   }
 
   return (
-    <div className={`bg-white dark:bg-dark-surface border border-border dark:border-dark-border rounded-lg p-6 ${className}`}>
+    <div className={`bg-white dark:bg-dark-surface border border-border dark:border-dark-border rounded-lg p-2 ${className}`}>
       {/* Заголовок с кнопкой сброса */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">
@@ -131,78 +132,68 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
         )}
       </div>
 
-      {/* Первая строка - Страны и состояние */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Фильтр по странам */}
-        <div>
-          <h4 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-3">
-            Страна производства
-          </h4>
-          <div className="flex flex-wrap gap-3">
-            {countries.map(country => (
-              <label key={country.id} className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.countries.includes(country.id)}
-                  onChange={() => handleCountryChange(country.id)}
-                  className="w-4 h-4 text-primary-600 bg-white dark:bg-dark-surface border-border dark:border-dark-border rounded focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-text-primary dark:text-dark-text-primary flex items-center">
-                  <span className="mr-2">{country.flag}</span>
-                  {country.name}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+      {/* Грид-сетка фильтров */}
+      <div className="grid grid-cols-3 gap-2">
 
-        {/* Состояние автомобиля */}
+		{/* Экспортируемая страна */}
         <div>
-          <h4 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-3">
-            Состояние
-          </h4>
-          <div className="flex gap-4">
-            {[
-              { value: 'all', label: 'Любое' },
-              { value: 'new', label: 'Новые' },
-              { value: 'used', label: 'С пробегом' }
-            ].map(condition => (
-              <label key={condition.value} className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="condition"
-                  value={condition.value}
-                  checked={filters.vehicleCondition === condition.value}
-                  onChange={() => handleConditionChange(condition.value)}
-                  className="w-4 h-4 text-primary-600 bg-white dark:bg-dark-surface border-border dark:border-dark-border focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-text-primary dark:text-dark-text-primary">
-                  {condition.label}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Вторая строка - Марка и модель */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Марка автомобиля */}
-        <div>
-          <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
-            Марка
-            {filterDataLoading && (
-              <span className="ml-2 text-xs text-primary-600">Загрузка...</span>
-            )}
-          </label>
           <select
-            value={filters.brand}
+            value={filters.countries.includes('all') ? 'all' : filters.countries[0] || 'all'}
+            onChange={(e) => handleCountryChange(e.target.value)}
+            className="w-full p-3 border border-border dark:border-dark-border rounded-tl-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+          >
+            {countries.map(country => (
+              <option key={country.value} value={country.value}>
+                {country.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+		{/* Наличие */}
+        <div>
+          <select
+            value={filters.availability || 'all'}
+            onChange={(e) => handleAvailabilityChange(e.target.value)}
+            className="w-full p-3 border border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+          >
+            {availabilityOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Состояние */}
+        <div>
+          <select
+            value={filters.vehicleCondition || 'all'}
+            onChange={(e) => handleConditionChange(e.target.value)}
+            className="w-full p-3 border border-border dark:border-dark-border rounded-tr-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+          >
+            {conditionOptions.map(condition => (
+              <option key={condition.value} value={condition.value}>
+                {condition.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        
+
+		
+
+        {/* Марка */}
+        <div className="col-span-3 md:col-span-2">
+          <select
+            value={filters.brand || ''}
             onChange={(e) => handleBrandChange(e.target.value)}
             disabled={filterDataLoading}
-            className="w-full p-3 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className=" w-full p-3 border border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <option value="">
-              {filterDataLoading ? 'Загрузка марок...' : 'Все марки'}
+              {filterDataLoading ? 'Загрузка...' : 'Все марки'}
             </option>
             {!filterDataLoading && getAvailableBrands.map(brand => (
               <option key={brand} value={brand}>
@@ -210,32 +201,21 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
               </option>
             ))}
           </select>
-          {getAvailableBrands.length === 0 && !filterDataLoading && (
-            <p className="mt-1 text-xs text-text-muted dark:text-dark-text-muted">
-              Нет доступных марок для выбранных стран
-            </p>
-          )}
         </div>
 
-        {/* Модель автомобиля */}
-        <div>
-          <label className="block text-sm font-medium text-text-secondary dark:text-dark-text-secondary mb-2">
-            Модель
-            {filterDataLoading && filters.brand && (
-              <span className="ml-2 text-xs text-primary-600">Загрузка...</span>
-            )}
-          </label>
+        {/* Модель - скрыта на мобильных */}
+        <div className="hidden md:block">
           <select
-            value={filters.model}
+            value={filters.model || ''}
             onChange={(e) => handleModelChange(e.target.value)}
             disabled={!filters.brand || filterDataLoading}
-            className="w-full p-3 border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full p-3 border border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <option value="">
               {!filters.brand 
-                ? 'Сначала выберите марку' 
+                ? 'Сначала марку' 
                 : filterDataLoading 
-                  ? 'Загрузка моделей...' 
+                  ? 'Загрузка...' 
                   : 'Все модели'
               }
             </option>
@@ -245,32 +225,21 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
               </option>
             ))}
           </select>
-          {filters.brand && getAvailableModels.length === 0 && !filterDataLoading && (
-            <p className="mt-1 text-xs text-text-muted dark:text-dark-text-muted">
-              Нет доступных моделей для марки {filters.brand}
-            </p>
-          )}
         </div>
-      </div>
 
-      {/* Третья строка - Кнопки попапов */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Кнопка года с попапом */}
+        {/* Год выпуска */}
         <div className="relative">
           <button
             onClick={() => setIsYearPopupOpen(true)}
-            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-bl-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
           >
-            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Год выпуска</span>
-            <div className="mt-1">
-              {filters.yearRange.from || filters.yearRange.to ? (
-                <span className="text-primary-600">
-                  {filters.yearRange.from || '...'} - {filters.yearRange.to || '...'}
-                </span>
-              ) : (
-                <span className="text-text-muted dark:text-dark-text-muted">Любой год</span>
-              )}
-            </div>
+            {filters.yearRange.from || filters.yearRange.to ? (
+              <span className="text-primary-600">
+                {filters.yearRange.from || '...'} - {filters.yearRange.to || '...'}
+              </span>
+            ) : (
+              <span className="text-text-muted dark:text-dark-text-muted">Год</span>
+            )}
           </button>
           
           {isYearPopupOpen && (
@@ -288,23 +257,20 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
           )}
         </div>
 
-        {/* Кнопка цены с попапом */}
+        {/* Цена */}
         <div className="relative">
           <button
             onClick={() => setIsPricePopupOpen(true)}
-            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="w-full p-3 text-left border border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
           >
-            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Цена</span>
-            <div className="mt-1">
-              {filters.priceRange.from || filters.priceRange.to ? (
-                <span className="text-primary-600">
-                  {filters.priceRange.from ? `¥${parseInt(filters.priceRange.from).toLocaleString()}` : '...'} - 
-                  {filters.priceRange.to ? `¥${parseInt(filters.priceRange.to).toLocaleString()}` : '...'}
-                </span>
-              ) : (
-                <span className="text-text-muted dark:text-dark-text-muted">Любая цена</span>
-              )}
-            </div>
+            {filters.priceRange.from || filters.priceRange.to ? (
+              <span className="text-primary-600">
+                {filters.priceRange.from ? `¥${parseInt(filters.priceRange.from).toLocaleString()}` : '...'} - 
+                {filters.priceRange.to ? `¥${parseInt(filters.priceRange.to).toLocaleString()}` : '...'}
+              </span>
+            ) : (
+              <span className="text-text-muted dark:text-dark-text-muted">Цена</span>
+            )}
           </button>
           
           {isPricePopupOpen && (
@@ -322,24 +288,21 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
           )}
         </div>
 
-        {/* Кнопка параметров с попапом */}
+        {/* Параметры */}
         <div className="relative">
           <button
             onClick={() => setIsParametersPopupOpen(true)}
-            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-md bg-white dark:bg-dark-surface text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-br-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
           >
-            <span className="text-sm text-text-secondary dark:text-dark-text-secondary">Параметры</span>
-            <div className="mt-1">
-              {filters.parameters.fuelType || filters.parameters.transmission ? (
-                <span className="text-primary-600">
-                  {[filters.parameters.fuelType, filters.parameters.transmission]
-                    .filter(Boolean)
-                    .join(', ')}
-                </span>
-              ) : (
-                <span className="text-text-muted dark:text-dark-text-muted">Любые параметры</span>
-              )}
-            </div>
+            {filters.parameters.fuelType || filters.parameters.transmission ? (
+              <span className="text-primary-600">
+                {[filters.parameters.fuelType, filters.parameters.transmission]
+                  .filter(Boolean)
+                  .join(', ')}
+              </span>
+            ) : (
+              <span className="text-text-muted dark:text-dark-text-muted">Параметры</span>
+            )}
           </button>
           
           {isParametersPopupOpen && (
