@@ -6,10 +6,12 @@ import { VehicleFilters } from '../../features/car-catalog';
 import { CitySelector, DeliveryInfo } from '../../features/delivery';
 import { Pagination } from '../../shared/ui';
 import { imagesApi, debugApi } from '../../shared/api/client.js';
+import { MobileTopNav } from '../../widgets/nav';
 
 const CatalogPage = () => {
   const { vehicles, loading, error, pagination, filterCars, refreshCache } = useCars();
   const { health } = useSystemHealth();
+  const { navigateTo } = useAppNavigation();
   const [favoriteVehicleIds, setFavoriteVehicleIds] = useState([]);
   const [selectedDeliveryCity, setSelectedDeliveryCity] = useState(null);
   const [imageStats, setImageStats] = useState(null);
@@ -23,7 +25,6 @@ const CatalogPage = () => {
   const [customSelectorResult, setCustomSelectorResult] = useState(null); // Результат пользовательского селектора
   const [pageSourceData, setPageSourceData] = useState(null); // Данные HTML источника
   const [showPageSourceModal, setShowPageSourceModal] = useState(false); // Показать модальное окно с HTML
-  const { navigateTo } = useAppNavigation();
 
   // Загружаем статистику изображений
   const loadImageStats = async () => {
@@ -263,18 +264,21 @@ const CatalogPage = () => {
 
   return (
     <div className="min-h-screen bg-surface dark:bg-dark-surface transition-colors">
+      {/* Мобильная навигация под шапкой (стиль дром) */}
+      <MobileTopNav />
+
       <div className="container section-padding">
         {/* Заголовок и информация о доставке */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-            <div>
+            {/* <div>
               <h1 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary mb-4">
-                Каталог автомобилей из Китая
+                Каталог автомобилей.
               </h1>
               <p className="text-text-secondary dark:text-dark-text-secondary">
                 Найдено {pagination.total} автомобилей
               </p>
-            </div>
+            </div> */}
             
             {/* Выбор города доставки */}
             <div className="lg:w-96">
@@ -540,13 +544,13 @@ const CatalogPage = () => {
           <VehicleFilters className="flex-2/3"
             onFiltersChange={handleFiltersChange}
             loading={loading}
-			/>
-			{/* Информация о доставке */}
-			{selectedDeliveryCity && (
-			  <div className="flex-1/3">
-				<DeliveryInfo city={selectedDeliveryCity} />
-			  </div>
-			)}
+          />
+          {/* Информация о доставке */}
+          {selectedDeliveryCity && (
+            <div className="flex-1/3">
+              <DeliveryInfo city={selectedDeliveryCity} />
+            </div>
+          )}
         </div>
 
         {/* Основной контент с карточками */}

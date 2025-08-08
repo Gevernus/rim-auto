@@ -1,0 +1,1 @@
+export { default as SpecialTechPage } from './SpecialTechPage'; 

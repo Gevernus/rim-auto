@@ -35,11 +35,19 @@ export const useAppParams = () => {
 
 // Утилиты для создания путей
 export const routes = {
+  // Базовые пути
+  root: '/',
+
   // Основное меню
   cars: '/cars',
   specialTech: '/special-tech',
   parts: '/parts',
   moto: '/moto',
+  
+  // Мобильная навигация
+  favorites: '/favorites',
+  messages: '/messages',
+  menu: '/menu',
   
   // Дополнительное меню
   news: '/news',

@@ -69,7 +69,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-surface-elevated dark:bg-dark-surface-elevated shadow-sm border-b border-border dark:border-dark-border">
+    <header className="fixed top-0 left-0 right-0 md:static bg-surface-elevated dark:bg-dark-surface-elevated shadow-sm border-b border-border dark:border-dark-border z-40">
       <div className="container">
         <div className="flex items-center justify-between h-16">
           {/* Логотип */}
@@ -132,12 +132,12 @@ const Header = () => {
             </Button>
           </div>
 
-          {/* Мобильное меню */}
+          {/* Планшетное меню */}
           <div className="flex xl:hidden items-center space-x-2">
             <ThemeToggle className="scale-75" />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors"
+              className="hidden md:inline-flex items-center justify-center p-2 rounded-md text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors"
               aria-expanded="false"
             >
               <span className="sr-only">Открыть меню</span>
@@ -189,7 +189,7 @@ const Header = () => {
 
         {/* Мобильное выпадающее меню */}
         {isMobileMenuOpen && (
-          <div className="xl:hidden border-t border-border dark:border-dark-border animate-slide-up">
+          <div className="md:hidden border-t border-border dark:border-dark-border animate-slide-up">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {/* Авторизация в мобильном меню */}
               {isAuthenticated ? (
@@ -294,7 +294,116 @@ const Header = () => {
             </div>
           </div>
         )}
+
+        {/* Планшетное выпадающее меню */}
+        {isMobileMenuOpen && (
+          <div className="hidden md:block xl:hidden border-t border-border dark:border-dark-border animate-slide-up">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {/* Авторизация в планшетном меню */}
+              {isAuthenticated ? (
+                <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
+                  <UserProfile compact={true} />
+                </div>
+              ) : (
+                <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
+                  {!isTelegramWebApp && (
+                    <TelegramLoginButton
+                      onAuth={handleTelegramAuth}
+                      disabled={authLoading}
+                      buttonSize="medium"
+                      compact={true}
+                      className="w-full mb-2"
+                    />
+                  )}
+                  {isTelegramWebApp && (
+                    <p className="text-sm text-text-muted dark:text-dark-text-muted text-center">
+                      Авторизация через Telegram WebApp
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {/* Основное меню */}
+              <div className="mb-4">
+                <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
+                  Основное меню
+                </h3>
+                {mainNavigation.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => handleNavClick(item.href)}
+                    className={`block px-3 py-2 text-base font-medium w-full text-left rounded-md transition-colors ${
+                      isActive(item.href)
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary'
+                    }`}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Дополнительное меню */}
+              <div className="mb-4">
+                <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
+                  Дополнительно
+                </h3>
+                {secondaryNavigation.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => handleNavClick(item.href)}
+                    className={`block px-3 py-2 text-sm font-medium w-full text-left rounded-md transition-colors ${
+                      isActive(item.href)
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-text-muted dark:text-dark-text-muted hover:text-text-secondary dark:hover:text-dark-text-secondary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary'
+                    }`}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Админ меню для авторизованных пользователей */}
+              {isAuthenticated && (
+                <div className="mb-4">
+                  <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
+                    Администрирование
+                  </h3>
+                  {adminNavigation.map((item) => (
+                    <button
+                      key={item.name}
+                      onClick={() => handleNavClick(item.href)}
+                      className={`block px-3 py-2 text-sm font-medium w-full text-left rounded-md transition-colors ${
+                        isActive(item.href)
+                          ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'text-text-muted dark:text-dark-text-muted hover:text-text-secondary dark:hover:text-dark-text-secondary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary'
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Информация о компании в планшетном меню */}
+              <div className="px-3 py-2 border-t border-border dark:border-dark-border">
+                <div className="flex flex-col gap-1 mb-3">
+                  <span className="text-sm text-text-secondary dark:text-dark-text-secondary">
+                    г. Москва, пр. Дмитревский, 63а
+                  </span>
+                  <span className="text-sm text-text-secondary dark:text-dark-text-secondary">
+                    8-905-705-24-09
+                  </span>
+                </div>
+                <Button className="w-full" onClick={handleOrderClick}>
+                  Заказать авто
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
     </header>
   );
 };

@@ -37,7 +37,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-footer-bg dark:bg-dark-footer-bg text-footer-text dark:text-dark-footer-text">
+    <footer className="hidden md:block bg-footer-bg dark:bg-dark-footer-bg text-footer-text dark:text-dark-footer-text">
       <div className="container py-12">
         <div className="flex flex-col md:flex-row gap-8 ">
           {/* Логотип и описание */}
