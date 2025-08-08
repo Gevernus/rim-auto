@@ -44,6 +44,8 @@ services:
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
     # No host port published; Traefik handles routing inside the `web` network
+    volumes:
+      - car_images:/app/static/images
     networks:
       - web
     depends_on:
@@ -117,7 +119,7 @@ services:
 
 volumes:
   mongo_data:
-
+  car_images:
 networks:
   web:
     driver: bridge 
