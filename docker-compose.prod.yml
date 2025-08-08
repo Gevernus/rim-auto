@@ -62,6 +62,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - VITE_API_URL=https://casa-de-costura.ru/api
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`casa-de-costura.ru`) && PathPrefix(`/`)"

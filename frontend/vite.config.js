@@ -10,6 +10,10 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  // Передаем переменные окружения в приложение
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
+  },
   server: {
     host: '0.0.0.0', // Важно для Docker - привязываем ко всем интерфейсам
     port: 3000,

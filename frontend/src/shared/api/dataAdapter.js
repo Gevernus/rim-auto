@@ -2,6 +2,9 @@
  * Адаптер данных для преобразования Backend API в Frontend структуру
  */
 
+// Получаем базовый URL для статических файлов (без /api)
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000';
+
 /**
  * Преобразует цену из backend формата в frontend формат
  * @param {string} backendPrice - Цена в формате "28万"
@@ -195,7 +198,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     
     if (backendCar.images) {
       if (backendCar.images.local_url) {
-        images = [`http://localhost:8000${backendCar.images.local_url}`];
+        images = [`${API_BASE_URL}${backendCar.images.local_url}`];
         console.log('🖼️ Используем локальное изображение:', images[0]);
       } else if (backendCar.images.original_url) {
         images = [backendCar.images.original_url];
@@ -245,7 +248,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     let images = ['/placeholder-car.svg']; // По умолчанию
     
     if (backendCar.local_image_url) {
-      images = [`http://localhost:8000${backendCar.local_image_url}`];
+      images = [`${API_BASE_URL}${backendCar.local_image_url}`];
       console.log('🖼️ Используем локальное изображение:', images[0]);
     } else if (backendCar.image_url) {
       images = [backendCar.image_url];
@@ -314,7 +317,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
       history: defaults.history,
       market_data: defaults.market_data,
       images: backendCar.local_image_url ? 
-        [`http://localhost:8000${backendCar.local_image_url}`] : 
+        [`${API_BASE_URL}${backendCar.local_image_url}`] : 
         (backendCar.image_url ? [backendCar.image_url] : ['/placeholder-car.svg'])
     };
   } else {
@@ -337,9 +340,9 @@ export const adaptVehicle = (backendCar, index = 0) => {
     // Формируем URL изображений
     let images = ['/placeholder-car.svg'];
     if (backendCar.images && backendCar.images.local_url) {
-      images = [`http://localhost:8000${backendCar.images.local_url}`];
+      images = [`${API_BASE_URL}${backendCar.images.local_url}`];
     } else if (backendCar.local_image_url) {
-      images = [`http://localhost:8000${backendCar.local_image_url}`];
+      images = [`${API_BASE_URL}${backendCar.local_image_url}`];
     } else if (backendCar.images && backendCar.images.original_url) {
       images = [backendCar.images.original_url];
     } else if (backendCar.image_url) {
