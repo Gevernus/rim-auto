@@ -69,7 +69,11 @@ jobs:
             set -e
             cd /opt/rim-auto
             mkdir -p letsencrypt
-            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+            docker compose -f docker-compose.prod.yml build backend frontend
+            docker compose -f docker-compose.prod.yml up -d mongo selenium
+            docker compose -f docker-compose.prod.yml up -d backend
+            docker compose -f docker-compose.prod.yml up -d frontend
             docker system prune -f || true
+            docker compose -f docker-compose.prod.yml ps
 
 

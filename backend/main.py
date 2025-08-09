@@ -864,7 +864,6 @@ def get_health():
     
     # Проверка Selenium
     try:
-        # Простая проверка доступности Selenium Grid
         selenium_url = "http://selenium:4444/wd/hub/status"
         response = requests.get(selenium_url, timeout=5)
         if response.status_code == 200:
@@ -884,7 +883,11 @@ def get_health():
         health_status["services"]["car_cache"] = f"error: {str(e)}"
         health_status["status"] = "degraded"
     
-    return health_status 
+    # Если какая-либо зависимость не в порядке — отдаем 503, чтобы балансировщик не вел трафик на инстанс
+    if health_status["status"] != "ok":
+        raise HTTPException(status_code=503, detail=health_status)
+
+    return health_status
 
 @app.get("/api/debug/page-source")
 def get_debug_page_source():

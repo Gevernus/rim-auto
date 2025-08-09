@@ -50,14 +50,25 @@ services:
       - "traefik.http.routers.backend-static.tls.certresolver=myresolver"
       - "traefik.http.routers.backend-static.priority=10"
       - "traefik.http.routers.backend-static.service=backend"
-    # No host port published; Traefik handles routing inside the `web` network
+      # Active healthcheck for backend in Traefik
+      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/api/health"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.timeout=3s"
     volumes:
       - car_images:/app/static/images
     networks:
       - web
     depends_on:
-      - mongo
-      - selenium
+      mongo:
+        condition: service_started
+      selenium:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   frontend:
     build:
@@ -78,14 +89,23 @@ services:
       - "traefik.http.routers.frontend.priority=5"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-    # No host port published; Traefik handles routing inside the `web` network
+      # Active healthcheck for frontend in Traefik
+      - "traefik.http.services.frontend.loadbalancer.healthcheck.path=/"
+      - "traefik.http.services.frontend.loadbalancer.healthcheck.interval=10s"
+      - "traefik.http.services.frontend.loadbalancer.healthcheck.timeout=3s"
     networks:
       - web
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   selenium:
-    image: selenium/standalone-chrome:latest
+    image: selenium/standalone-chrome:4.34.0
     container_name: rim-auto-selenium
     restart: unless-stopped
     shm_size: 2gb
@@ -112,7 +132,7 @@ services:
       - web
 
   mongo:
-    image: mongo:latest
+    image: mongo:8.1.2
     container_name: rim-auto-mongo
     command: mongod --quiet --logpath /dev/null
     environment:
