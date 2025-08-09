@@ -132,7 +132,7 @@ services:
       - web
 
   mongo:
-    image: mongo:8.1.2
+    image: mongo:8.0.12
     container_name: rim-auto-mongo
     command: mongod --quiet --logpath /dev/null
     environment:
