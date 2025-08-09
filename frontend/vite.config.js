@@ -1,43 +1,68 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  publicDir: 'public',
-  resolve: {
-    alias: {
-      '@': '/src',
+export default defineConfig(({ mode, command }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const isDev = command === 'serve' || mode === 'development'
+
+  return {
+    plugins: [react()],
+    publicDir: 'public',
+    resolve: {
+      alias: {
+        '@': '/src',
+      },
     },
-  },
-  // Передаем переменные окружения в приложение
-  define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
-  },
-  server: {
-    host: '0.0.0.0', // Важно для Docker - привязываем ко всем интерфейсам
-    port: 3000,
-    watch: {
-      usePolling: true, // Нужно для работы hot reload в Docker
-      interval: 3000, // Увеличиваем интервал опроса файлов для экономии ресурсов
+
+    // Делает доступными только переменные с префиксом VITE_
+    envPrefix: ['VITE_'],
+
+    // Явно пробрасываем VITE_API_URL на случай отсутствия .env файлов
+    define: {
+      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL ?? process.env.VITE_API_URL ?? ''),
     },
-    hmr: false, // Отключаем HMR чтобы избежать WebSocket ошибок
-  },
-  // Настройки для продакшена  
-  build: {
-    outDir: 'dist',
-    sourcemap: false, // Отключаем sourcemap для экономии памяти
-  },
-  // Оптимизация для Docker с ограниченной памятью
-  optimizeDeps: {
-    exclude: ['@vitejs/plugin-react'],
-    include: ['react', 'react-dom'] // Явно включаем основные зависимости
-  },
-  // Отключаем некоторые оптимизации для экономии памяти
-  esbuild: {
-    target: 'es2020'
-  },
-  // Отключаем некоторые функции для экономии памяти
-  clearScreen: false,
-  logLevel: 'warn'
+
+    server: {
+      host: '0.0.0.0',
+      port: 3000,
+      strictPort: true,
+      watch: {
+        usePolling: true,
+        interval: 2000,
+      },
+      // Конфиг HMR для Docker. Если ранее были ошибки WS — это решает clientPort/host
+      hmr: isDev
+        ? {
+            protocol: 'ws',
+            host: 'localhost',
+            clientPort: 3000,
+            overlay: true,
+          }
+        : false,
+    },
+
+    // Для локального предпросмотра production билда
+    preview: {
+      host: '0.0.0.0',
+      port: 3000,
+      strictPort: true,
+    },
+
+    build: {
+      outDir: 'dist',
+      sourcemap: false,
+      target: 'es2020',
+    },
+
+    optimizeDeps: {
+      include: ['react', 'react-dom'],
+    },
+
+    esbuild: {
+      target: 'es2020',
+    },
+
+    clearScreen: false,
+    logLevel: isDev ? 'info' : 'warn',
+  }
 }) 
