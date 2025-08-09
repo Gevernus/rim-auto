@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { setNavigateFunction } from '../shared/lib/navigation';
 import { ThemeProvider } from '../shared/lib/ThemeProvider';
 import { useTelegramAuth } from '../features/auth';
+import { ProtectedRoute } from '../features/auth';
 
 // Страницы
 import { CatalogPage } from '../pages/catalog';
@@ -164,7 +165,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <Layout><AdminPage /></Layout>,
+    element: <Layout><ProtectedRoute><AdminPage /></ProtectedRoute></Layout>,
   },
   
   // Перенаправление с корневого пути на автомобили

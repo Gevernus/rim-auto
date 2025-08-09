@@ -5,7 +5,6 @@
 
 import { useEffect, useRef } from 'react';
 import { Button } from '../../../shared/ui';
-import { isTelegramWebApp } from '../../../shared/lib/platform';
 import { useTelegramAuth } from '../hooks/useTelegramAuth';
 
 export const TelegramLoginButton = ({ 
@@ -17,11 +16,12 @@ export const TelegramLoginButton = ({
   compact = false // Новый проп для компактного режима
 }) => {
   const containerRef = useRef(null);
-  const { isAuthenticated, isTelegramWebApp: isWebApp } = useTelegramAuth();
+  const { isAuthenticated } = useTelegramAuth();
+  const isRealWebApp = typeof window !== 'undefined' && Boolean(window.Telegram?.WebApp);
 
   useEffect(() => {
-    // Не показываем кнопку если это Telegram WebApp И пользователь авторизован
-    if ((isTelegramWebApp() && isAuthenticated) || disabled) return;
+    // Не показываем кнопку если это реальный Telegram WebApp И пользователь авторизован
+    if ((isRealWebApp && isAuthenticated) || disabled) return;
 
     // Создаем скрипт для Telegram Login Widget
     const script = document.createElement('script');
@@ -54,10 +54,10 @@ export const TelegramLoginButton = ({
       }
       delete window.onTelegramAuth;
     };
-  }, [onAuth, buttonSize, cornerRadius, disabled, isAuthenticated]);
+  }, [onAuth, buttonSize, cornerRadius, disabled, isAuthenticated, isRealWebApp]);
 
-  // Если это Telegram WebApp И пользователь авторизован, показываем информационное сообщение
-  if (isTelegramWebApp() && isAuthenticated) {
+  // Если это реальный Telegram WebApp И пользователь авторизован, показываем информационное сообщение
+  if (isRealWebApp && isAuthenticated) {
     return (
       <div className={`text-center p-4 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg ${compact ? 'text-xs' : 'text-sm'}`}>
         <p className="text-text-secondary dark:text-dark-text-secondary">
@@ -67,8 +67,8 @@ export const TelegramLoginButton = ({
     );
   }
 
-  // Если это Telegram WebApp НО пользователь НЕ авторизован, показываем сообщение о необходимости авторизации
-  if (isTelegramWebApp() && !isAuthenticated) {
+  // Если это реальный Telegram WebApp НО пользователь НЕ авторизован, показываем сообщение о необходимости авторизации
+  if (isRealWebApp && !isAuthenticated) {
     return (
       <div className={`text-center p-4 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg ${compact ? 'text-xs' : 'text-sm'}`}>
         <p className="text-text-secondary mb-0 dark:text-dark-text-secondary">

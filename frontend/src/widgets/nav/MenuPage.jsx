@@ -31,6 +31,7 @@ const MenuPage = () => {
     { name: 'Услуги', href: routes.services, icon: '⚙️' },
     { name: 'Отзывы', href: routes.reviews, icon: '⭐' },
     { name: 'О нас', href: routes.about, icon: 'ℹ️' },
+	{ name: 'Админ', href: routes.admin, icon: '🔑' },
   ];
 
   return (

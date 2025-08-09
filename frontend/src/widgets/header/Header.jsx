@@ -21,6 +21,8 @@ const Header = () => {
     isTelegramWebApp
   } = useTelegramAuth();
 
+  const isTest = true;
+
   // Основное меню
   const mainNavigation = [
     { name: 'Автомобили', href: routes.cars },
@@ -171,7 +173,7 @@ const Header = () => {
               </button>
             ))}
             {/* Админ меню для авторизованных пользователей */}
-            {isAuthenticated && adminNavigation.map((item) => (
+            {isTest && adminNavigation.map((item) => (
               <button
                 key={item.name}
                 onClick={() => handleNavClick(item.href)}
@@ -256,7 +258,7 @@ const Header = () => {
               </div>
 
               {/* Админ меню для авторизованных пользователей */}
-              {isAuthenticated && (
+              {isTest && (
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
                     Администрирование
@@ -364,7 +366,7 @@ const Header = () => {
               </div>
 
               {/* Админ меню для авторизованных пользователей */}
-              {isAuthenticated && (
+              {isTest && (
                 <div className="mb-4">
                   <h3 className="px-3 py-2 text-sm font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
                     Администрирование

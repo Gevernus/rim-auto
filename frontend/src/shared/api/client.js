@@ -92,13 +92,7 @@ apiClient.interceptors.response.use(
       removeItemSync('authToken');
       removeItemSync('telegramInitData');
       
-      // В веб-окружении перенаправляем на страницу авторизации
-      if (typeof window !== 'undefined') {
-        // Не перенаправляем если это уже страница авторизации
-        if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
-          window.location.href = '/cars'; // Перенаправляем на главную страницу каталога
-        }
-      }
+      // Не выполняем жесткий редирект тут, пусть защитник роутов/компоненты решают, что показывать
     }
     
     // Логирование ошибок
@@ -124,13 +118,7 @@ longOperationClient.interceptors.response.use(
       removeItemSync('authToken');
       removeItemSync('telegramInitData');
       
-      // В веб-окружении перенаправляем на страницу авторизации
-      if (typeof window !== 'undefined') {
-        // Не перенаправляем если это уже страница авторизации
-        if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
-          window.location.href = '/cars'; // Перенаправляем на главную страницу каталога
-        }
-      }
+      // Не выполняем жесткий редирект тут, пусть защитник роутов/компоненты решают, что показывать
     }
     
     // Логирование ошибок
