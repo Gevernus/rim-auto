@@ -411,34 +411,34 @@ const AdminPage = () => {
 
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
+          <div className="flex items-center md:flex-col md:items-start md:justify-start gap-2 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
             <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Всего заявок</h3>
-            <p className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">
+            <p className="mb-0 text-2xl font-bold text-text-primary dark:text-dark-text-primary">
               {stats.total_applications || 0}
             </p>
           </div>
-          <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
+          <div className="flex items-center md:flex-col md:items-start md:justify-start gap-2 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
+            <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">В обработке</h3>
+            <p className="mb-0 text-2xl font-bold text-text-primary dark:text-dark-text-primary">
+              {(stats.credit?.processing || 0) + (stats.leasing?.processing || 0)}
+            </p>
+          </div>
+          <div className="flex items-center md:flex-col md:items-start md:justify-start gap-2 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
             <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Кредитные заявки</h3>
-            <p className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">
+            <p className="mb-0 text-2xl font-bold text-text-primary dark:text-dark-text-primary">
               {stats.credit?.total || 0}
             </p>
-            <p className="text-sm text-text-secondary dark:text-dark-text-secondary">
+            <p className="mb-0 text-sm text-text-secondary dark:text-dark-text-secondary">
               Новых: {stats.credit?.new || 0}
             </p>
           </div>
-          <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
+          <div className="flex items-center md:flex-col md:items-start md:justify-start gap-2 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
             <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">Лизинговые заявки</h3>
-            <p className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">
+            <p className="mb-0 text-2xl font-bold text-text-primary dark:text-dark-text-primary">
               {stats.leasing?.total || 0}
             </p>
-            <p className="text-sm text-text-secondary dark:text-dark-text-secondary">
+            <p className="mb-0 text-sm text-text-secondary dark:text-dark-text-secondary">
               Новых: {stats.leasing?.new || 0}
-            </p>
-          </div>
-          <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4">
-            <h3 className="text-sm font-medium text-text-secondary dark:text-dark-text-secondary">В обработке</h3>
-            <p className="text-2xl font-bold text-text-primary dark:text-dark-text-primary">
-              {(stats.credit?.processing || 0) + (stats.leasing?.processing || 0)}
             </p>
           </div>
         </div>
