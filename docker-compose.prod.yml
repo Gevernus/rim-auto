@@ -110,7 +110,7 @@ services:
     restart: unless-stopped
     shm_size: 2gb
     environment:
-      - SE_NODE_MAX_SESSIONS=4
+      - SE_NODE_MAX_SESSIONS=2
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
       - SE_SESSION_REQUEST_TIMEOUT=300
       - SE_SESSION_QUEUE_TIMEOUT=300
@@ -125,9 +125,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     networks:
       - web
 
@@ -149,6 +149,8 @@ services:
 volumes:
   mongo_data:
   car_images:
+
 networks:
   web:
-    driver: bridge 
+    driver: bridge
+    name: web 
