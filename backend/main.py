@@ -883,10 +883,6 @@ def get_health():
         health_status["services"]["car_cache"] = f"error: {str(e)}"
         health_status["status"] = "degraded"
     
-    # Если какая-либо зависимость не в порядке — отдаем 503, чтобы балансировщик не вел трафик на инстанс
-    if health_status["status"] != "ok":
-        raise HTTPException(status_code=503, detail=health_status)
-
     return health_status
 
 @app.get("/api/debug/page-source")

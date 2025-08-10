@@ -50,10 +50,6 @@ services:
       - "traefik.http.routers.backend-static.tls.certresolver=myresolver"
       - "traefik.http.routers.backend-static.priority=10"
       - "traefik.http.routers.backend-static.service=backend"
-      # Active healthcheck for backend in Traefik
-      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/api/health"
-      - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
-      - "traefik.http.services.backend.loadbalancer.healthcheck.timeout=3s"
     volumes:
       - car_images:/app/static/images
     networks:
@@ -62,13 +58,7 @@ services:
       mongo:
         condition: service_started
       selenium:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+        condition: service_started
 
   frontend:
     build:
@@ -89,20 +79,10 @@ services:
       - "traefik.http.routers.frontend.priority=5"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-      # Active healthcheck for frontend in Traefik
-      - "traefik.http.services.frontend.loadbalancer.healthcheck.path=/"
-      - "traefik.http.services.frontend.loadbalancer.healthcheck.interval=10s"
-      - "traefik.http.services.frontend.loadbalancer.healthcheck.timeout=3s"
     networks:
       - web
     depends_on:
       - backend
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
 
   selenium:
     image: selenium/standalone-chrome:4.34.0
@@ -116,18 +96,6 @@ services:
       - SE_SESSION_QUEUE_TIMEOUT=300
       - SE_NODE_SESSION_TIMEOUT=300
       - SE_VNC_NO_PASSWORD=1
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
     networks:
       - web
 
