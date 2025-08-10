@@ -4,6 +4,14 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const isDev = command === 'serve' || mode === 'development'
+  const isTwa = mode === 'twa' || env.VITE_TWA === '1'
+
+  // Публичный хост, через который Telegram WebApp будет обращаться к dev-серверу (ngrok/cloudflared)
+  const publicHost = env.VITE_PUBLIC_HOST || process.env.VITE_PUBLIC_HOST || ''
+
+  // Локальные хост/порт для dev
+  const devHost = env.VITE_DEV_HOST || process.env.VITE_DEV_HOST || 'localhost'
+  const devPort = Number(env.VITE_DEV_PORT || process.env.VITE_DEV_PORT || 3000)
 
   return {
     plugins: [react()],
@@ -24,20 +32,31 @@ export default defineConfig(({ mode, command }) => {
 
     server: {
       host: '0.0.0.0',
-      port: 3000,
+      port: devPort,
       strictPort: true,
       watch: {
         usePolling: true,
         interval: 2000,
       },
-      // Конфиг HMR для Docker. Если ранее были ошибки WS — это решает clientPort/host
+      // Если запущено в режиме twa и указан публичный хост, настраиваем корректные origin/HMR для Telegram
+      origin: isTwa && publicHost ? `https://${publicHost}` : undefined,
+      // Конфиг HMR: локально обычный ws; для Telegram через туннель — wss на публичный хост:443
       hmr: isDev
-        ? {
-            protocol: 'ws',
-            host: 'localhost',
-            clientPort: 3000,
-            overlay: true,
-          }
+        ? (
+            isTwa && publicHost
+              ? {
+                  protocol: 'wss',
+                  host: publicHost,
+                  clientPort: 443,
+                  overlay: true,
+                }
+              : {
+                  protocol: 'ws',
+                  host: devHost,
+                  clientPort: devPort,
+                  overlay: true,
+                }
+          )
         : false,
     },
 

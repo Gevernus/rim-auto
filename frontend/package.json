@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:twa": "vite --host 0.0.0.0 --port 3000 --mode twa",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview --host 0.0.0.0",
