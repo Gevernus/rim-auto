@@ -10,9 +10,7 @@ import {
   isTelegramWebApp, 
   getTelegramInitData, 
   getTelegramUser, 
-  showTelegramAlert,
-  enableDebugMode,
-  disableDebugMode
+  showTelegramAlert
 } from '../../../shared/lib/platform/telegram';
 
 export const useTelegramAuth = () => {
@@ -36,36 +34,7 @@ export const useTelegramAuth = () => {
       // Сохраняем данные Telegram пользователя
       auth.setTelegramUser(telegramUser, initData);
 
-      // Проверяем debug режим
-      const isDebugMode = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
-      
-      if (isDebugMode) {
-        // В debug режиме создаем локальный токен без обращения к backend
-        const debugUser = {
-          id: telegramUser.id,
-          name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`,
-          username: telegramUser.username,
-          avatar: telegramUser.photo_url,
-          telegram_id: telegramUser.id,
-          is_debug: true
-        };
-        
-        // Создаем debug токен с правильным base64 кодированием
-        const debugTokenData = {
-          user: debugUser,
-          debug: true,
-          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
-        };
-        
-        const debugToken = btoa(unescape(encodeURIComponent(JSON.stringify(debugTokenData))));
-        
-        // Устанавливаем debug пользователя и токен
-        auth.setUser(debugUser, debugToken);
-        console.log('✅ Debug авторизация успешна:', debugUser);
-        return;
-      }
-
-      // Отправляем данные на backend для проверки и получения токена
+      // Всегда отправляем данные на backend для получения токена (в том числе в debug)
       const response = await apiClient.post('/auth/telegram-webapp', {
         initData,
         user: telegramUser,
@@ -140,46 +109,11 @@ export const useTelegramAuth = () => {
     }
   };
 
-  // Проверка валидности токена
+  // Проверка валидности токена (всегда через backend)
   const validateToken = useCallback(async () => {
     if (!auth.authToken) return false;
 
     try {
-      // Проверяем debug режим
-      const isDebugMode = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
-      
-      if (isDebugMode) {
-        // В debug режиме проверяем токен локально
-        try {
-          // Безопасное декодирование base64
-          const decodedToken = decodeURIComponent(escape(atob(auth.authToken)));
-          const tokenData = JSON.parse(decodedToken);
-          
-          // Проверяем структуру токена
-          if (!tokenData.user || !tokenData.debug || !tokenData.exp) {
-            console.error('❌ Неверная структура debug токена');
-            auth.logout();
-            return false;
-          }
-          
-          const isExpired = tokenData.exp < Math.floor(Date.now() / 1000);
-          
-          if (isExpired) {
-            console.log('❌ Debug токен истек');
-            auth.logout();
-            return false;
-          }
-          
-          console.log('✅ Debug токен валиден');
-          return true;
-        } catch (error) {
-          console.error('❌ Ошибка парсинга debug токена:', error);
-          // Если токен поврежден - выходим
-          auth.logout();
-          return false;
-        }
-      }
-
       const response = await apiClient.get('/auth/validate');
       return response.data.valid;
     } catch (error) {

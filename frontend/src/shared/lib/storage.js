@@ -65,4 +65,51 @@ export const STORAGE_KEYS = {
   SEARCH_HISTORY: 'searchHistory',
   FILTERS: 'filters',
   THEME: 'theme',
+};
+// Синхронные helper-функции (веб): согласованные с JSON-сериализацией
+export const setItemSync = (key, value) => {
+  try {
+    const serializedValue = JSON.stringify(value);
+    localStorage.setItem(key, serializedValue);
+    return true;
+  } catch (error) {
+    console.error('Storage setItemSync error:', error);
+    return false;
+  }
+};
+
+export const getItemSync = (key) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    // Попытка прочитать примитив без JSON-обертки
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return null;
+      return JSON.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+};
+
+export const removeItemSync = (key) => {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    console.error('Storage removeItemSync error:', error);
+    return false;
+  }
+};
+
+export const clearSync = () => {
+  try {
+    localStorage.clear();
+    return true;
+  } catch (error) {
+    console.error('Storage clearSync error:', error);
+    return false;
+  }
 }; 

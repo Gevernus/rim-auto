@@ -116,7 +116,7 @@ const Header = () => {
             
             {/* Авторизация */}
             {isAuthenticated ? (
-              <UserProfile />
+              <UserProfile showLogoutButton={!isTelegramWebApp} />
             ) : (
               <div className="flex items-center gap-2">
                 {!isTelegramWebApp && (
@@ -196,7 +196,7 @@ const Header = () => {
               {/* Авторизация в мобильном меню */}
               {isAuthenticated ? (
                 <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
-                  <UserProfile compact={true} />
+                  <UserProfile compact={true} showLogoutButton={!isTelegramWebApp} />
                 </div>
               ) : (
                 <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
@@ -304,7 +304,7 @@ const Header = () => {
               {/* Авторизация в планшетном меню */}
               {isAuthenticated ? (
                 <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
-                  <UserProfile compact={true} />
+                  <UserProfile compact={true} showLogoutButton={!isTelegramWebApp} />
                 </div>
               ) : (
                 <div className="mb-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">

@@ -4,6 +4,8 @@
  * React Native: Аналогичный API через нативные методы
  */
 
+import { getItemSync, setItemSync, removeItemSync } from '../storage.js';
+
 let tgWebApp = null;
 
 // Захардкоженные данные для локальной отладки
@@ -43,7 +45,7 @@ const createDebugToken = () => {
 const DEBUG_INIT_DATA = "user=%7B%22id%22%3A123456789%2C%22first_name%22%3A%22%D0%98%D0%B2%D0%B0%D0%BD%22%2C%22last_name%22%3A%22%D0%9F%D0%B5%D1%82%D1%80%D0%BE%D0%B2%22%2C%22username%22%3A%22ivan_petrov%22%2C%22language_code%22%3A%22ru%22%7D&auth_date=" + Math.floor(Date.now() / 1000) + "&hash=debug_hash";
 
 // Флаг для включения режима отладки
-const DEBUG_MODE = import.meta.env.DEV && localStorage.getItem('telegram_debug_mode') === 'true';
+const DEBUG_MODE = import.meta.env.DEV && Boolean(getItemSync('telegram_debug_mode'));
 
 // Инициализация Telegram WebApp
 const initTelegramWebApp = () => {
@@ -147,7 +149,7 @@ export const isTelegramPremium = () => {
 // Утилиты для отладки
 export const enableDebugMode = () => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('telegram_debug_mode', 'true');
+    setItemSync('telegram_debug_mode', true);
     console.log('🧪 Telegram DEBUG MODE включен');
     console.log('🔄 Перезагрузите страницу для применения изменений');
   }
@@ -155,7 +157,7 @@ export const enableDebugMode = () => {
 
 export const disableDebugMode = () => {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('telegram_debug_mode');
+    removeItemSync('telegram_debug_mode');
     console.log('🧪 Telegram DEBUG MODE выключен');
     console.log('🔄 Перезагрузите страницу для применения изменений');
   }

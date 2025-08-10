@@ -5,10 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { storage } from '../../../shared/lib/storage.js';
-
-// Синхронные функции для быстрого чтения в initialize
-const getItemSync = (key) => localStorage.getItem(key);
+import { storage, getItemSync } from '../../../shared/lib/storage.js';
 
 // Store для состояния авторизации
 const useAuthStore = create(

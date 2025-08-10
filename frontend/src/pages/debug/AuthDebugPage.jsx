@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useTelegramAuth } from '../../features/auth';
 import { Button } from '../../shared/ui';
 import { enableDebugMode, disableDebugMode } from '../../shared/lib/platform/telegram';
+import { getItemSync, removeItemSync } from '../../shared/lib/storage.js';
 
 export const AuthDebugPage = () => {
   const {
@@ -20,7 +21,7 @@ export const AuthDebugPage = () => {
   } = useTelegramAuth();
 
   const [telegramDebugMode, setTelegramDebugMode] = useState(
-    typeof window !== 'undefined' && localStorage.getItem('telegram_debug_mode') === 'true'
+    typeof window !== 'undefined' && Boolean(getItemSync('telegram_debug_mode'))
   );
 
   const toggleTelegramDebug = () => {
@@ -61,7 +62,7 @@ export const AuthDebugPage = () => {
             </div>
             
             <div>
-              <span className="font-medium text-text-secondary dark:text-dark-text-secondary">Telegram WebApp:</span>
+              <span className="font-medium text-text-secondary dark:text-dark-text-secondary">Telegram WebApp (симуляция в debug):</span>
               <p className={`font-bold ${isTelegramWebApp ? 'text-blue-600' : 'text-gray-600'}`}>
                 {isTelegramWebApp ? 'Да' : 'Нет'}
               </p>
@@ -82,21 +83,24 @@ export const AuthDebugPage = () => {
             </div>
           </div>
           
-          {/* Debug информация */}
-          {telegramDebugMode && isAuthenticated && (
-            <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-              <p className="text-sm text-orange-700 dark:text-orange-300">
-                <strong>Debug режим активен</strong> - используется локальный токен авторизации.
-                Страница заказа должна открываться без проблем.
+          {/* Информация */}
+          {telegramDebugMode && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                <strong>Debug режим:</strong> подставляем тестовые данные Telegram (initData, user). Токен всегда получаем с backend.
               </p>
-              
-              {/* Отображение debug токена */}
-              <details className="mt-3">
-                <summary className="text-xs text-orange-600 dark:text-orange-400 cursor-pointer">
-                  Показать debug токен
+            </div>
+          )}
+
+          {/* Токен */}
+          {isAuthenticated && (
+            <div className="mt-4 p-3 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg border border-border dark:border-dark-border">
+              <details>
+                <summary className="text-xs text-text-secondary dark:text-dark-text-secondary cursor-pointer">
+                  Показать текущий токен
                 </summary>
-                <div className="mt-2 p-2 bg-orange-100 dark:bg-orange-800 rounded text-xs font-mono break-all">
-                  {localStorage.getItem('authToken') || 'Токен не найден'}
+                <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono break-all">
+                  {getItemSync('authToken') || 'Токен не найден'}
                 </div>
               </details>
             </div>
@@ -117,7 +121,7 @@ export const AuthDebugPage = () => {
               {telegramDebugMode ? 'Выключить Telegram Debug' : 'Включить Telegram Debug'}
             </Button>
             
-            {telegramDebugMode !== (localStorage.getItem('telegram_debug_mode') === 'true') && (
+            {telegramDebugMode !== Boolean(getItemSync('telegram_debug_mode')) && (
               <Button onClick={reloadPage} variant="outline">
                 Перезагрузить страницу
               </Button>
@@ -125,8 +129,8 @@ export const AuthDebugPage = () => {
             
             <Button 
               onClick={() => {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('telegramInitData');
+                removeItemSync('authToken');
+                removeItemSync('telegramInitData');
                 window.location.reload();
               }} 
               variant="outline"
@@ -134,13 +138,6 @@ export const AuthDebugPage = () => {
             >
               Очистить токены
             </Button>
-          </div>
-          
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>Telegram Debug Mode</strong> включает тестового пользователя для локальной отладки.
-              После включения/выключения необходимо перезагрузить страницу.
-            </p>
           </div>
         </div>
 
