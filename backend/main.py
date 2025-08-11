@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi import FastAPI, Query, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -612,9 +612,47 @@ def logout(current_user = Depends(get_current_user)):
     }
 
 @app.post("/api/auth/telegram")
-def auth_telegram(auth_data: dict):
-    """Legacy endpoint для обратной совместимости"""
-    return auth_telegram_web(auth_data)
+async def auth_telegram(request: Request):
+    """Единая точка для Login Widget (поддержка JSON и form-data)"""
+    try:
+        content_type = request.headers.get("content-type", "")
+        auth_data = None
+
+        if "application/json" in content_type:
+            auth_data = await request.json()
+        elif "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+            form = await request.form()
+            # Приводим значения к str как ожидает алгоритм проверки
+            auth_data = {k: (v if isinstance(v, str) else str(v)) for k, v in form.items()}
+        else:
+            # Попробуем JSON как fallback
+            try:
+                auth_data = await request.json()
+            except Exception:
+                auth_data = None
+
+        if not isinstance(auth_data, dict) or not auth_data:
+            raise HTTPException(status_code=400, detail="Invalid or empty auth data")
+
+        if not verify_telegram_auth(auth_data.copy()):
+            raise HTTPException(status_code=403, detail="Invalid authentication data")
+        
+        # Сохраняем пользователя в БД
+        saved_user = save_user_to_db(auth_data)
+        
+        # Создаем JWT токен
+        token = create_jwt_token(auth_data)
+        
+        return {
+            "success": True,
+            "user": saved_user,
+            "token": token,
+            "message": "Successful authentication"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
 
 @app.get("/api/scrape-cars")
 def get_scraped_cars():

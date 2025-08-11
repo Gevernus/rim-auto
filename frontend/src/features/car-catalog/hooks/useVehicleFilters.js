@@ -90,12 +90,12 @@ export const useVehicleFilters = () => {
 
   // Получение брендов с фильтрацией по странам
   const getAvailableBrands = useMemo(() => {
-    console.log('🔍 Фильтрация брендов, текущие страны:', filters.countries);
-    console.log('🔍 Доступные бренды из API:', brands);
+    // console.log('🔍 Фильтрация брендов, текущие страны:', filters.countries);
+    // console.log('🔍 Доступные бренды из API:', brands);
     
     // Если нет данных из API, используем статические
     if (!brands || brands.length === 0) {
-      console.log('⚠️ Используем статические бренды');
+    //   console.log('⚠️ Используем статические бренды');
       if (filters.countries.length === 0 || filters.countries.includes('all')) {
         return Object.keys(BRAND_TO_COUNTRY);
       }
@@ -107,7 +107,7 @@ export const useVehicleFilters = () => {
 
     // Если выбраны все страны или не выбрана ни одна, показываем все бренды
     if (filters.countries.length === 0 || filters.countries.includes('all')) {
-      console.log('✅ Показываем все бренды из API');
+    //   console.log('✅ Показываем все бренды из API');
       return brands;
     }
 
@@ -117,14 +117,14 @@ export const useVehicleFilters = () => {
       return country && filters.countries.includes(country);
     });
     
-    console.log('✅ Отфильтрованные бренды:', filteredBrands);
+    // console.log('✅ Отфильтрованные бренды:', filteredBrands);
     return filteredBrands;
   }, [brands, filters.countries]);
 
   // Получение моделей для выбранного бренда
   const getAvailableModels = useMemo(() => {
-    console.log('🔍 Получение моделей для бренда:', filters.brand);
-    console.log('🔍 Доступные модели из API:', models);
+    // console.log('🔍 Получение моделей для бренда:', filters.brand);
+    // console.log('🔍 Доступные модели из API:', models);
     
     if (!filters.brand) {
       return [];
@@ -153,7 +153,7 @@ export const useVehicleFilters = () => {
 
   // Преобразование фильтров в параметры для API
   const getApiFilters = useCallback(() => {
-    console.log('🔍 getApiFilters вызван с фильтрами:', filters);
+    // console.log('🔍 getApiFilters вызван с фильтрами:', filters);
     
     const apiFilters = {
       page: 1, // Всегда сбрасываем на первую страницу при изменении фильтров
@@ -163,45 +163,45 @@ export const useVehicleFilters = () => {
     // Добавляем фильтры только если они заданы
     if (filters.brand) {
       apiFilters.title = filters.brand; // Backend ищет по title
-      console.log('✅ Добавлен фильтр по бренду:', filters.brand);
+    //   console.log('✅ Добавлен фильтр по бренду:', filters.brand);
     }
 
     // Исправляем конвертацию цен - делим на 10000 для перевода в 万
     if (filters.priceRange.from) {
       const priceInWan = (parseInt(filters.priceRange.from) / 10000).toString();
       apiFilters.price_from = priceInWan;
-      console.log(`✅ Добавлен фильтр по цене от: ${filters.priceRange.from} юаней = ${priceInWan}万`);
+    //   console.log(`✅ Добавлен фильтр по цене от: ${filters.priceRange.from} юаней = ${priceInWan}万`);
     }
 
     if (filters.priceRange.to) {
       const priceInWan = (parseInt(filters.priceRange.to) / 10000).toString();
       apiFilters.price_to = priceInWan;
-      console.log(`✅ Добавлен фильтр по цене до: ${filters.priceRange.to} юаней = ${priceInWan}万`);
+    //   console.log(`✅ Добавлен фильтр по цене до: ${filters.priceRange.to} юаней = ${priceInWan}万`);
     }
 
     // Добавляем фильтрацию по году
     if (filters.yearRange.from) {
       apiFilters.year_from = filters.yearRange.from;
-      console.log('✅ Добавлен фильтр по году от:', filters.yearRange.from);
+    //   console.log('✅ Добавлен фильтр по году от:', filters.yearRange.from);
     }
 
     if (filters.yearRange.to) {
       apiFilters.year_to = filters.yearRange.to;
-      console.log('✅ Добавлен фильтр по году до:', filters.yearRange.to);
+    //   console.log('✅ Добавлен фильтр по году до:', filters.yearRange.to);
     }
 
     // Добавляем фильтрацию по странам
     if (filters.countries.length > 0) {
       if (filters.countries.includes('all')) {
         apiFilters.country = 'all';
-        console.log('✅ Добавлен фильтр по стране: все страны');
+        // console.log('✅ Добавлен фильтр по стране: все страны');
       } else if (filters.countries.length === 1) {
         apiFilters.country = filters.countries[0];
-        console.log('✅ Добавлен фильтр по стране:', filters.countries[0]);
+        // console.log('✅ Добавлен фильтр по стране:', filters.countries[0]);
       } else {
         // Если выбрано несколько стран, пока используем первую
         apiFilters.country = filters.countries[0];
-        console.log('✅ Добавлен фильтр по стране (первая из выбранных):', filters.countries[0]);
+        // console.log('✅ Добавлен фильтр по стране (первая из выбранных):', filters.countries[0]);
       }
     }
 
@@ -209,10 +209,10 @@ export const useVehicleFilters = () => {
     if (filters.priceRange.from || filters.priceRange.to) {
       apiFilters.sort_by = 'price';
       apiFilters.sort_order = 'asc';
-      console.log('✅ Добавлена сортировка по цене');
+    //   console.log('✅ Добавлена сортировка по цене');
     }
 
-    console.log('🔍 Итоговые API фильтры:', apiFilters);
+    // console.log('🔍 Итоговые API фильтры:', apiFilters);
     return apiFilters;
   }, [filters]);
 

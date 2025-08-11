@@ -3,7 +3,7 @@
  * Обрабатывает бесшовную авторизацию из WebApp и веб-авторизацию
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { apiClient } from '../../../shared/api/client';
 import { 
@@ -14,35 +14,53 @@ import {
 } from '../../../shared/lib/platform/telegram';
 
 export const useTelegramAuth = () => {
-  const auth = useAuth();
+  const {
+    // Состояние
+    isAuthenticated,
+    user,
+    telegramUser,
+    isLoading,
+    isTelegramWebApp: isTelegramWebAppInStore,
+    userName,
+    userAvatar,
+    authToken,
 
+    // Методы стора
+    setUser,
+    setTelegramUser,
+    logout: logoutStore,
+    setLoading,
+    initialize: initializeStore,
+  } = useAuth();
+
+  console.log('isTelegramWebApp', isTelegramWebApp());
   // Бесшовная авторизация при загрузке для Telegram WebApp
-  const initTelegramAuth = async () => {
+  const initTelegramAuth = useCallback(async () => {
     if (!isTelegramWebApp()) return;
 
     try {
-      auth.setLoading(true);
+      setLoading(true);
       
       const initData = getTelegramInitData();
-      const telegramUser = getTelegramUser();
+      const tgUser = getTelegramUser();
       
-      if (!initData || !telegramUser) {
+      if (!initData || !tgUser) {
         console.log('Нет данных инициализации Telegram');
         return;
       }
 
       // Сохраняем данные Telegram пользователя
-      auth.setTelegramUser(telegramUser, initData);
+      setTelegramUser(tgUser, initData);
 
       // Всегда отправляем данные на backend для получения токена (в том числе в debug)
       const response = await apiClient.post('/auth/telegram-webapp', {
         initData,
-        user: telegramUser,
+        user: tgUser,
       });
 
       if (response.data.success) {
         // Устанавливаем пользователя и токен
-        auth.setUser(response.data.user, response.data.token);
+        setUser(response.data.user, response.data.token);
         showTelegramAlert('Добро пожаловать!');
       } else {
         console.error('Ошибка авторизации:', response.data.message);
@@ -51,31 +69,31 @@ export const useTelegramAuth = () => {
     } catch (error) {
       console.error('Ошибка Telegram авторизации:', error);
     } finally {
-      auth.setLoading(false);
+      setLoading(false);
     }
-  };
+  }, [setLoading, setTelegramUser, setUser]);
 
   // Веб-авторизация через Telegram Login Widget
   const handleTelegramWebAuth = useCallback(async (telegramData) => {
     try {
-      auth.setLoading(true);
+      setLoading(true);
 
       // Отправляем данные с Telegram Login Widget на backend
-      const response = await apiClient.post('/auth/telegram-web', telegramData);
+      const response = await apiClient.post('/auth/telegram', telegramData);
 
       if (response.data.success) {
         // Устанавливаем пользователя и токен
-        auth.setUser(response.data.user, response.data.token);
-        auth.setTelegramUser(telegramData);
+        setUser(response.data.user, response.data.token);
+        setTelegramUser(telegramData);
         
         console.log('✅ Авторизация успешна:', response.data);
         
         // Проверяем состояние после небольшой задержки
         setTimeout(() => {
           console.log('✅ Состояние auth после авторизации:', {
-            isAuthenticated: auth.isAuthenticated,
-            user: auth.user,
-            token: auth.authToken
+            isAuthenticated,
+            user,
+            token: authToken,
           });
         }, 200);
         
@@ -94,24 +112,25 @@ export const useTelegramAuth = () => {
         error: error.response?.data?.message || 'Ошибка подключения' 
       };
     } finally {
-      auth.setLoading(false);
+      setLoading(false);
     }
-  }, [auth]);
+  }, [setLoading, setUser, setTelegramUser, isAuthenticated, user, authToken]);
 
   // Инициализация авторизации
-  const initialize = () => {
+  const initialize = useCallback(() => {
     // Инициализируем auth store
-    auth.initialize();
+    initializeStore();
     
     // Если это Telegram WebApp - пытаемся авторизоваться
     if (isTelegramWebApp()) {
+      // Не await — запуск в фоне
       initTelegramAuth();
     }
-  };
+  }, [initializeStore, initTelegramAuth]);
 
   // Проверка валидности токена (всегда через backend)
   const validateToken = useCallback(async () => {
-    if (!auth.authToken) return false;
+    if (!authToken) return false;
 
     try {
       const response = await apiClient.get('/auth/validate');
@@ -120,35 +139,35 @@ export const useTelegramAuth = () => {
       console.error('Ошибка валидации токена:', error);
       // Если токен невалидный - выходим
       if (error.response?.status === 401) {
-        auth.logout();
+        logoutStore();
       }
       return false;
     }
-  }, [auth]);
+  }, [authToken, logoutStore]);
 
   // Выход из системы
   const logout = useCallback(async () => {
     try {
       // Уведомляем backend о выходе
-      if (auth.authToken) {
+      if (authToken) {
         await apiClient.post('/auth/logout');
       }
     } catch (error) {
       console.error('Ошибка выхода:', error);
     } finally {
-      auth.logout();
+      logoutStore();
     }
-  }, [auth]);
+  }, [authToken, logoutStore]);
 
   return {
     // Состояние
-    isAuthenticated: auth.isAuthenticated,
-    user: auth.user,
-    telegramUser: auth.telegramUser,
-    isLoading: auth.isLoading,
-    isTelegramWebApp: auth.isTelegramWebApp,
-    userName: auth.userName,
-    userAvatar: auth.userAvatar,
+    isAuthenticated,
+    user,
+    telegramUser,
+    isLoading,
+    isTelegramWebApp: isTelegramWebAppInStore,
+    userName,
+    userAvatar,
     
     // Методы
     handleTelegramWebAuth,

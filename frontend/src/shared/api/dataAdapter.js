@@ -180,7 +180,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     return null;
   }
 
-  console.log('🔧 Адаптируем автомобиль:', backendCar);
+//   console.log('🔧 Адаптируем автомобиль:', backendCar);
 
   // Проверяем формат данных
   const isNewFormat = backendCar.brand && backendCar.specs && backendCar.price && typeof backendCar.price === 'object';
@@ -189,7 +189,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
 
   if (isNewFormat) {
     // Новый структурированный формат (с specs и price объектом)
-    console.log('✅ Используем новый структурированный формат');
+    // console.log('✅ Используем новый структурированный формат');
     
     const defaults = generateDefaults(index);
     
@@ -240,7 +240,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     };
   } else if (isSimplifiedFormat) {
     // Упрощенный формат (с price_value)
-    console.log('✅ Используем упрощенный формат');
+    // console.log('✅ Используем упрощенный формат');
     
     const defaults = generateDefaults(index);
     
@@ -249,7 +249,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     
     if (backendCar.local_image_url) {
       images = [`${API_BASE_URL}${backendCar.local_image_url}`];
-      console.log('🖼️ Используем локальное изображение:', images[0]);
+    //   console.log('🖼️ Используем локальное изображение:', images[0]);
     } else if (backendCar.image_url) {
       images = [backendCar.image_url];
       console.log('🖼️ Используем оригинальное изображение:', images[0]);
@@ -290,7 +290,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     };
   } else if (isOldFormat) {
     // Старый формат (для обратной совместимости)
-    console.log('⚠️ Используем старый формат данных');
+    // console.log('⚠️ Используем старый формат данных');
     
     const brand = extractBrand(backendCar.title);
     const model = extractModel(backendCar.title, brand);
@@ -322,7 +322,7 @@ export const adaptVehicle = (backendCar, index = 0) => {
     };
   } else {
     // Попробуем обработать как новый формат с вложенными объектами
-    console.log('🔍 Пробуем обработать как новый формат с вложенными объектами');
+    // console.log('🔍 Пробуем обработать как новый формат с вложенными объектами');
     
     const defaults = generateDefaults(index);
     
@@ -427,7 +427,7 @@ const extractDriveType = (title) => {
  * @returns {Array} Массив адаптированных автомобилей
  */
 export const adaptVehicleList = (backendCars) => {
-  console.log('🔧 adaptVehicleList получил данные:', backendCars);
+//   console.log('🔧 adaptVehicleList получил данные:', backendCars);
   
   if (!Array.isArray(backendCars)) {
     console.log('❌ backendCars не является массивом:', typeof backendCars);
@@ -438,7 +438,7 @@ export const adaptVehicleList = (backendCars) => {
     .map((car, index) => {
       const adapted = adaptVehicle(car, index);
       if (adapted) {
-        console.log(`✅ Адаптирован автомобиль ${index + 1}:`, adapted.title);
+        // console.log(`✅ Адаптирован автомобиль ${index + 1}:`, adapted.title);
       } else {
         console.log(`❌ Не удалось адаптировать автомобиль ${index + 1}`);
       }
@@ -446,7 +446,7 @@ export const adaptVehicleList = (backendCars) => {
     })
     .filter(car => car !== null);
 
-  console.log(`🎉 Успешно адаптировано ${adaptedVehicles.length} из ${backendCars.length} автомобилей`);
+//   console.log(`🎉 Успешно адаптировано ${adaptedVehicles.length} из ${backendCars.length} автомобилей`);
   return adaptedVehicles;
 };
 
@@ -456,7 +456,7 @@ export const adaptVehicleList = (backendCars) => {
  * @returns {Object} Адаптированный ответ с vehicles
  */
 export const adaptApiResponse = (backendResponse) => {
-  console.log('🔧 adaptApiResponse получил ответ:', backendResponse);
+//   console.log('🔧 adaptApiResponse получил ответ:', backendResponse);
   
   if (!backendResponse || !backendResponse.data) {
     console.log('❌ Некорректный ответ от API');
@@ -469,7 +469,7 @@ export const adaptApiResponse = (backendResponse) => {
   }
 
   const { data, total, page, page_size } = backendResponse;
-  console.log(`📊 Обрабатываем ${data.length} автомобилей, страница ${page}, всего ${total}`);
+//   console.log(`📊 Обрабатываем ${data.length} автомобилей, страница ${page}, всего ${total}`);
 
   const result = {
     vehicles: adaptVehicleList(data),
@@ -478,6 +478,6 @@ export const adaptApiResponse = (backendResponse) => {
     page_size: page_size || 10
   };
 
-  console.log('✅ Финальный результат adaptApiResponse:', result);
+//   console.log('✅ Финальный результат adaptApiResponse:', result);
   return result;
 }; 

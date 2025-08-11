@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, ThemeToggle } from '../../shared/ui';
 import { useAppNavigation, useAppLocation, routes } from '../../shared/lib/navigation';
 import { useTelegramAuth } from '../../features/auth';
@@ -18,8 +18,13 @@ const Header = () => {
     isLoading: authLoading,
     handleTelegramWebAuth,
     logout,
-    isTelegramWebApp
+    isTelegramWebApp,
+    initialize,
   } = useTelegramAuth();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   const isTest = true;
 

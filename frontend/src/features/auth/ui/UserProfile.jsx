@@ -65,7 +65,7 @@ export const UserProfile = ({
           </div>
         )}
       </div>
-
+      {console.log('🔍 showLogoutButton:', showLogoutButton)}
       {/* Кнопка выхода */}
       {showLogoutButton && (
         <Button

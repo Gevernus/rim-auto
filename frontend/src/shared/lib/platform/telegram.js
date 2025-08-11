@@ -66,7 +66,16 @@ export const isTelegramWebApp = () => {
     return true;
   }
   
-  return Boolean(window.Telegram?.WebApp);
+  const hasWebApp = Boolean(window.Telegram?.WebApp);
+  if (!hasWebApp) return false;
+
+  if (!tgWebApp) {
+    initTelegramWebApp();
+  }
+
+  // Считаем, что мы действительно внутри Telegram только при наличии initData или user
+  const hasInitData = Boolean(tgWebApp?.initData && tgWebApp.initData.length > 0) || Boolean(tgWebApp?.initDataUnsafe?.user);
+  return hasInitData;
 };
 
 // Получение данных инициализации Telegram

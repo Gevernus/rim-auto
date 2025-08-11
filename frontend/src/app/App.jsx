@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { setNavigateFunction } from '../shared/lib/navigation';
 import { ThemeProvider } from '../shared/lib/ThemeProvider';
 import { useTelegramAuth } from '../features/auth';
@@ -42,11 +42,14 @@ const NavigationProvider = ({ children }) => {
 // Компонент для инициализации авторизации
 const AuthProvider = ({ children }) => {
   const { initialize } = useTelegramAuth();
+  const initializedRef = useRef(false);
   
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     // Инициализируем авторизацию при запуске приложения
     initialize();
-  }, []); // Пустой массив зависимостей - вызываем только один раз
+  }, [initialize]);
 
   return children;
 };
