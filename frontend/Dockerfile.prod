@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 # Память для Node (устойчивость Vite)
-ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV NODE_OPTIONS=--max-old-space-size=3072
 
 # Принимаем аргумент из docker-compose
 ARG VITE_API_URL
