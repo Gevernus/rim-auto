@@ -70,7 +70,6 @@ jobs:
             cd /opt/rim-auto
             mkdir -p letsencrypt
             export DOCKER_BUILDKIT=1
-            export COMPOSE_BAKE=true
             docker compose -f docker-compose.prod.yml build --pull --progress=plain backend frontend
             docker compose -f docker-compose.prod.yml up -d mongo
             docker compose -f docker-compose.prod.yml up -d selenium

@@ -25,9 +25,10 @@ export default defineConfig(({ mode, command }) => {
     // Делает доступными только переменные с префиксом VITE_
     envPrefix: ['VITE_'],
 
-    // Явно пробрасываем VITE_API_URL на случай отсутствия .env файлов
+    // Явно пробрасываем VITE_API_URL и VITE_TELEGRAM_BOT_USERNAME на случай отсутствия .env файлов
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL ?? process.env.VITE_API_URL ?? ''),
+      'import.meta.env.VITE_TELEGRAM_BOT_USERNAME': JSON.stringify(env.VITE_TELEGRAM_BOT_USERNAME ?? process.env.VITE_TELEGRAM_BOT_USERNAME ?? ''),
     },
 
     server: {

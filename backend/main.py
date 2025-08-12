@@ -1689,3 +1689,78 @@ def structure_car_data(car_data):
     # print(f"   Цена: {price_value}万, Страна: {country}")
     
     return structured_car 
+
+@app.post("/api/auth/save-phone")
+def save_phone(data: dict, current_user = Depends(get_current_user)):
+    """Сохраняет номер телефона в профиле пользователя"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    phone = (data or {}).get("phone", "")
+    if not isinstance(phone, str) or len(phone) < 5:
+        raise HTTPException(status_code=400, detail="Invalid phone")
+
+    # Нормализуем номер: оставляем + и цифры
+    normalized = re.sub(r"[^0-9+]", "", phone)
+    if not re.search(r"\d{5,}", normalized):
+        raise HTTPException(status_code=400, detail="Invalid phone format")
+
+    telegram_id = current_user.get("user_id")
+    if not telegram_id:
+        raise HTTPException(status_code=400, detail="Missing user id")
+
+    users_collection.update_one(
+        {"telegram_id": telegram_id},
+        {"$set": {"phone": normalized, "updated_at": datetime.utcnow()}},
+        upsert=True,
+    )
+
+    user = users_collection.find_one({"telegram_id": telegram_id}, {"_id": 0})
+    return {"success": True, "user": user}
+
+
+@app.get("/api/auth/me")
+def get_me(current_user = Depends(get_current_user)):
+    """Возвращает профиль пользователя из БД"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    telegram_id = current_user.get("user_id")
+    user = users_collection.find_one({"telegram_id": telegram_id}, {"_id": 0})
+    if not user:
+        # Вернем базовую информацию хотя бы из токена
+        user = {
+            "telegram_id": telegram_id,
+            "username": current_user.get("username"),
+            "first_name": current_user.get("first_name"),
+        }
+    return {"success": True, "user": user}
+
+
+@app.post("/api/telegram/webhook/{token}")
+async def telegram_webhook(token: str, request: Request):
+    """Прием апдейтов Telegram. Сохраняет телефон при шаринге контакта."""
+    if token != TELEGRAM_BOT_TOKEN:
+        raise HTTPException(status_code=403, detail="Invalid token")
+
+    try:
+        update = await request.json()
+    except Exception:
+        update = {}
+
+    message = (update or {}).get("message", {})
+    contact = message.get("contact") or {}
+
+    if contact and contact.get("phone_number"):
+        phone_number = contact.get("phone_number")
+        owner_id = contact.get("user_id") or (message.get("from") or {}).get("id")
+        if owner_id:
+            normalized = re.sub(r"[^0-9+]", "", str(phone_number))
+            users_collection.update_one(
+                {"telegram_id": owner_id},
+                {"$set": {"phone": normalized, "updated_at": datetime.utcnow()}},
+                upsert=True,
+            )
+            print(f"✅ Phone saved for user {owner_id}: {normalized}")
+
+    return {"ok": True}

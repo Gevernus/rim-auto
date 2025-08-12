@@ -4,6 +4,8 @@ import { useAppNavigation, useAppLocation, routes } from '../../shared/lib/navig
 import { useTelegramAuth } from '../../features/auth';
 import { TelegramLoginButton, UserProfile } from '../../features/auth';
 import logo from '../../assets/logo.jpg';
+import { requestUserPhone, showTelegramAlert } from '../../shared/lib/platform/telegram.js';
+import { authApi } from '../../shared/api/client.js';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

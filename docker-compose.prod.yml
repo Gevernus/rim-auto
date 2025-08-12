@@ -66,11 +66,13 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - VITE_API_URL=https://casa-de-costura.ru/api
+        - VITE_TELEGRAM_BOT_USERNAME=${VITE_TELEGRAM_BOT_USERNAME}
     container_name: rim-auto-frontend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://casa-de-costura.ru/api
+      - VITE_TELEGRAM_BOT_USERNAME=${VITE_TELEGRAM_BOT_USERNAME}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"

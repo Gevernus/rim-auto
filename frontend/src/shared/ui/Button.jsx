@@ -16,7 +16,7 @@ const Button = forwardRef(({
     primary: 'bg-primary-500 hover:bg-primary-600 text-white focus:ring-primary-500 shadow-sm',
     secondary: 'bg-secondary-100 hover:bg-secondary-200 text-secondary-900 focus:ring-secondary-500 dark:bg-secondary-700 dark:hover:bg-secondary-600 dark:text-secondary-100',
     outline: 'border border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-500 dark:hover:bg-primary-900/20',
-    ghost: 'text-secondary-600 hover:bg-secondary-100 focus:ring-secondary-500 dark:text-secondary-300 dark:hover:bg-secondary-700',
+    ghost: 'border border-secondary-100 text-secondary-600 hover:bg-secondary-100 focus:ring-secondary-500 dark:text-secondary-300 dark:hover:bg-secondary-700',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm',
   };
   

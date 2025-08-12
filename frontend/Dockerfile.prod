@@ -12,6 +12,10 @@ ENV NODE_OPTIONS=--max-old-space-size=2048
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
+# Новый аргумент для Telegram Bot Username
+ARG VITE_TELEGRAM_BOT_USERNAME
+ENV VITE_TELEGRAM_BOT_USERNAME=$VITE_TELEGRAM_BOT_USERNAME
+
 COPY package*.json ./
 RUN npm install
 

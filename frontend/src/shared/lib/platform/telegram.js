@@ -193,3 +193,37 @@ if (typeof window !== 'undefined') {
     }
   }
 } 
+
+export const requestUserPhone = async () => {
+  // DEBUG: возвращаем тестовый номер для локальной отладки
+  if (DEBUG_MODE) {
+    return { accepted: true, phone: "+79990000000", is_debug: true };
+  }
+
+  // Доступно только внутри Telegram WebApp
+  if (!isTelegramWebApp()) {
+    return { accepted: false, reason: "not_telegram" };
+  }
+
+  if (!tgWebApp) {
+    initTelegramWebApp();
+  }
+
+  // Официальный API: Telegram.WebApp.requestContact(callback)
+  if (tgWebApp?.requestContact) {
+    return await new Promise((resolve) => {
+      try {
+        tgWebApp.requestContact((shared) => {
+          // shared: boolean — поделился ли пользователь контактом
+          resolve({ accepted: Boolean(shared) });
+        });
+      } catch (e) {
+        console.error("requestContact error:", e);
+        resolve({ accepted: false, reason: "request_error" });
+      }
+    });
+  }
+
+  // Нет поддержки метода
+  return { accepted: false, reason: "unsupported" };
+}; 

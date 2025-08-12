@@ -122,6 +122,8 @@ export const systemApi = {
 
 export const authApi = {
   telegramAuth: (authData) => api.post('/auth/telegram', authData),
+  savePhone: (phone) => api.post('/auth/save-phone', { phone }),
+  getMe: () => api.get('/auth/me'),
 };
 
 export const ordersApi = {
