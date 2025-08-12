@@ -59,18 +59,25 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          VITE_TELEGRAM_BOT_USERNAME: ${{ secrets.VITE_TELEGRAM_BOT_USERNAME }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
+          command_timeout: 40m
+          envs: VITE_TELEGRAM_BOT_USERNAME
+          envs_format: export {{ .Name }}="{{ .Value }}"
           script: |
             set -e
             cd /opt/rim-auto
             mkdir -p letsencrypt
+            # Persist env for docker compose substitutions
+            echo "VITE_TELEGRAM_BOT_USERNAME=${VITE_TELEGRAM_BOT_USERNAME}" > .env
             export DOCKER_BUILDKIT=1
-            docker compose -f docker-compose.prod.yml build --pull --progress=plain backend frontend
+            docker compose --progress=plain -f docker-compose.prod.yml build --pull backend frontend
             docker compose -f docker-compose.prod.yml up -d mongo
             docker compose -f docker-compose.prod.yml up -d selenium
             docker compose -f docker-compose.prod.yml up -d backend
