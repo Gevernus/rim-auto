@@ -3,16 +3,16 @@
 // В RN версии будет использовать react-navigation
 
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useCallback } from 'react';
 
 // Хук для навигации
 export const useAppNavigation = () => {
   const navigate = useNavigate();
-  
-  return {
-    navigateTo: (path) => navigate(path),
-    goBack: () => navigate(-1),
-    replace: (path) => navigate(path, { replace: true }),
-  };
+  const navigateTo = useCallback((path) => navigate(path), [navigate]);
+  const goBack = useCallback(() => navigate(-1), [navigate]);
+  const replace = useCallback((path) => navigate(path, { replace: true }), [navigate]);
+
+  return { navigateTo, goBack, replace };
 };
 
 // Хук для получения текущего местоположения
@@ -52,16 +52,19 @@ export const routes = {
   // Дополнительное меню
   news: '/news',
   services: '/services',
+  detailing: '/detailing',
   reviews: '/reviews',
   about: '/about',
   insurance: '/insurance',
   credit: '/credit',
   leasing: '/leasing',
+  contracts: '/contracts',
   
   // Дополнительные маршруты
   car: (id) => `/car/${id}`,
   order: '/order',
   admin: '/admin',
+  detailingCompany: (slug) => `/detailing/${slug}`,
 };
 
 // Функция для навигации без хуков (для использования в обработчиках)

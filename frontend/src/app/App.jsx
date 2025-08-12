@@ -21,10 +21,14 @@ import { MenuPage } from '../widgets/nav';
 import { MotoPage } from '../pages/moto';
 import { SpecialTechPage } from '../pages/special-tech';
 import { PartsPage } from '../pages/parts';
+import { ContractsPage } from '../pages/contracts';
+import { DetailingCompaniesPage, CompanyServicesPage } from '../pages/detailing';
 
 // Виджеты
 import { Header } from '../widgets/header';
 import { MobileBottomNavigation } from '../widgets/nav';
+import { AlternateBottomNavigation } from '../widgets/nav/AlternateBottomNavigation';
+import { BottomNavProvider, useBottomNav } from '../shared/lib/bottom-nav/context';
 import { Footer } from '../widgets/footer';
 
 // Компонент для инициализации навигации
@@ -37,6 +41,14 @@ const NavigationProvider = ({ children }) => {
   }, [navigate]);
 
   return children;
+};
+
+const BottomNavSwitcher = () => {
+  const { mode } = useBottomNav();
+  if (mode === 'alternate') {
+    return <AlternateBottomNavigation />;
+  }
+  return <MobileBottomNavigation />;
 };
 
 // Компонент для инициализации авторизации
@@ -59,14 +71,16 @@ const Layout = ({ children }) => {
   return (
     <NavigationProvider>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary transition-colors">
-          <Header />
-          <main className="flex-1 xl:pb-0 md:pb-0 pb-24 md:pt-0 pt-16">
-            {children}
-          </main>
-          <Footer />
-          <MobileBottomNavigation />
-        </div>
+        <BottomNavProvider>
+          <div className="min-h-screen flex flex-col bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary transition-colors">
+            <Header />
+            <main className="flex-1 xl:pb-0 md:pb-0 pb-24 md:pt-0 pt-16">
+              {children}
+            </main>
+            <Footer />
+            <BottomNavSwitcher />
+          </div>
+        </BottomNavProvider>
       </AuthProvider>
     </NavigationProvider>
   );
@@ -151,6 +165,18 @@ const router = createBrowserRouter([
   {
     path: "/leasing",
     element: <Layout><LeasingPage /></Layout>,
+  },
+  {
+    path: "/contracts",
+    element: <Layout><ContractsPage /></Layout>,
+  },
+  {
+    path: "/detailing",
+    element: <Layout><DetailingCompaniesPage /></Layout>,
+  },
+  {
+    path: "/detailing/:slug",
+    element: <Layout><CompanyServicesPage /></Layout>,
   },
   
   // Дополнительные страницы
