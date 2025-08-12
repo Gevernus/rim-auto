@@ -1692,7 +1692,7 @@ def structure_car_data(car_data):
 
 @app.post("/api/auth/save-phone")
 def save_phone(data: dict, current_user = Depends(get_current_user)):
-    """Сохраняет номер телефона в профиле пользователя"""
+    # """Сохраняет номер телефона в профиле пользователя"""
     if not current_user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
@@ -1721,7 +1721,7 @@ def save_phone(data: dict, current_user = Depends(get_current_user)):
 
 @app.get("/api/auth/me")
 def get_me(current_user = Depends(get_current_user)):
-    """Возвращает профиль пользователя из БД"""
+    # """Возвращает профиль пользователя из БД"""
     if not current_user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
