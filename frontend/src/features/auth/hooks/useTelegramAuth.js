@@ -33,7 +33,6 @@ export const useTelegramAuth = () => {
     initialize: initializeStore,
   } = useAuth();
 
-  console.log('isTelegramWebApp', isTelegramWebApp());
   // Бесшовная авторизация при загрузке для Telegram WebApp
   const initTelegramAuth = useCallback(async () => {
     if (!isTelegramWebApp()) return;

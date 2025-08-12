@@ -19,10 +19,11 @@ export const TelegramLoginButton = ({
   const { isAuthenticated, isTelegramWebApp: inTelegramWebApp } = useTelegramAuth();
 
   // Важные значения окружения
-  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME;
+  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'Rim_Avto_all_bot';
   const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
   const authUrl = `${apiBase.replace(/\/$/, '')}/auth/telegram`;
   console.log('🔍 botUsername:', botUsername);
+  console.log('🔍 authUrl:', import.meta.env.VITE_API_URL);
 
   useEffect(() => {
     // Не показываем виджет если внутри Telegram WebApp или если disabled
