@@ -153,9 +153,13 @@ export const debugApi = {
 export const applicationsApi = {
   submitCreditApplication: (applicationData) => api.post('/applications/credit', applicationData),
   submitLeasingApplication: (applicationData) => api.post('/applications/leasing', applicationData),
+  submitInsuranceApplication: (applicationData) => api.post('/applications/insurance', applicationData),
+  submitGuaranteeApplication: (applicationData) => api.post('/applications/guarantee', applicationData),
   getStats: () => api.get('/applications/stats'),
   getCreditApplications: (params = {}) => api.get('/applications/credit', { params }),
   getLeasingApplications: (params = {}) => api.get('/applications/leasing', { params }),
+  getInsuranceApplications: (params = {}) => api.get('/applications/insurance', { params }),
+  getGuaranteeApplications: (params = {}) => api.get('/applications/guarantee', { params }),
   updateApplicationStatus: (applicationType, applicationId, status) => api.put(`/applications/${applicationType}/${applicationId}/status`, { status }),
 };
 

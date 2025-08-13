@@ -1,1 +1,2 @@
-export { CreditPage } from './CreditPage'; 
+export { CreditPage } from './CreditPage';
+export { BankCreditPage } from './BankCreditPage'; 

@@ -1,5 +1,5 @@
 import { useAppNavigation, routes } from '../../shared/lib/navigation';
-import primeWrap from '../../assets/primeWrap.png';
+import primeWrap from '../../assets/detailing/primeWrap.png';
 import { BackToMenuButton } from '../../shared/ui';
 const companies = [
   {

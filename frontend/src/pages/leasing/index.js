@@ -1,1 +1,2 @@
-export { LeasingPage } from './LeasingPage'; 
+export { LeasingPage } from './LeasingPage';
+export { LeasingCompanyPage } from './LeasingCompanyPage'; 

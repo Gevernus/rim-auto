@@ -2,15 +2,15 @@ import { useAppParams, useAppNavigation, routes } from '../../shared/lib/navigat
 import { useEffect, useMemo } from 'react';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
 import { openURL, openPhoneDialer } from '../../shared/lib/platform';
-import primeWrap from '../../assets/primeWrap.png';
-import cleaning from '../../assets/cleaning.png';
-import all from '../../assets/all.png';
-import ppf from '../../assets/ppf.png';
-import hydro from '../../assets/hydro.png';
-import polish from '../../assets/polish.png';
-import coatings from '../../assets/coatings.png';
-import tint from '../../assets/tint.png';
-import soundproof from '../../assets/soundproof.png';
+import primeWrap from '../../assets/detailing/primeWrap.png';
+import cleaning from '../../assets/detailing/cleaning.png';
+import all from '../../assets/detailing/all.png';
+import ppf from '../../assets/detailing/ppf.png';
+import hydro from '../../assets/detailing/hydro.png';
+import polish from '../../assets/detailing/polish.png';
+import coatings from '../../assets/detailing/coatings.png';
+import tint from '../../assets/detailing/tint.png';
+import soundproof from '../../assets/detailing/soundproof.png';
 
 const services = [
   { key: 'all', title: 'ВСЕ УСЛУГИ', description: 'Список всех услуг детейлинга.', logo: all },
@@ -74,15 +74,15 @@ const CompanyServicesPage = () => {
   return (
     <div className="container section-padding">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <img src={company.logo} alt={company.name} className="w-16 h-16 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface-elevated" />
+        <div className="mb-6">
           <button
             type="button"
             onClick={() => navigateTo(routes.detailing)}
-            className="text-3xl font-bold text-text-primary dark:text-dark-text-primary underline-offset-4 hover:underline focus:underline focus:outline-none"
+            className="flex items-center gap-3 focus:outline-none underline-offset-4 hover:underline focus:underline"
             aria-label="Вернуться к списку компаний"
           >
-            {company.name}
+            <img src={company.logo} alt={company.name} className="w-16 h-16 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface-elevated" />
+            <span className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">{company.name}</span>
           </button>
         </div>
 

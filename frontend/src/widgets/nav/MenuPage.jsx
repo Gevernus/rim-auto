@@ -20,10 +20,10 @@ const MenuPage = () => {
   };
 
   const menuItems = [
-	{ name: 'О нас', href: routes.about, icon: 'ℹ️' }, { name: 'Кредит', href: routes.credit, icon: '💳' },  { name: 'Спецтехника', href: routes.specialTech, icon: '🚜' },
-    { name: 'Отзывы', href: routes.reviews, icon: '⭐' }, { name: 'Лизинг', href: routes.leasing, icon: '📋' }, { name: 'Мото', href: routes.moto, icon: '🏍️' },
-    { name: 'Договора', href: routes.contracts, icon: '📄' }, { name: 'Страховка', href: routes.insurance, icon: '🛡️' }, { name: 'Админ', href: routes.admin, icon: '🔑' },
-    { name: 'Доп. услуги (Детейлинг)', href: routes.detailing, icon: '🧽' }, { name: 'Услуги', href: routes.services, icon: '⚙️' }, { name: 'Новости', href: routes.news, icon: '📰' },
+	{ name: 'О нас', href: routes.about, icon: 'ℹ️' }, { name: 'Кредит', href: routes.credit, icon: '💳' }, { name: 'СТО', href: routes.sto, icon: '🧰' }, 
+    { name: 'Отзывы', href: routes.reviews, icon: '⭐' }, { name: 'Лизинг', href: routes.leasing, icon: '📋' }, { name: 'Тех. помощь', href: routes.help, icon: '🆘' },
+    { name: 'Договора', href: routes.contracts, icon: '📄' }, { name: 'Страховка', href: routes.insurance, icon: '🛡️' },   { name: 'Автомойка', href: routes.wash, icon: '🚿' }, 
+    { name: 'Доп. услуги (Детейлинг)', href: routes.detailing, icon: '🧽' }, { name: 'Гарантия на авто', href: routes.guarantee, icon: '🧾' }, { name: 'Шиномонтаж', href: routes.tire, icon: '🛞' },{ name: 'Админ', href: routes.admin, icon: '🔑' },
   ];
 
   return (

@@ -12,8 +12,8 @@ import { CarPage } from '../pages/car';
 import { OrderPage } from '../pages/order';
 import { AboutPage } from '../pages/about';
 import { AuthDebugPage } from '../pages/debug/AuthDebugPage';
-import { CreditPage } from '../pages/credit';
-import { LeasingPage } from '../pages/leasing';
+import { CreditPage, BankCreditPage } from '../pages/credit';
+import { LeasingPage, LeasingCompanyPage } from '../pages/leasing';
 import { AdminPage } from '../pages/admin';
 import { FavoritesPage } from '../pages/favorites';
 import { MessagesPage } from '../pages/messages';
@@ -23,6 +23,12 @@ import { SpecialTechPage } from '../pages/special-tech';
 import { PartsPage } from '../pages/parts';
 import { ContractsPage } from '../pages/contracts';
 import { DetailingCompaniesPage, CompanyServicesPage } from '../pages/detailing';
+import { InsurancePage, InsuranceCompanyPage } from '../pages/insurance';
+import { GuaranteePage, GuaranteeCompanyPage } from '../pages/guarantee';
+import { StationsPage, StationServicesPage } from '../pages/sto';
+import { HelpCompaniesPage, CompanyHelpServicesPage } from '../pages/help';
+import { WashCompaniesPage, CompanyWashServicesPage } from '../pages/wash';
+import { TireCompaniesPage, CompanyTireServicesPage } from '../pages/tire';
 
 // Виджеты
 import { Header } from '../widgets/header';
@@ -156,19 +162,71 @@ const router = createBrowserRouter([
   },
   {
     path: "/insurance",
-    element: <Layout><ComingSoonPage title="Страховка" /></Layout>,
+    element: <Layout><InsurancePage /></Layout>,
+  },
+  {
+    path: "/insurance/:company",
+    element: <Layout><InsuranceCompanyPage /></Layout>,
   },
   {
     path: "/credit",
     element: <Layout><CreditPage /></Layout>,
   },
   {
+    path: "/credit/:bank",
+    element: <Layout><BankCreditPage /></Layout>,
+  },
+  {
     path: "/leasing",
     element: <Layout><LeasingPage /></Layout>,
   },
   {
+    path: "/leasing/:company",
+    element: <Layout><LeasingCompanyPage /></Layout>,
+  },
+  {
     path: "/contracts",
     element: <Layout><ContractsPage /></Layout>,
+  },
+  {
+    path: "/guarantee",
+    element: <Layout><GuaranteePage /></Layout>,
+  },
+  {
+    path: "/guarantee/:company",
+    element: <Layout><GuaranteeCompanyPage /></Layout>,
+  },
+  {
+    path: "/sto",
+    element: <Layout><StationsPage /></Layout>,
+  },
+  {
+    path: "/sto/:slug",
+    element: <Layout><StationServicesPage /></Layout>,
+  },
+  {
+    path: "/help",
+    element: <Layout><HelpCompaniesPage /></Layout>,
+  },
+  {
+    path: "/help/:slug",
+    element: <Layout><CompanyHelpServicesPage /></Layout>,
+  },
+  {
+    path: "/wash",
+    element: <Layout><WashCompaniesPage /></Layout>,
+  },
+  {
+    path: "/wash/:slug",
+    element: <Layout><CompanyWashServicesPage /></Layout>,
+  },
+  {
+    path: "/tire",
+    element: <Layout><TireCompaniesPage /></Layout>,
+  },
+  {
+    path: "/tire/:slug",
+    element: <Layout><CompanyTireServicesPage /></Layout>,
   },
   {
     path: "/detailing",
