@@ -14,7 +14,7 @@ const CompanyCard = ({ company, onOpen }) => (
     aria-label={`Открыть ${company.name}`}
   >
     <div className="flex items-center gap-4">
-      <img src={company.logo} alt={company.name} className="w-36 h-14 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface" />
+      <img src={company.logo} alt={company.name} className="w-36 h-14 object-contain rounded-md " />
       <div className="text-left" />
     </div>
     <div className="shrink-0 text-sm text-text-secondary dark:text-dark-text-secondary">{company.hours}</div>
@@ -29,7 +29,7 @@ const TireCompaniesPage = () => {
     <div className="container section-padding">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">Шиномонтаж</h1>
+          <h1 className="text-2xl m:text-3xl font-bold text-text-primary dark:text-dark-text-primary">Шиномонтаж</h1>
           <BackToMenuButton />
         </div>
         <div className="space-y-3">

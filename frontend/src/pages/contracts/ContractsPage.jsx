@@ -106,7 +106,7 @@ const ContractsPage = () => {
 
         {currentDoc ? (
           <div className="bg-surface-secondary dark:bg-dark-surface-secondary border border-border dark:border-dark-border rounded-lg p-4">
-            <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-3">
               <h2 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">{currentDoc.title}</h2>
               {isAvailable ? (
                 <a

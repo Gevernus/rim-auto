@@ -27,7 +27,7 @@ const InsurancePage = () => {
     <div className="container section-padding">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">Страхование — Выбор компании</h1>
+          <h1 className="text-3xl font-bold ">Страхование</h1>
           <BackToMenuButton />
         </div>
 

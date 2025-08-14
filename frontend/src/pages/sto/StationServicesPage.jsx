@@ -53,12 +53,13 @@ const StationServicesPage = () => {
           <button
             type="button"
             onClick={() => navigateTo(routes.sto)}
-            className="flex items-center gap-3 focus:outline-none underline-offset-4 hover:underline focus:underline"
+            className="flex items-center justify-between gap-3 w-full mb-4 focus:outline-none underline-offset-4 hover:underline focus:underline"
             aria-label="Вернуться к списку СТО"
           >
-            <img src={company.logo} alt={company.name} className="h-16 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface-elevated" />
-            <span className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">{company.name}</span>
+            <img src={company.logo} alt={company.name} className="h-16 max-w-48 m:max-w-67 object-contain rounded-md " />
+            <span className="text-2xl font-bold text-primary-700 dark:text-primary-600">назад</span>
           </button>
+		  <h1 className="text-3xl font-bold text-center text-text-primary dark:text-dark-text-primary">{company.name}</h1>
         </div>
         <div className="space-y-3">
           {SERVICES.map((s) => (

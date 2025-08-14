@@ -6,7 +6,7 @@ import creditImg from '../../assets/menu-page/credit.png';
 import stoImg from '../../assets/menu-page/sto.png';
 import reviewsImg from '../../assets/menu-page/reviews.png';
 import leasingImg from '../../assets/menu-page/leasing.png';
-import helpImg from '../../assets/menu-page/help.png';
+import helpImg from '../../assets/menu-page/help1.png';
 import contractsImg from '../../assets/menu-page/contracts.png';
 import insuranceImg from '../../assets/menu-page/insurance.png';
 import washImg from '../../assets/menu-page/wash.png';
@@ -87,11 +87,11 @@ const MenuPage = () => {
               className="aspect-square flex flex-col items-center justify-center gap-2 p-2 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-all duration-200 hover:scale-105"
             >
               {item.image ? (
-                <img src={item.image} alt={item.name} className="w-18 h-18 object-contain" loading="lazy" />
+                <img src={item.image} alt={item.name} className="w-16 h-16 object-contain" loading="lazy" />
               ) : (
                 <span className="text-3xl">{item.icon}</span>
               )}
-              <span className="text-text-primary dark:text-dark-text-primary font-medium text-sm text-center leading-tight">
+              <span className="text-text-primary dark:text-dark-text-primary font-medium text-[12px] text-center leading-tight">
                 {item.name}
               </span>
             </button>

@@ -125,7 +125,7 @@ const AboutPage = () => {
       <h1 className="text-3xl font-bold mb-8">О компании</h1>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Команда РИМ АВТО</h2>
+        <h2 className="text-2xl text-primary-700 dark:text-primary-600 font-bold mb-6">Команда РИМ АВТО</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {team.map((member) => (
             <div key={member.name} className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-xl p-4 flex flex-col items-center text-center">
@@ -138,7 +138,7 @@ const AboutPage = () => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Наши услуги</h2>
+        <h2 className="text-2xl text-primary-700 dark:text-primary-600 font-bold mb-6">Наши услуги</h2>
         <div className="md:ml-12 space-y-3 max-w-2xl">
           {services.map((item, idx) => {
             const expanded = isOpen(idx);
@@ -176,7 +176,7 @@ const AboutPage = () => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Наши партнёры</h2>
+        <h2 className="text-2xl text-primary-700 dark:text-primary-600 font-bold mb-6">Наши партнёры</h2>
 
         {/* Mobile carousel */}
         <div className="sm:hidden -mx-4 px-4">
@@ -207,7 +207,7 @@ const AboutPage = () => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Офисы РИМ АВТО</h2>
+        <h2 className="text-2xl text-primary-700 dark:text-primary-600 font-bold mb-6">Офисы РИМ АВТО</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {offices.map((office) => (
             <div key={office.city} className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-xl p-4">

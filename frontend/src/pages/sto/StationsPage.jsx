@@ -14,7 +14,7 @@ const StationCard = ({ station, onOpen }) => (
     aria-label={`Открыть ${station.name}`}
   >
     <div className="flex items-center gap-4">
-      <img src={station.logo} alt={station.name} className="w-36 h-14 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface" />
+      <img src={station.logo} alt={station.name} className="w-36 h-14 object-contain rounded-md " />
       <div className="text-left">
         {/* <div className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">{station.name}</div>
         <div className="text-sm text-text-secondary dark:text-dark-text-secondary">СТО услуги</div> */}

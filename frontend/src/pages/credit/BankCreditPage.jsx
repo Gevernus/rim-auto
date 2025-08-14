@@ -105,17 +105,17 @@ const BankCreditPage = () => {
   return (
     <div className="container section-padding">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={() => navigateTo(routes.credit)}
-            aria-label="Вернуться к выбору банков"
-            className="flex items-center gap-3 focus:outline-none underline-offset-4 hover:underline focus:underline"
-          >
-            <img src={bankInfo.logo} alt={bankInfo.name} className=" h-16 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface-elevated" />
-            <span className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">{bankInfo.name}</span>
-          </button>
-        </div>
+
+        <button
+          type="button"
+          onClick={() => navigateTo(routes.credit)}
+          aria-label="Вернуться к выбору банков"
+          className="flex items-center justify-between gap-3 w-full mb-6 focus:outline-none underline-offset-4 hover:underline focus:underline"
+        >
+          <img src={bankInfo.logo} alt={bankInfo.name} className=" h-16 max-w-48 m:max-w-67 object-contain rounded-md " />
+          <span className="mr-4 text-2xl font-bold text-primary-700 dark:text-primary-600">назад</span>
+        </button>
+
 
         {submitError && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

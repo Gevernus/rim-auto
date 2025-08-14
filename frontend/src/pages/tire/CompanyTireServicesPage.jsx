@@ -18,7 +18,7 @@ const COMPANY_META = {
 
 const ServiceRow = ({ service }) => (
   <div className="flex items-start gap-4 p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg">
-    <img src={service.logo} alt={service.title} className="w-10 h-10 object-contain rounded-md bg-surface dark:bg-dark-surface" />
+    <img src={service.logo} alt={service.title} className="w-12 h-12 object-contain rounded-md bg-surface dark:bg-dark-surface" />
     <div>
       <div className="text-base font-semibold text-text-primary dark:text-dark-text-primary">{service.title}</div>
       {service.description && (
@@ -52,12 +52,13 @@ const CompanyTireServicesPage = () => {
           <button
             type="button"
             onClick={() => navigateTo(routes.tire)}
-            className="flex items-center gap-3 focus:outline-none underline-offset-4 hover:underline focus:underline"
+            className="flex items-center justify-between gap-3 w-full mb-4 focus:outline-none underline-offset-4 hover:underline focus:underline"
             aria-label="Вернуться к списку компаний"
           >
-            <img src={company.logo} alt={company.name} className="h-16 object-contain rounded-md bg-dark-surface-secondary dark:bg-dark-surface-elevated" />
-            <span className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">{company.name}</span>
+            <img src={company.logo} alt={company.name} className="h-16 max-w-48 m:max-w-67 object-contain rounded-md " />
+            <span className="text-2xl font-bold text-primary-700 dark:text-primary-600">назад</span>
           </button>
+		  <h1 className="text-3xl font-bold text-center text-text-primary dark:text-dark-text-primary">{company.name}</h1>
         </div>
         <div className="space-y-3">
           {SERVICES.map((s) => (

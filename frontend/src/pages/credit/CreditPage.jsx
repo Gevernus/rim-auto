@@ -21,7 +21,7 @@ const BankCard = ({ bank, onOpen }) => {
       aria-label={`Открыть банк ${bank.name}`}
     >
       <div className="flex items-center justify-center">
-        <img src={bank.logo} alt={bank.name} className=" h-24 object-contain rounded-md bg-surface dark:bg-dark-surface" />
+        <img src={bank.logo} alt={bank.name} className=" h-24 object-contain rounded-md " />
       </div>
     </button>
   );
@@ -38,7 +38,7 @@ const CreditPage = () => {
     <div className="container section-padding">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">Кредит — Выбор банка</h1>
+          <h1 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary">Кредит</h1>
           <BackToMenuButton />
         </div>
 

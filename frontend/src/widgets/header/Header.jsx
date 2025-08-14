@@ -87,7 +87,8 @@ const Header = () => {
             onClick={handleLogoClick}
           >
             <img src={logo} alt="Logo" className="w-10 h-10 rounded-lg" />
-            <span className="text-xl font-bold text-text-primary dark:text-dark-text-primary">Рим - Авто</span>
+            <span className="text-xl font-bold text-primary-600 dark:text-primary-600">Рим</span>
+            <span className="text-xl font-bold text-text-primary dark:text-dark-text-primary"> - Авто</span>
           </div>
 
           {/* Основная навигация (десктоп) */}
