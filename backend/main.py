@@ -1770,13 +1770,33 @@ async def telegram_webhook(token: str, request: Request):
 
 # ====== Отзывы: список, создание, ответ менеджера, удаление ======
 @app.get("/api/reviews")
-def get_reviews(page: int = 1, page_size: int = 10):
+def get_reviews(page: int = 1, page_size: int = 10, rating: Optional[int] = None, status: Optional[str] = None):
     try:
         skip = (page - 1) * page_size
-        total = reviews_collection.count_documents({})
+        # Формируем фильтр
+        query: dict = {}
+        if rating is not None:
+            try:
+                rating_int = int(rating)
+                if rating_int < 1 or rating_int > 5:
+                    raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+                query["rating"] = rating_int
+            except Exception:
+                raise HTTPException(status_code=400, detail="Invalid rating")
+        if status:
+            if status not in ("new", "processed"):
+                raise HTTPException(status_code=400, detail="Invalid status")
+            if status == "new":
+                # Статус новый: либо явно status=new, либо нет ответа
+                query["$or"] = [{"status": "new"}, {"reply": None}]
+            elif status == "processed":
+                # Статус обработан: либо явно status=processed, либо есть ответ
+                query["$or"] = [{"status": "processed"}, {"reply": {"$ne": None}}]
+
+        total = reviews_collection.count_documents(query)
         items = list(
             reviews_collection
-            .find({})
+            .find(query)
             .skip(skip)
             .limit(page_size)
             .sort("created_at", -1)
@@ -1816,7 +1836,7 @@ def create_review(payload: dict, current_user = Depends(get_current_user)):
             "reply_author": None,
             "reply_at": None,
             "user": None,
-            "status": "published",
+            "status": "new",
         }
         doc["user"] = {
             "user_id": telegram_id,
@@ -1854,7 +1874,7 @@ def reply_review(review_id: str, payload: dict, current_user = Depends(get_curre
             raise HTTPException(status_code=400, detail="Invalid review ID")
         result = reviews_collection.update_one(
             {"_id": oid},
-            {"$set": {"reply": reply_text, "reply_author": reply_author, "reply_at": datetime.utcnow()}}
+            {"$set": {"reply": reply_text, "reply_author": reply_author, "reply_at": datetime.utcnow(), "status": "processed"}}
         )
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Review not found")
