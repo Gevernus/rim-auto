@@ -72,7 +72,7 @@ const Pagination = ({
         disabled={currentPage <= 1 || loading}
         className="px-3 py-2 text-sm font-medium text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        ← Предыдущая
+        ← Пред.
       </button>
 
       {/* Номера страниц */}
@@ -104,7 +104,7 @@ const Pagination = ({
         disabled={currentPage >= totalPages || loading}
         className="px-3 py-2 text-sm font-medium text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        Следующая →
+        След. →
       </button>
     </div>
   );

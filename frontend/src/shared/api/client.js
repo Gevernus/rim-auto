@@ -163,5 +163,13 @@ export const applicationsApi = {
   updateApplicationStatus: (applicationType, applicationId, status) => api.put(`/applications/${applicationType}/${applicationId}/status`, { status }),
 };
 
+export const reviewsApi = {
+  getReviews: (params = {}) => api.get('/reviews', { params }),
+  createReview: (data) => api.post('/reviews', data),
+  replyReview: (id, reply, author = 'Менеджер') => api.post(`/reviews/${id}/reply`, { reply, author }),
+  deleteReview: (id) => api.delete(`/reviews/${id}`),
+  updateReview: (id, data) => api.patch(`/reviews/${id}`, data),
+};
+
 export default apiClient;
 export { apiClient }; 

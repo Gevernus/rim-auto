@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useTelegramAuth } from '../../features/auth';
 import { applicationsApi } from '../../shared/api/client';
+import { reviewsApi } from '../../shared/api/client';
+import { Pagination } from '../../shared/ui/Pagination';
+import { Rating } from '../../shared/ui/Rating';
 
 const AdminPage = () => {
   const { user } = useTelegramAuth();
   const [activeTab, setActiveTab] = useState('credit');
   const [creditApplications, setCreditApplications] = useState([]);
   const [leasingApplications, setLeasingApplications] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsTotal, setReviewsTotal] = useState(0);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [reviewsPageSize, setReviewsPageSize] = useState(10);
+  const [replyMap, setReplyMap] = useState({});
+  const [editReplyMap, setEditReplyMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stats, setStats] = useState({});
@@ -26,8 +35,11 @@ const AdminPage = () => {
     // if (user) {
       loadStats();
       loadApplications();
+      if (activeTab === 'reviews') {
+        loadReviews();
+      }
     // }
-  }, [user, activeTab, statusFilter, telegramFilter, page]);
+  }, [user, activeTab, statusFilter, telegramFilter, page, reviewsPage, reviewsPageSize]);
 
   const loadStats = async () => {
     try {
@@ -45,6 +57,7 @@ const AdminPage = () => {
   };
 
   const loadApplications = async () => {
+    if (activeTab === 'reviews') return;
     setLoading(true);
     try {
       const params = {
@@ -69,7 +82,7 @@ const AdminPage = () => {
         }
         
         setCreditApplications(applications);
-      } else {
+      } else if (activeTab === 'leasing') {
         response = await applicationsApi.getLeasingApplications(params);
         let applications = response.data.data;
         
@@ -88,9 +101,25 @@ const AdminPage = () => {
       // Временно показываем пустые массивы при ошибке
       if (activeTab === 'credit') {
         setCreditApplications([]);
-      } else {
+      } else if (activeTab === 'leasing') {
         setLeasingApplications([]);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadReviews = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await reviewsApi.getReviews({ page: reviewsPage, page_size: reviewsPageSize });
+      setReviews(res.data.data || []);
+      setReviewsTotal(res.data.total || 0);
+    } catch (e) {
+      setError('Ошибка загрузки отзывов');
+      setReviews([]);
+      setReviewsTotal(0);
     } finally {
       setLoading(false);
     }
@@ -106,6 +135,48 @@ const AdminPage = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       setError(error.response?.data?.detail || 'Ошибка обновления статуса');
+    }
+  };
+
+  const handleReplyChange = (reviewId, value) => {
+    setReplyMap((prev) => ({ ...prev, [reviewId]: value }));
+  };
+
+  const handleReply = async (reviewId) => {
+    const value = (replyMap[reviewId] || '').trim();
+    if (!value) return;
+    try {
+      await reviewsApi.replyReview(reviewId, value);
+      setReplyMap((prev) => ({ ...prev, [reviewId]: '' }));
+      await loadReviews();
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Не удалось отправить ответ');
+    }
+  };
+
+  const handleReplyEditToggle = (reviewId, currentReply) => {
+    setEditReplyMap((prev) => ({ ...prev, [reviewId]: prev[reviewId] != null ? null : (currentReply || '') }));
+  };
+
+  const handleReplySave = async (reviewId) => {
+    const value = (editReplyMap[reviewId] || '').trim();
+    if (!value) return;
+    try {
+      await reviewsApi.replyReview(reviewId, value);
+      setEditReplyMap((prev) => ({ ...prev, [reviewId]: null }));
+      await loadReviews();
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Не удалось сохранить ответ');
+    }
+  };
+
+  const handleDelete = async (reviewId) => {
+    if (!window.confirm('Удалить отзыв?')) return;
+    try {
+      await reviewsApi.deleteReview(reviewId);
+      await loadReviews();
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Не удалось удалить отзыв');
     }
   };
 
@@ -381,6 +452,64 @@ const AdminPage = () => {
     </div>
   );
 
+  const renderReview = (r) => {
+    return (
+      <div key={r._id} className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4 mb-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="font-semibold text-text-primary dark:text-dark-text-primary">{r.name || 'Аноним'}</p>
+            <div className="flex items-center gap-1 mt-1">
+              <Rating value={r.rating || 0} editable={false} />
+            </div>
+          </div>
+          <p className="text-xs text-text-muted dark:text-dark-text-muted">{formatDate(r.created_at)}</p>
+        </div>
+        <p className="mt-3 text-text-primary dark:text-dark-text-primary">{r.message}</p>
+
+        {r.reply ? (
+          <div className="mt-3 p-3 rounded-md bg-gray-50 dark:bg-gray-800/60 border border-border dark:border-dark-border">
+            <p className="text-sm text-text-secondary dark:text-dark-text-secondary mb-1">Ответ: {r.reply_author || 'Менеджер'}</p>
+            {editReplyMap[r._id] != null ? (
+              <div className="flex flex-col gap-2">
+                <textarea
+                  value={editReplyMap[r._id]}
+                  onChange={(e) => setEditReplyMap((prev) => ({ ...prev, [r._id]: e.target.value }))}
+                  rows={2}
+                  className="px-3 py-2 rounded-md border border-border dark:border-dark-border bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => handleReplySave(r._id)} className="px-3 py-1 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded">Сохранить</button>
+                  <button onClick={() => handleReplyEditToggle(r._id, null)} className="px-3 py-1 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded">Отмена</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-text-primary dark:text-dark-text-primary">{r.reply}</p>
+                <div className="mt-2">
+                  <button onClick={() => handleReplyEditToggle(r._id, r.reply)} className="px-3 py-1 text-sm bg-yellow-600 hover:bg-yellow-700 text-white rounded mr-2">Редактировать</button>
+                  <button onClick={() => handleDelete(r._id)} className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">Удалить</button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-col gap-2">
+            <input
+              value={replyMap[r._id] || ''}
+              onChange={(e) => handleReplyChange(r._id, e.target.value)}
+              placeholder="Ответ менеджера..."
+              className="px-3 py-2 rounded-md border border-border dark:border-dark-border bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => handleReply(r._id)} className="px-3 py-1 text-sm bg-info-600 hover:bg-info-700 text-white rounded">Ответить</button>
+              <button onClick={() => handleDelete(r._id)} className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">Удалить</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Временно отключаем проверку авторизации для разработки
   // if (!user) {
   //   return (
@@ -466,7 +595,7 @@ const AdminPage = () => {
         </div>
 
         {/* Табы */}
-        <div className="flex space-x-1 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setActiveTab('credit')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -487,32 +616,44 @@ const AdminPage = () => {
           >
             Лизинговые заявки ({stats.leasing?.total || 0})
           </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'reviews'
+                ? 'bg-primary-600 text-white'
+                : 'bg-surface-elevated dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-surface dark:hover:bg-dark-surface'
+            }`}
+          >
+            Отзывы
+          </button>
         </div>
 
         {/* Фильтры */}
-        <div className="mb-6 flex flex-wrap gap-4">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
-          >
-            <option value="all">Все статусы</option>
-            <option value="new">Новые</option>
-            <option value="processing">В обработке</option>
-            <option value="approved">Одобренные</option>
-            <option value="rejected">Отклоненные</option>
-          </select>
-          
-          <select
-            value={telegramFilter}
-            onChange={(e) => setTelegramFilter(e.target.value)}
-            className="px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
-          >
-            <option value="all">Все заявки</option>
-            <option value="telegram">С Telegram</option>
-            <option value="no-telegram">Без Telegram</option>
-          </select>
-        </div>
+        {activeTab !== 'reviews' && (
+          <div className="mb-6 flex flex-wrap gap-4">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+            >
+              <option value="all">Все статусы</option>
+              <option value="new">Новые</option>
+              <option value="processing">В обработке</option>
+              <option value="approved">Одобренные</option>
+              <option value="rejected">Отклоненные</option>
+            </select>
+            
+            <select
+              value={telegramFilter}
+              onChange={(e) => setTelegramFilter(e.target.value)}
+              className="px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+            >
+              <option value="all">Все заявки</option>
+              <option value="telegram">С Telegram</option>
+              <option value="no-telegram">Без Telegram</option>
+            </select>
+          </div>
+        )}
 
         {/* Ошибка */}
         {error && (
@@ -521,7 +662,7 @@ const AdminPage = () => {
           </div>
         )}
 
-        {/* Список заявок */}
+        {/* Список */}
         <div>
           {loading ? (
             <div className="text-center py-8">
@@ -529,18 +670,50 @@ const AdminPage = () => {
             </div>
           ) : activeTab === 'credit' ? (
             creditApplications.length > 0 ? (
-              creditApplications.map(renderCreditApplication)
+              creditApplications.map((app) => (
+                <div key={app._id} className="mb-4">{renderCreditApplication(app)}</div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-text-secondary dark:text-dark-text-secondary">Нет заявок</p>
+              </div>
+            )
+          ) : activeTab === 'leasing' ? (
+            leasingApplications.length > 0 ? (
+              leasingApplications.map((app) => (
+                <div key={app._id} className="mb-4">{renderLeasingApplication(app)}</div>
+              ))
             ) : (
               <div className="text-center py-8">
                 <p className="text-text-secondary dark:text-dark-text-secondary">Нет заявок</p>
               </div>
             )
           ) : (
-            leasingApplications.length > 0 ? (
-              leasingApplications.map(renderLeasingApplication)
+            reviews.length > 0 ? (
+              <>
+                <div className="flex items-center justify-end gap-2 mb-2">
+                  <label className="text-sm text-text-secondary dark:text-dark-text-secondary" htmlFor="admin-reviews-page-size">Показывать</label>
+                  <select
+                    id="admin-reviews-page-size"
+                    value={reviewsPageSize}
+                    onChange={(e) => { setReviewsPageSize(Number(e.target.value) || 10); setReviewsPage(1); }}
+                    className="px-2 py-1 border border-border dark:border-dark-border rounded-md bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary"
+                  >
+                    {[5,10,20,50].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {reviews.map(renderReview)}
+                <Pagination
+                  currentPage={reviewsPage}
+                  totalPages={Math.max(1, Math.ceil(reviewsTotal / reviewsPageSize))}
+                  onPageChange={setReviewsPage}
+                  loading={loading}
+                  className="mt-4"
+                />
+              </>
             ) : (
               <div className="text-center py-8">
-                <p className="text-text-secondary dark:text-dark-text-secondary">Нет заявок</p>
+                <p className="text-text-secondary dark:text-dark-text-secondary">Отзывов нет</p>
               </div>
             )
           )}

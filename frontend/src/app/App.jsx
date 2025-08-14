@@ -29,6 +29,7 @@ import { StationsPage, StationServicesPage } from '../pages/sto';
 import { HelpCompaniesPage, CompanyHelpServicesPage } from '../pages/help';
 import { WashCompaniesPage, CompanyWashServicesPage } from '../pages/wash';
 import { TireCompaniesPage, CompanyTireServicesPage } from '../pages/tire';
+import { ReviewsPage } from '../pages/reviews';
 
 // Виджеты
 import { Header } from '../widgets/header';
@@ -154,7 +155,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/reviews",
-    element: <Layout><ComingSoonPage title="Отзывы" /></Layout>,
+    element: <Layout><ReviewsPage /></Layout>,
   },
   {
     path: "/about",

@@ -58,6 +58,8 @@ scrape_cache = db.scrape_cache
 users_collection = db.users  # Коллекция для пользователей
 credit_applications = db.credit_applications  # Коллекция для кредитных заявок
 leasing_applications = db.leasing_applications  # Коллекция для лизинговых заявок
+reviews_collection = db.reviews  # Коллекция для отзывов
+# MANAGER_IDS = set(map(lambda x: x.strip(), os.environ.get("MANAGER_IDS", "").split(","))) if os.environ.get("MANAGER_IDS") else set()
 
 
 def download_and_save_image(image_url, car_id):
@@ -437,6 +439,7 @@ def create_jwt_token(user_data):
         "user_id": user_data.get("id"),
         "username": user_data.get("username"),
         "first_name": user_data.get("first_name"),
+        "last_name": user_data.get("last_name"),
         "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
         "iat": datetime.utcnow()
     }
@@ -1739,7 +1742,7 @@ def get_me(current_user = Depends(get_current_user)):
 
 @app.post("/api/telegram/webhook/{token}")
 async def telegram_webhook(token: str, request: Request):
-    """Прием апдейтов Telegram. Сохраняет телефон при шаринге контакта."""
+    # """Прием апдейтов Telegram. Сохраняет телефон при шаринге контакта."""
     if token != TELEGRAM_BOT_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid token")
 
@@ -1764,3 +1767,163 @@ async def telegram_webhook(token: str, request: Request):
             print(f"✅ Phone saved for user {owner_id}: {normalized}")
 
     return {"ok": True}
+
+# ====== Отзывы: список, создание, ответ менеджера, удаление ======
+@app.get("/api/reviews")
+def get_reviews(page: int = 1, page_size: int = 10):
+    try:
+        skip = (page - 1) * page_size
+        total = reviews_collection.count_documents({})
+        items = list(
+            reviews_collection
+            .find({})
+            .skip(skip)
+            .limit(page_size)
+            .sort("created_at", -1)
+        )
+        for item in items:
+            item["_id"] = str(item["_id"]) 
+        return {"total": total, "page": page, "page_size": page_size, "data": items}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get reviews: {str(e)}")
+
+@app.post("/api/reviews")
+def create_review(payload: dict, current_user = Depends(get_current_user)):
+    try:
+        if not current_user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        # Берем данные пользователя из токена с fallback на БД
+        telegram_id = (current_user or {}).get("user_id")
+        db_user = users_collection.find_one({"telegram_id": telegram_id}) or {}
+        first_name = (current_user or {}).get("first_name") or db_user.get("first_name") or ""
+        last_name = (current_user or {}).get("last_name") or db_user.get("last_name") or ""
+        username = (current_user or {}).get("username") or db_user.get("username") or ""
+        full_name = (f"{first_name} {last_name}".strip()) or (f"@{username}" if username else "Пользователь")
+
+        message = (payload or {}).get("message", "").strip()
+        rating = int((payload or {}).get("rating", 0))
+        if rating < 1 or rating > 5:
+            raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+        if not message or len(message) < 3:
+            raise HTTPException(status_code=400, detail="Сообщение слишком короткое")
+        doc = {
+            "name": full_name,
+            "message": message,
+            "rating": rating,
+            "created_at": datetime.utcnow(),
+            "reply": None,
+            "reply_author": None,
+            "reply_at": None,
+            "user": None,
+            "status": "published",
+        }
+        doc["user"] = {
+            "user_id": telegram_id,
+            "username": username,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
+        result = reviews_collection.insert_one(doc)
+        doc["_id"] = str(result.inserted_id)
+        return {"success": True, "data": doc}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create review: {str(e)}")
+
+@app.post("/api/reviews/{review_id}/reply")
+def reply_review(review_id: str, payload: dict, current_user = Depends(get_current_user)):
+    try:
+        if not current_user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        reply_text = (payload or {}).get("reply", "").strip()
+        # Формируем автора ответа из профиля текущего пользователя (fallback на БД)
+        telegram_id = (current_user or {}).get("user_id")
+        db_user = users_collection.find_one({"telegram_id": telegram_id}) or {}
+        first_name = (current_user or {}).get("first_name") or db_user.get("first_name") or ""
+        last_name = (current_user or {}).get("last_name") or db_user.get("last_name") or ""
+        username = (current_user or {}).get("username") or db_user.get("username") or ""
+        reply_author = (f"{first_name} {last_name}".strip()) or (f"@{username}" if username else "Менеджер")
+        if not reply_text:
+            raise HTTPException(status_code=400, detail="Reply is required")
+        try:
+            oid = ObjectId(review_id)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid review ID")
+        result = reviews_collection.update_one(
+            {"_id": oid},
+            {"$set": {"reply": reply_text, "reply_author": reply_author, "reply_at": datetime.utcnow()}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Review not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reply: {str(e)}")
+
+@app.delete("/api/reviews/{review_id}")
+def delete_review(review_id: str):  # ВРЕМЕННО БЕЗ АВТОРИЗАЦИИ
+    try:
+        try:
+            oid = ObjectId(review_id)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid review ID")
+        result = reviews_collection.delete_one({"_id": oid})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Review not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete: {str(e)}")
+
+@app.patch("/api/reviews/{review_id}")
+def update_review(review_id: str, payload: dict, current_user = Depends(get_current_user)):
+    # """Редактирование собственного отзыва пользователем (message, rating)."""
+    try:
+        if not current_user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        try:
+            oid = ObjectId(review_id)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid review ID")
+
+        review = reviews_collection.find_one({"_id": oid})
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        # Разрешаем редактировать только владельцу
+        owner_id = str(((review or {}).get("user") or {}).get("user_id") or "")
+        current_id = str(current_user.get("user_id") or "")
+        if not owner_id or owner_id != current_id:
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+        updates = {}
+        if "message" in payload:
+            message = (payload.get("message") or "").strip()
+            if len(message) < 3:
+                raise HTTPException(status_code=400, detail="Сообщение слишком короткое")
+            updates["message"] = message
+        if "rating" in payload:
+            try:
+                rating = int(payload.get("rating"))
+            except Exception:
+                raise HTTPException(status_code=400, detail="Invalid rating")
+            if rating < 1 or rating > 5:
+                raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+            updates["rating"] = rating
+
+        if not updates:
+            return {"success": True}
+
+        updates["updated_at"] = datetime.utcnow()
+        reviews_collection.update_one({"_id": oid}, {"$set": updates})
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update review: {str(e)}")
