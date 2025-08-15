@@ -13,6 +13,7 @@ const Popup = ({
   const popupRef = useClickOutside(onClose);
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isBackgroundVisible, setIsBackgroundVisible] = useState(false);
 
   useEffect(() => {
     // Определяем мобильное устройство
@@ -27,14 +28,19 @@ const Popup = ({
   }, []);
 
   useEffect(() => {
-    if (isOpen && mobileFullScreen && isMobile) {
-      // Небольшая задержка для анимации
-      const timer = setTimeout(() => setIsVisible(true), 10);
+    if (isOpen) {
+      // Сначала показываем фон
+      setIsBackgroundVisible(true);
+      // Затем показываем попап с небольшой задержкой
+      const timer = setTimeout(() => setIsVisible(true), 50);
       return () => clearTimeout(timer);
     } else {
       setIsVisible(false);
+      // Скрываем фон с задержкой для плавного исчезновения
+      const timer = setTimeout(() => setIsBackgroundVisible(false), 300);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, mobileFullScreen, isMobile]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -44,14 +50,16 @@ const Popup = ({
       <div className="fixed inset-0 z-50">
         {/* Затемнение фона */}
         <div 
-          className="absolute inset-0 bg-black opacity-50 transition-opacity duration-300"
+          className={`absolute inset-0 bg-black transition-opacity duration-300 ease-out ${
+            isBackgroundVisible ? 'opacity-90' : 'opacity-0'
+          }`}
           onClick={onClose}
         />
         
         {/* Попап снизу */}
         <div 
           ref={popupRef}
-          className={`absolute bottom-0 left-0 right-0 p-4 mb-20 bg-surface dark:bg-dark-surface border-t border-border rounded-t-lg dark:border-dark-border transition-transform duration-300 ease-out ${
+          className={`absolute bottom-0 left-0 right-0 p-4 mb-20 bg-surface dark:bg-dark-surface border-t border-border rounded-t-lg dark:border-dark-border transition-transform duration-300 ease-out popup-mobile-animation ${
             isVisible ? 'translate-y-0' : 'translate-y-full'
           }`}
         >

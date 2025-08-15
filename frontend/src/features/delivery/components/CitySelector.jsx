@@ -61,9 +61,9 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
         <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-1">
           Город доставки
         </label>
-        <p className="text-xs text-text-secondary dark:text-dark-text-secondary">
+        {/* <p className="text-xs text-text-secondary dark:text-dark-text-secondary">
           Выберите город для расчета стоимости доставки
-        </p>
+        </p> */}
       </div>
 
       {/* Выбранный город */}

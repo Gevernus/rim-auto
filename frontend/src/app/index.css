@@ -126,6 +126,7 @@
   /* Анимации */
   --animate-fade-in: fadeIn 0.3s ease-out;
   --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-slide-up-from-bottom: slideUpFromBottom 0.4s ease-out;
   --animate-scale-in: scaleIn 0.2s ease-out;
   --animate-bounce-in: bounceIn 0.6s ease-out;
 
@@ -147,6 +148,17 @@
   @keyframes slideUp {
     0% { 
       transform: translateY(10px); 
+      opacity: 0; 
+    }
+    100% { 
+      transform: translateY(0); 
+      opacity: 1; 
+    }
+  }
+  
+  @keyframes slideUpFromBottom {
+    0% { 
+      transform: translateY(100%); 
       opacity: 0; 
     }
     100% { 
@@ -359,6 +371,13 @@
   }
   
   /* Обрезание текста */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -371,6 +390,29 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  
+  /* Обрезание текста с многоточием */
+  .text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Минимальная ширина для предотвращения переноса */
+  .min-w-fit {
+    min-width: fit-content;
+  }
+  
+  /* Фиксированная ширина для фильтров */
+  .w-filter {
+    width: 8rem;
+  }
+  
+  @media (max-width: 640px) {
+    .w-filter {
+      width: 6rem;
+    }
   }
 
   /* Скрытие скроллбара */
@@ -399,12 +441,31 @@
     animation: var(--animate-slide-up);
   }
   
+  .animate-slide-up-from-bottom {
+    animation: var(--animate-slide-up-from-bottom);
+  }
+  
   .animate-scale-in {
     animation: var(--animate-scale-in);
   }
   
   .animate-bounce-in {
     animation: var(--animate-bounce-in);
+  }
+  
+  /* Адаптивные анимации для попапов */
+  .popup-mobile-animation {
+    animation: var(--animate-slide-up-from-bottom);
+  }
+  
+  .popup-desktop-animation {
+    animation: var(--animate-scale-in);
+  }
+  
+  @media (min-width: 768px) {
+    .popup-mobile-animation {
+      animation: var(--animate-scale-in);
+    }
   }
   
   /* Переходы */

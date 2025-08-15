@@ -21,27 +21,18 @@ const PricePopup = ({ priceRange, onApply, onClose }) => {
     });
   };
 
-  // Предустановленные диапазоны цен
+  // Предустановленные диапазоны цен в рублях
   const priceRanges = [
-    { label: 'До ¥200,000', from: '', to: '200000' },
-    { label: '¥200,000 - ¥300,000', from: '200000', to: '300000' },
-    { label: '¥300,000 - ¥400,000', from: '300000', to: '400000' },
-    { label: '¥400,000 - ¥500,000', from: '400000', to: '500000' },
-    { label: 'Свыше ¥500,000', from: '500000', to: '' }
+    { label: 'До 200 тыс. ₽', from: '', to: '200000' },
+    { label: '200 тыс. - 500 тыс. ₽', from: '200000', to: '500000' },
+    { label: '500 тыс. - 1 млн. ₽', from: '500000', to: '1000000' },
+    { label: '1 млн. - 2 млн. ₽', from: '1000000', to: '2000000' },
+    { label: 'Свыше 2 млн. ₽', from: '2000000', to: '' }
   ];
 
   const selectPriceRange = (range) => {
     setPriceFrom(range.from);
     setPriceTo(range.to);
-  };
-
-  const formatPrice = (value) => {
-    if (!value) return '';
-    return new Intl.NumberFormat('zh-CN', {
-      style: 'currency',
-      currency: 'CNY',
-      minimumFractionDigits: 0
-    }).format(value);
   };
 
   return (

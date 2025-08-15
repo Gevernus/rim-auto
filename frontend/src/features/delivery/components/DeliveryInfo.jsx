@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { useDelivery } from '../hooks/useDelivery';
 
-const DeliveryInfo = ({ vehiclePrice = 0, className = '' }) => {
-  const { deliveryInfo, calculateDeliveryCost } = useDelivery();
+const DeliveryInfo = ({  className = '' }) => {
+  const { deliveryInfo,  } = useDelivery();
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!deliveryInfo) return null;
 
-  const costInfo = calculateDeliveryCost(vehiclePrice);
+//   const costInfo = calculateDeliveryCost(vehiclePrice);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+//   const formatPrice = (price) => {
+//     return new Intl.NumberFormat('ru-RU', {
+//       style: 'currency',
+//       currency: 'RUB',
+//       minimumFractionDigits: 0,
+//       maximumFractionDigits: 0,
+//     }).format(price);
+//   };
 
   const toggleAccordion = () => {
     setIsExpanded(!isExpanded);
@@ -99,7 +99,7 @@ const DeliveryInfo = ({ vehiclePrice = 0, className = '' }) => {
           </div>
 
           {/* Расчет стоимости */}
-          {costInfo && (
+          {/* {costInfo && (
             <div className="border-t border-border dark:border-dark-border pt-4">
               <h4 className="font-medium text-text-primary dark:text-dark-text-primary mb-3">
                 Расчет стоимости доставки
@@ -138,7 +138,7 @@ const DeliveryInfo = ({ vehiclePrice = 0, className = '' }) => {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Дополнительная информация */}
           <div className="mt-4 p-3 bg-info-50 dark:bg-info-900/20 border border-info-200 dark:border-info-700 rounded-lg">
@@ -147,8 +147,7 @@ const DeliveryInfo = ({ vehiclePrice = 0, className = '' }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="text-xs text-info-700 dark:text-info-300">
-                <p>Стоимость доставки рассчитана приблизительно. Точная стоимость будет указана при оформлении заказа.</p>
-                <p className="mt-1">Срок доставки может изменяться в зависимости от наличия автомобиля и текущей загрузки.</p>
+                <p>Срок доставки может изменяться в зависимости от наличия автомобиля и текущей загрузки.</p>
               </div>
             </div>
           </div>

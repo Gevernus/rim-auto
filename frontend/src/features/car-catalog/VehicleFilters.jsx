@@ -4,6 +4,8 @@ import { YearPopup } from './components/YearPopup';
 import { PricePopup } from './components/PricePopup';
 import { ParametersPopup } from './components/ParametersPopup';
 import { useEffect } from 'react';
+import { formatCompactPrice } from '../../shared/lib/utils';
+import { ParametersIcon } from '../../shared/ui';
 
 const VehicleFilters = ({ onFiltersChange, className, loading }) => {
   const {
@@ -59,16 +61,16 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
   };
 
   // Обработчик изменения состояния автомобиля
-  const handleConditionChange = (condition) => {
-    console.log('🔍 handleConditionChange:', condition);
-    updateFilter('vehicleCondition', condition);
-  };
+//   const handleConditionChange = (condition) => {
+//     console.log('🔍 handleConditionChange:', condition);
+//     updateFilter('vehicleCondition', condition);
+//   };
 
   // Обработчик изменения наличия
-  const handleAvailabilityChange = (availability) => {
-    console.log('🔍 handleAvailabilityChange:', availability);
-    updateFilter('availability', availability);
-  };
+//   const handleAvailabilityChange = (availability) => {
+//     console.log('🔍 handleAvailabilityChange:', availability);
+//     updateFilter('availability', availability);
+//   };
 
   // Обработчик сброса фильтров
   const handleReset = () => {
@@ -78,7 +80,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
 
   // Список экспортируемых стран
   const countries = [
-    { value: 'all', label: 'Все страны' },
+    { value: 'all', label: 'Страны' },
     { value: 'japan', label: 'Япония' },
     { value: 'korea', label: 'Корея' },
     { value: 'uae', label: 'О.А.Э.' },
@@ -86,18 +88,18 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
   ];
 
   // Опции наличия
-  const availabilityOptions = [
-    { value: 'all', label: 'Все' },
-    { value: 'in_stock', label: 'В наличии' },
-    { value: 'on_order', label: 'Под заказ' }
-  ];
+//   const availabilityOptions = [
+//     { value: 'all', label: 'Все' },
+//     { value: 'in_stock', label: 'В наличии' },
+//     { value: 'on_order', label: 'Под заказ' }
+//   ];
 
   // Состояния автомобиля
-  const conditionOptions = [
-    { value: 'all', label: 'Любое' },
-    { value: 'new', label: 'Новые' },
-    { value: 'used', label: 'С пробегом' }
-  ];
+//   const conditionOptions = [
+//     { value: 'all', label: 'Любое' },
+//     { value: 'new', label: 'Новые' },
+//     { value: 'used', label: 'С пробегом' }
+//   ];
 
   if (loading) {
     return (
@@ -136,11 +138,11 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
       <div className="grid grid-cols-3 gap-2">
 
 		{/* Экспортируемая страна */}
-        <div>
+        <div className="col-span-3">
           <select
             value={filters.countries.includes('all') ? 'all' : filters.countries[0] || 'all'}
             onChange={(e) => handleCountryChange(e.target.value)}
-            className="w-full p-3 border border-border dark:border-dark-border rounded-tl-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+            className="w-full p-3 border rounded-tr-md border-border dark:border-dark-border rounded-tl-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
           >
             {countries.map(country => (
               <option key={country.value} value={country.value}>
@@ -151,7 +153,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
         </div>
 
 		{/* Наличие */}
-        <div>
+        {/* <div>
           <select
             value={filters.availability || 'all'}
             onChange={(e) => handleAvailabilityChange(e.target.value)}
@@ -163,10 +165,10 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         {/* Состояние */}
-        <div>
+        {/* <div>
           <select
             value={filters.vehicleCondition || 'all'}
             onChange={(e) => handleConditionChange(e.target.value)}
@@ -178,19 +180,19 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         
 
 		
 
         {/* Марка */}
-        <div className="col-span-3 md:col-span-2">
+        <div className="col-span-3 ">
           <select
             value={filters.brand || ''}
             onChange={(e) => handleBrandChange(e.target.value)}
             disabled={filterDataLoading}
-            className=" w-full p-3 border border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className=" w-full p-3 border  border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             <option value="">
               {filterDataLoading ? 'Загрузка...' : 'Все марки'}
@@ -204,7 +206,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
         </div>
 
         {/* Модель - скрыта на мобильных */}
-        <div className="hidden md:block">
+        <div className="hidden col-span-3 md:block">
           <select
             value={filters.model || ''}
             onChange={(e) => handleModelChange(e.target.value)}
@@ -227,14 +229,16 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
           </select>
         </div>
 
+		<div className="col-span-3 flex flex-row gap-2 min-w-0">
+
         {/* Год выпуска */}
-        <div className="relative">
+        <div className="relative grow min-w-0">
           <button
             onClick={() => setIsYearPopupOpen(true)}
             className="w-full p-3 text-left border border-border dark:border-dark-border rounded-bl-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
           >
             {filters.yearRange.from || filters.yearRange.to ? (
-              <span className="text-primary-600">
+              <span className="text-primary-600 text-ellipsis block">
                 {filters.yearRange.from || '...'} - {filters.yearRange.to || '...'}
               </span>
             ) : (
@@ -258,15 +262,14 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
         </div>
 
         {/* Цена */}
-        <div className="relative">
+        <div className="relative grow min-w-0">
           <button
             onClick={() => setIsPricePopupOpen(true)}
             className="w-full p-3 text-left border border-border dark:border-dark-border bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
           >
             {filters.priceRange.from || filters.priceRange.to ? (
-              <span className="text-primary-600">
-                {filters.priceRange.from ? `¥${parseInt(filters.priceRange.from).toLocaleString()}` : '...'} - 
-                {filters.priceRange.to ? `¥${parseInt(filters.priceRange.to).toLocaleString()}` : '...'}
+              <span className="text-primary-600 text-ellipsis block">
+                {filters.priceRange.from ? `${formatCompactPrice(filters.priceRange.from)}` : '...'} - {filters.priceRange.to ? `${formatCompactPrice(filters.priceRange.to)} ₽` : '... ₽'}
               </span>
             ) : (
               <span className="text-text-muted dark:text-dark-text-muted">Цена</span>
@@ -289,20 +292,18 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
         </div>
 
         {/* Параметры */}
-        <div className="relative">
+        <div className="relative flex-initial min-w-0">
           <button
             onClick={() => setIsParametersPopupOpen(true)}
-            className="w-full p-3 text-left border border-border dark:border-dark-border rounded-br-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
+            className="w-full h-full px-2 text-left border border-border dark:border-dark-border rounded-br-md bg-surface-secondary dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm relative"
           >
-            {filters.parameters.fuelType || filters.parameters.transmission ? (
-              <span className="text-primary-600">
-                {[filters.parameters.fuelType, filters.parameters.transmission]
-                  .filter(Boolean)
-                  .join(', ')}
-              </span>
-            ) : (
-              <span className="text-text-muted dark:text-dark-text-muted">Параметры</span>
-            )}
+            <ParametersIcon 
+              selectedCount={[
+                filters.parameters.fuelType,
+                filters.parameters.transmission,
+                filters.parameters.driveType
+              ].filter(Boolean).length}
+            />
           </button>
           
           {isParametersPopupOpen && (
@@ -320,6 +321,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
             />
           )}
         </div>
+		</div>
       </div>
     </div>
   );

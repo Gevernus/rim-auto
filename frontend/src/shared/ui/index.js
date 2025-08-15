@@ -9,6 +9,7 @@ export { Badge } from './Badge';
 export { ThemeToggle } from './ThemeToggle';
 export { Modal } from './Modal';
 export { Pagination } from './Pagination';
+export { ParametersIcon } from './ParametersIcon';
 export { Breadcrumbs } from './Breadcrumbs';
 export { BackToMenuButton } from './BackToMenuButton';
 export { DocxPreview } from './DocxPreview'; 
