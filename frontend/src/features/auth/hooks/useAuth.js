@@ -33,6 +33,12 @@ const useAuthStore = create(
         }
       },
 
+      updateUser: (updatedUser) => {
+        set((state) => ({
+          user: { ...state.user, ...updatedUser },
+        }));
+      },
+
       setTelegramUser: (telegramUser, initData) => {
         set({
           telegramUser,
@@ -107,6 +113,7 @@ export const useAuth = () => {
     
     // Действия
     setUser: store.setUser,
+    updateUser: store.updateUser,
     setTelegramUser: store.setTelegramUser,
     logout: store.logout,
     setLoading: store.setLoading,

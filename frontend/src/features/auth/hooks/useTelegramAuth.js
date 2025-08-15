@@ -27,6 +27,7 @@ export const useTelegramAuth = () => {
 
     // Методы стора
     setUser,
+    updateUser,
     setTelegramUser,
     logout: logoutStore,
     setLoading,
@@ -173,6 +174,7 @@ export const useTelegramAuth = () => {
     validateToken,
     logout,
     initialize,
+    updateUser,
     
     // Автоинициализация для WebApp
     initTelegramAuth,

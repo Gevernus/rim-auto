@@ -20,6 +20,7 @@ export const UserProfile = ({
     logout,
     isAuthenticated,
     isTelegramWebApp,
+    updateUser,
   } = useTelegramAuth();
 
   const [avatarError, setAvatarError] = useState(false);
@@ -61,12 +62,27 @@ export const UserProfile = ({
 
   const handleRequestPhone = async () => {
     try {
+      console.log('🔍 Запрос номера телефона...');
+      console.log('   isTelegramWebApp:', isTelegramWebApp);
+      console.log('   Текущий пользователь:', user);
+      
       if (isTelegramWebApp) {
         const res = await requestUserPhone();
+        console.log('   Результат requestUserPhone:', res);
+        
         if (res?.phone) {
-          await authApi.savePhone(res.phone);
-          showTelegramAlert(user?.phone ? 'Номер телефона обновлен' : 'Номер телефона сохранен');
-          return;
+          console.log('   Получен номер:', res.phone);
+          // Сохраняем номер в БД
+          const response = await authApi.savePhone(res.phone);
+          console.log('   Ответ от API savePhone:', response.data);
+          
+          if (response.data.success) {
+            // Обновляем состояние пользователя с новыми данными
+            console.log('   Обновляем пользователя:', response.data.user);
+            updateUser(response.data.user);
+            showTelegramAlert(user?.phone ? 'Номер телефона обновлен' : 'Номер телефона сохранен');
+            return;
+          }
         }
         if (res?.accepted) {
           showTelegramAlert('Подтвердите отправку номера в Telegram. Номер сохранится автоматически.');
@@ -77,11 +93,19 @@ export const UserProfile = ({
 
       const manual = window.prompt('Введите номер телефона', user?.phone || '');
       if (manual && manual.trim().length > 5) {
-        await authApi.savePhone(manual.trim());
-        showTelegramAlert(user?.phone ? 'Номер телефона обновлен' : 'Номер телефона сохранен');
+        console.log('   Ручной ввод номера:', manual.trim());
+        const response = await authApi.savePhone(manual.trim());
+        console.log('   Ответ от API savePhone (ручной):', response.data);
+        
+        if (response.data.success) {
+          // Обновляем состояние пользователя с новыми данными
+          console.log('   Обновляем пользователя (ручной):', response.data.user);
+          updateUser(response.data.user);
+          showTelegramAlert(user?.phone ? 'Номер телефона обновлен' : 'Номер телефона сохранен');
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error('❌ Ошибка при сохранении номера:', err);
       showTelegramAlert('Ошибка при сохранении номера');
     }
   };

@@ -195,27 +195,54 @@ if (typeof window !== 'undefined') {
 } 
 
 export const requestUserPhone = async () => {
+  console.log('📞 requestUserPhone вызван');
+  console.log('   DEBUG_MODE:', DEBUG_MODE);
+  console.log('   isTelegramWebApp():', isTelegramWebApp());
+  
   // DEBUG: возвращаем тестовый номер для локальной отладки
   if (DEBUG_MODE) {
+    console.log('   Возвращаем debug номер: +79990000000');
     return { accepted: true, phone: "+79990000000", is_debug: true };
   }
 
   // Доступно только внутри Telegram WebApp
   if (!isTelegramWebApp()) {
+    console.log('   Не в Telegram WebApp');
     return { accepted: false, reason: "not_telegram" };
   }
 
   if (!tgWebApp) {
+    console.log('   Инициализируем tgWebApp');
     initTelegramWebApp();
   }
 
+  console.log('   tgWebApp.requestContact доступен:', Boolean(tgWebApp?.requestContact));
+
   // Официальный API: Telegram.WebApp.requestContact(callback)
   if (tgWebApp?.requestContact) {
+    console.log('   Вызываем tgWebApp.requestContact...');
     return await new Promise((resolve) => {
       try {
         tgWebApp.requestContact((shared) => {
+          console.log('   requestContact callback вызван, shared:', shared);
           // shared: boolean — поделился ли пользователь контактом
-          resolve({ accepted: Boolean(shared) });
+          if (shared) {
+            // Если пользователь поделился контактом, получаем данные пользователя
+            const user = getTelegramUser();
+            console.log('   Данные пользователя после шаринга:', user);
+            
+            if (user && user.phone_number) {
+              console.log('   Найден номер в данных пользователя:', user.phone_number);
+              resolve({ accepted: true, phone: user.phone_number });
+            } else {
+              // Если номер не доступен сразу, возвращаем accepted для обработки через webhook
+              console.log('   Номер не найден в данных пользователя, возвращаем accepted для webhook');
+              resolve({ accepted: true });
+            }
+          } else {
+            console.log('   Пользователь не поделился контактом');
+            resolve({ accepted: false });
+          }
         });
       } catch (e) {
         console.error("requestContact error:", e);
@@ -225,5 +252,6 @@ export const requestUserPhone = async () => {
   }
 
   // Нет поддержки метода
+  console.log('   requestContact не поддерживается');
   return { accepted: false, reason: "unsupported" };
 }; 

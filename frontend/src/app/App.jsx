@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { setNavigateFunction } from '../shared/lib/navigation';
 import { ThemeProvider } from '../shared/lib/ThemeProvider';
 import { useTelegramAuth } from '../features/auth';
-// import { ProtectedRoute } from '../features/auth';
+import { ProtectedRoute } from '../features/auth';
 
 // Страницы
 import { CatalogPage } from '../pages/catalog';
@@ -126,7 +126,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/moto",
-    element: <Layout><MotoPage /></Layout>,
+    element: <Layout><ProtectedRoute><MotoPage /></ProtectedRoute></Layout>,
   },
   
   // Мобильная навигация
