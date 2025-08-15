@@ -16,6 +16,7 @@ services:
     volumes:
       - ./backend:/app
       - car-images:/app/static/images  # Уточняем путь для изображений
+      - contracts:/app/static/contracts  # Volume для договоров
     depends_on:
       - mongo
       - selenium
@@ -85,6 +86,7 @@ services:
 volumes:
   mongo-data:
   car-images:
+  contracts:
 
 networks:
   my_network:

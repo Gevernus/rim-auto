@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Query, HTTPException, Depends, Request
+from fastapi import UploadFile, File, Form
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -32,9 +34,9 @@ app.add_middleware(
     expose_headers=["*"],  # Разрешаем все заголовки в ответе
 )
 
-# Создаем папку для статических файлов если её нет
-STATIC_DIR = Path("static/images")
-STATIC_DIR.mkdir(parents=True, exist_ok=True)
+# Пути для статических файлов (Docker volumes)
+STATIC_IMAGES_DIR = Path("static/images")
+CONTRACTS_DIR = Path("static/contracts")
 
 # Подключаем статические файлы
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -88,7 +90,7 @@ def download_and_save_image(image_url, car_id):
             extension = '.jpg'  # Дефолтное расширение
         
         filename = f"{safe_filename}{extension}"
-        file_path = STATIC_DIR / filename
+        file_path = STATIC_IMAGES_DIR / filename
         
         # Проверяем, не скачано ли уже это изображение
         if file_path.exists():
@@ -695,7 +697,7 @@ def refresh_cache():
 def get_images_stats():
     """Возвращает статистику скачанных изображений."""
     try:
-        images_dir = STATIC_DIR
+        images_dir = STATIC_IMAGES_DIR
         if not images_dir.exists():
             return {"total_images": 0, "total_size": 0, "status": "directory_not_found"}
         
@@ -712,11 +714,47 @@ def get_images_stats():
     except Exception as e:
         return {"error": str(e), "status": "error"}
 
+@app.get("/api/volumes/stats")
+def get_volumes_stats():
+    """Возвращает статистику volumes (изображения и договоры)."""
+    try:
+        stats = {
+            "images": {"files": 0, "size_mb": 0},
+            "contracts": {"files": 0, "size_mb": 0}
+        }
+        
+        # Статистика изображений
+        if STATIC_IMAGES_DIR.exists():
+            image_files = list(STATIC_IMAGES_DIR.glob("*"))
+            total_size = sum(f.stat().st_size for f in image_files if f.is_file())
+            stats["images"] = {
+                "files": len(image_files),
+                "size_mb": round(total_size / (1024 * 1024), 2)
+            }
+        
+        # Статистика договоров
+        if CONTRACTS_DIR.exists():
+            contract_files = list(CONTRACTS_DIR.glob("*.docx"))
+            total_size = sum(f.stat().st_size for f in contract_files if f.is_file())
+            stats["contracts"] = {
+                "files": len(contract_files),
+                "size_mb": round(total_size / (1024 * 1024), 2)
+            }
+        
+        return {
+            "status": "ok",
+            "volumes": stats,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        return {"error": str(e), "status": "error"}
+
 @app.post("/api/images/cleanup")
 def cleanup_images():
     """Очищает папку с изображениями."""
     try:
-        images_dir = STATIC_DIR
+        images_dir = STATIC_IMAGES_DIR
         if not images_dir.exists():
             return {"message": "Directory not found", "status": "ok"}
         
@@ -734,6 +772,168 @@ def cleanup_images():
     except Exception as e:
         return {"error": str(e), "status": "error"}
 
+@app.post("/api/contracts/cleanup")
+def cleanup_contracts():
+    """Очищает папку с договорами."""
+    try:
+        contracts_dir = CONTRACTS_DIR
+        if not contracts_dir.exists():
+            return {"message": "Directory not found", "status": "ok"}
+        
+        deleted_count = 0
+        for contract_file in contracts_dir.glob("*.docx"):
+            if contract_file.is_file():
+                contract_file.unlink()
+                deleted_count += 1
+        
+        return {
+            "message": f"Deleted {deleted_count} contracts",
+            "deleted_count": deleted_count,
+            "status": "ok"
+        }
+    except Exception as e:
+        return {"error": str(e), "status": "error"}
+
+
+# ====== Договоры (.docx) ======
+ALLOWED_CONTRACT_TYPES = {"agency", "consignment", "sale"}
+ALLOWED_CONTRACT_EXT = {".docx", ".doc"}
+
+def _contract_filename(contract_type: str) -> str:
+    # Храним под фиксированным именем <type>.docx, даже если загрузили .doc
+    return f"{contract_type}.docx"
+
+def _contract_path(contract_type: str) -> Path:
+    return CONTRACTS_DIR / _contract_filename(contract_type)
+
+def _contract_meta(contract_type: str):
+    file_path = _contract_path(contract_type)
+    if not file_path.exists():
+        return None
+    stat = file_path.stat()
+    return {
+        "type": contract_type,
+        "file_name": file_path.name,
+        "size": stat.st_size,
+        "updated_at": datetime.utcfromtimestamp(stat.st_mtime).isoformat(),
+        "url": f"/static/contracts/{file_path.name}",
+    }
+
+@app.get("/api/contracts")
+def list_contracts():
+    try:
+        result = []
+        for t in sorted(list(ALLOWED_CONTRACT_TYPES)):
+            meta = _contract_meta(t)
+            if meta:
+                result.append(meta)
+        return {"data": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list contracts: {str(e)}")
+
+@app.get("/api/contracts/{contract_type}")
+def get_contract(contract_type: str):
+    if contract_type not in ALLOWED_CONTRACT_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid contract type")
+    meta = _contract_meta(contract_type)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    return {"data": meta}
+
+@app.get("/static/contracts/{contract_type}.docx")
+def serve_contract_file(contract_type: str):
+    """Раздает файлы контрактов с правильным MIME типом"""
+    if contract_type not in ALLOWED_CONTRACT_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid contract type")
+    
+    file_path = _contract_path(contract_type)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Принудительно устанавливаем заголовки
+    response = FileResponse(
+        path=file_path,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=f"{contract_type}.docx"
+    )
+    
+    # Дополнительно устанавливаем заголовок
+    response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    return response
+
+@app.post("/api/contracts/{contract_type}")
+async def upload_contract(
+    contract_type: str,
+    file: UploadFile = File(...),
+):
+    if contract_type not in ALLOWED_CONTRACT_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid contract type")
+
+    original_name = file.filename or ""
+    ext = os.path.splitext(original_name)[1].lower()
+    if ext not in ALLOWED_CONTRACT_EXT:
+        raise HTTPException(status_code=400, detail="Only .docx or .doc files are allowed")
+
+    try:
+        # Читаем содержимое файла
+        content = await file.read()
+        
+        # Проверяем размер файла
+        if len(content) == 0:
+            raise HTTPException(status_code=400, detail="File is empty")
+        
+        # Проверяем, что это действительно .docx/.doc файл
+        # .docx файлы начинаются с PK (ZIP формат)
+        # .doc файлы имеют специфическую структуру
+        if ext == '.docx':
+            if not content.startswith(b'PK'):
+                raise HTTPException(status_code=400, detail="Invalid .docx file format")
+            
+            # Дополнительная проверка структуры .docx файла
+            try:
+                import zipfile
+                import io
+                
+                with zipfile.ZipFile(io.BytesIO(content)) as zip_file:
+                    # Проверяем наличие обязательных файлов .docx
+                    required_files = ['word/document.xml', '[Content_Types].xml']
+                    if not all(f in zip_file.namelist() for f in required_files):
+                        raise HTTPException(status_code=400, detail="Invalid .docx file structure")
+            except zipfile.BadZipFile:
+                raise HTTPException(status_code=400, detail="Invalid .docx file format")
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Error validating .docx file: {str(e)}")
+        
+        target_path = _contract_path(contract_type)
+        # Сохраняем как <type>.docx
+        with open(target_path, "wb") as f:
+            f.write(content)
+
+        meta = _contract_meta(contract_type)
+        return {"success": True, "data": meta}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload: {str(e)}")
+
+
+@app.delete("/api/contracts/{contract_type}")
+def delete_contract(contract_type: str):
+    """Удаляет файл договора указанного типа."""
+    if contract_type not in ALLOWED_CONTRACT_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid contract type")
+
+    try:
+        target_path = _contract_path(contract_type)
+        if not target_path.exists():
+            raise HTTPException(status_code=404, detail="Contract not found")
+
+        target_path.unlink(missing_ok=False)
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete: {str(e)}")
 
 @app.get("/")
 def read_root():

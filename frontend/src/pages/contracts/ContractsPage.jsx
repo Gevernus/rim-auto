@@ -1,22 +1,14 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useAppLocation } from '../../shared/lib/navigation';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { openURL, openPhoneDialer } from '../../shared/lib/platform';
-import { BackToMenuButton } from '../../shared/ui';
+import { openURL, openPhoneDialer, buildAbsoluteUrl } from '../../shared/lib/platform';
+import { BackToMenuButton, DocxPreview } from '../../shared/ui';
+import { contractsApi } from '../../shared/api/client';
 
-const DOCS = {
-  agency: {
-    title: 'Агентский договор (для заказа автомобиля)',
-    file: '/contracts/agency.pdf',
-  },
-  consignment: {
-    title: 'Комиссионный договор (для реализации вашего автомобиля в нашем салоне)',
-    file: '/contracts/consignment.pdf',
-  },
-  sale: {
-    title: 'Договор купли-продажи (для купли-продажи автомобиля между физ лицами)',
-    file: '/contracts/sale.pdf',
-  },
+const DOC_TITLES = {
+  agency: 'Агентский договор (для заказа автомобиля)',
+  consignment: 'Комиссионный договор (для реализации вашего автомобиля в нашем салоне)',
+  sale: 'Договор купли-продажи (для купли-продажи автомобиля между физ лицами)',
 };
 
 // Контакты для альтернативного меню на странице договоров
@@ -35,9 +27,12 @@ const ContractsPage = () => {
   }, [search]);
 
   const [selectedType, setSelectedType] = useState(initialType);
-  const isAvailable = false; // until backend/files are provided
+  const [meta, setMeta] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const currentDoc = selectedType ? DOCS[selectedType] : null;
+  const currentDoc = selectedType
+    ? { title: DOC_TITLES[selectedType], type: selectedType, file: buildAbsoluteUrl(meta?.url || '') }
+    : null;
 
   // Альтернативное меню: Чат и Звонок
   const altNavConfig = useMemo(() => ({
@@ -62,7 +57,33 @@ const ContractsPage = () => {
   useEffect(() => {
     activate();
     return () => deactivate();
-  }, []);
+  }, [activate, deactivate]);
+
+  useEffect(() => {
+    if (!selectedType) {
+      setMeta(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    contractsApi
+      .get(selectedType)
+      .then((res) => {
+        if (cancelled) return;
+        setMeta(res.data?.data || null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMeta(null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedType]);
 
   return (
     <div className="container section-padding">
@@ -76,7 +97,11 @@ const ContractsPage = () => {
           <button
             type="button"
             onClick={() => setSelectedType('agency')}
-            className="p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors text-left"
+            className={`p-4 bg-surface-elevated dark:bg-dark-surface-elevated border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors text-left ${
+              selectedType === 'agency'
+                ? 'border-primary-600 ring-2 ring-primary-600'
+                : 'border-border dark:border-dark-border'
+            }`}
             aria-label="Открыть агентский договор"
           >
             <div className="text-xl font-semibold text-text-primary dark:text-dark-text-primary mb-1">Агентский договор</div>
@@ -86,7 +111,11 @@ const ContractsPage = () => {
           <button
             type="button"
             onClick={() => setSelectedType('consignment')}
-            className="p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors text-left"
+            className={`p-4 bg-surface-elevated dark:bg-dark-surface-elevated border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors text-left ${
+              selectedType === 'consignment'
+                ? 'border-primary-600 ring-2 ring-primary-600'
+                : 'border-border dark:border-dark-border'
+            }`}
             aria-label="Открыть комиссионный договор"
           >
             <div className="text-xl font-semibold text-text-primary dark:text-dark-text-primary mb-1">Комиссионный договор</div>
@@ -96,7 +125,11 @@ const ContractsPage = () => {
           <button
             type="button"
             onClick={() => setSelectedType('sale')}
-            className="p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors text-left"
+            className={`p-4 bg-surface-elevated dark:bg-dark-surface-elevated border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors text-left ${
+              selectedType === 'sale'
+                ? 'border-primary-600 ring-2 ring-primary-600'
+                : 'border-border dark:border-dark-border'
+            }`}
             aria-label="Открыть договор купли-продажи"
           >
             <div className="text-xl font-semibold text-text-primary dark:text-dark-text-primary mb-1">Договор купли-продажи</div>
@@ -108,7 +141,7 @@ const ContractsPage = () => {
           <div className="bg-surface-secondary dark:bg-dark-surface-secondary border border-border dark:border-dark-border rounded-lg p-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-3">
               <h2 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">{currentDoc.title}</h2>
-              {isAvailable ? (
+              {meta ? (
                 <a
                   href={currentDoc.file}
                   download
@@ -119,7 +152,7 @@ const ContractsPage = () => {
               ) : (
                 <button
                   type="button"
-                  disabled
+                  disabled={true}
                   className="px-3 py-2 rounded-md bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border text-text-muted dark:text-dark-text-muted cursor-not-allowed"
                 >
                   Скачать
@@ -127,17 +160,11 @@ const ContractsPage = () => {
               )}
             </div>
 
-            {isAvailable ? (
-              <div className="aspect-[16/9] w-full border border-border dark:border-dark-border rounded-md overflow-hidden bg-surface-elevated dark:bg-dark-surface-elevated">
-                <iframe
-                  title={currentDoc.title}
-                  src={currentDoc.file}
-                  className="w-full h-full"
-                />
-              </div>
-            ) : (
+                         {meta ? (
+               <DocxPreview url={currentDoc.file} />
+             ) : (
               <div className="p-6 text-center text-text-secondary dark:text-dark-text-secondary">
-                Файл будет добавлен позже. Вы сможете прочитать и скачать договор после загрузки.
+                {loading ? 'Загрузка…' : 'Файл будет добавлен позже. Вы сможете прочитать и скачать договор после загрузки.'}
               </div>
             )}
           </div>
@@ -149,4 +176,8 @@ const ContractsPage = () => {
   );
 };
 
-export { ContractsPage }; 
+
+
+
+
+export { ContractsPage };

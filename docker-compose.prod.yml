@@ -52,6 +52,7 @@ services:
       - "traefik.http.routers.backend-static.service=backend"
     volumes:
       - car_images:/app/static/images
+      - contracts:/app/static/contracts  # Volume для договоров
     networks:
       - web
     depends_on:
@@ -119,6 +120,7 @@ services:
 volumes:
   mongo_data:
   car_images:
+  contracts:
 
 networks:
   web:

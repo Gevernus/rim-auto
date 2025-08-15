@@ -10,4 +10,5 @@ export { ThemeToggle } from './ThemeToggle';
 export { Modal } from './Modal';
 export { Pagination } from './Pagination';
 export { Breadcrumbs } from './Breadcrumbs';
-export { BackToMenuButton } from './BackToMenuButton'; 
+export { BackToMenuButton } from './BackToMenuButton';
+export { DocxPreview } from './DocxPreview'; 

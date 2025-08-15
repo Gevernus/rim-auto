@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { storage, getItemSync, removeItemSync } from '../lib/storage.js';
+import { getItemSync, removeItemSync } from '../lib/storage.js';
 
 // Базовая конфигурация API клиента
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -161,6 +161,19 @@ export const applicationsApi = {
   getInsuranceApplications: (params = {}) => api.get('/applications/insurance', { params }),
   getGuaranteeApplications: (params = {}) => api.get('/applications/guarantee', { params }),
   updateApplicationStatus: (applicationType, applicationId, status) => api.put(`/applications/${applicationType}/${applicationId}/status`, { status }),
+};
+
+export const contractsApi = {
+  list: () => api.get('/contracts'),
+  get: (type) => api.get(`/contracts/${type}`),
+  upload: (type, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/contracts/${type}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  remove: (type) => api.delete(`/contracts/${type}`),
 };
 
 export const reviewsApi = {

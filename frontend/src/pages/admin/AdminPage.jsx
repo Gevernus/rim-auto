@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTelegramAuth } from '../../features/auth';
-import { CreditTab, LeasingTab, ReviewsTab } from './tabs';
+import { CreditTab, LeasingTab, ReviewsTab, ContractsTab } from './tabs';
 
 const AdminPage = () => {
   const { user } = useTelegramAuth();
@@ -11,11 +11,13 @@ const AdminPage = () => {
   const canSeeCredit = permissions.includes('admin:credit:view') || true;
   const canSeeLeasing = permissions.includes('admin:leasing:view') || true;
   const canSeeReviews = permissions.includes('admin:reviews:view') || true;
+  const canSeeContracts = permissions.includes('admin:contracts:view') || true;
 
   const tabsConfig = [
     canSeeCredit && { key: 'credit', label: 'Кредитные заявки' },
     canSeeLeasing && { key: 'leasing', label: 'Лизинговые заявки' },
-    canSeeReviews && { key: 'reviews', label: 'Отзывы' }
+    canSeeReviews && { key: 'reviews', label: 'Отзывы' },
+    canSeeContracts && { key: 'contracts', label: 'Договора' }
   ].filter(Boolean);
 
   return (
@@ -48,6 +50,7 @@ const AdminPage = () => {
           {activeTab === 'credit' && <CreditTab />}
           {activeTab === 'leasing' && <LeasingTab />}
           {activeTab === 'reviews' && <ReviewsTab />}
+          {activeTab === 'contracts' && <ContractsTab />}
         </div>
       </div>
     </div>

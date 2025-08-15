@@ -1,0 +1,144 @@
+/* Критически важные стили для мобильного отображения .docx документов */
+.docx-container {
+  /* Базовые стили для контейнера */
+  font-family: 'Times New Roman', serif !important;
+  line-height: 1.6 !important;
+  color: #333 !important;
+  
+  /* Мобильная адаптация - убираем ограничения */
+  width: 100% !important;
+  max-width: none !important;
+  overflow: visible !important;
+  
+  /* Принудительно убираем ограничения скролла */
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+/* Стили для содержимого документа - переопределяем стили библиотеки */
+.docx-container .docx-wrapper {
+  /* Убираем ограничения ширины */
+  min-width: auto !important;
+  max-width: none !important;
+  
+  /* Адаптивные отступы */
+  padding: 0px !important;
+  
+  /* Фон и тени */
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  
+  /* Критически важно для мобильного скролла */
+  width: auto !important;
+  overflow: visible !important;
+  display: block !important;
+  flex-flow: unset !important;
+  align-items: unset !important;
+}
+
+/* Переопределяем стили библиотеки docx-preview */
+.docx-container .docx-wrapper section.docx {
+  /* Убираем ограничения ширины */
+  min-width: auto !important;
+  max-width: none !important;
+  width: auto !important;
+  
+  /* Убираем ограничения overflow */
+  overflow: visible !important;
+  
+  /* Убираем фиксированную высоту */
+  min-height: auto !important;
+  padding: 10px !important;
+}
+
+.docx-container .docx-wrapper section.docx p {
+	margin-inline-end: 5pt !important;
+}
+
+/* Принудительно переопределяем все стили библиотеки */
+.docx-container .docx-wrapper,
+.docx-container .docx-wrapper *,
+.docx-container section.docx,
+.docx-container section.docx * {
+  max-width: none !important;
+  min-width: auto !important;
+  width: auto !important;
+  overflow: visible !important;
+}
+
+/* Специально для таблиц */
+.docx-container table,
+.docx-container .docx-wrapper table,
+.docx-container section.docx table {
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  overflow: visible !important;
+  display: table !important;
+}
+
+/* Специально для ячеек таблиц */
+.docx-container td,
+.docx-container th,
+.docx-container .docx-wrapper td,
+.docx-container .docx-wrapper th,
+.docx-container section.docx td,
+.docx-container section.docx th {
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  word-break: break-word !important;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .docx-container .docx-wrapper {
+    padding: 15px !important;
+    /* Убираем все ограничения ширины */
+    min-width: auto !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+  
+  /* Принудительный перенос длинных строк */
+  .docx-container p,
+  .docx-container div,
+  .docx-container span {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: none !important;
+  }
+  
+  /* Адаптация таблиц - убираем ограничения */
+  .docx-container table {
+    min-width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+    display: table !important;
+    width: auto !important;
+  }
+  
+  .docx-container td,
+  .docx-container th {
+    min-width: auto !important;
+    max-width: none !important;
+    word-break: break-word !important;
+  }
+  
+  /* Принудительно убираем ограничения для всех элементов */
+  .docx-container * {
+    max-width: none !important;
+    min-width: auto !important;
+  }
+}
+
+/* Темная тема */
+[data-theme="dark"] .docx-container {
+  background: #1a1a1a !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .docx-container .docx-wrapper {
+  background: #1a1a1a !important;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1) !important;
+}
