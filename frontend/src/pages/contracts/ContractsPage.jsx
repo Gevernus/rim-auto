@@ -3,6 +3,7 @@ import { useAppLocation } from '../../shared/lib/navigation';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
 import { openURL, openPhoneDialer, buildAbsoluteUrl } from '../../shared/lib/platform';
 import { BackToMenuButton, DocxPreview } from '../../shared/ui';
+import { useFileDownload } from '../../shared/hooks';
 import { contractsApi } from '../../shared/api/client';
 
 const DOC_TITLES = {
@@ -19,6 +20,7 @@ const CONTRACTS_CONTACT = {
 
 const ContractsPage = () => {
   const { search } = useAppLocation();
+  const { downloadFile, downloading } = useFileDownload();
 
   const initialType = useMemo(() => {
     const params = new URLSearchParams(search);
@@ -142,13 +144,14 @@ const ContractsPage = () => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-3">
               <h2 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">{currentDoc.title}</h2>
               {meta ? (
-                <a
-                  href={currentDoc.file}
-                  download
-                  className="px-3 py-2 rounded-md bg-button-primary text-white hover:bg-primary-700 transition-colors"
+                <button
+                  type="button"
+                  onClick={() => downloadFile(currentDoc.file)}
+                  disabled={downloading}
+                  className="px-3 py-2 rounded-md bg-button-primary text-white hover:bg-primary-700 disabled:bg-surface-elevated dark:disabled:bg-dark-surface-elevated disabled:text-text-muted dark:disabled:text-dark-text-muted transition-colors"
                 >
-                  Скачать
-                </a>
+                  {downloading ? 'Скачивание...' : 'Скачать'}
+                </button>
               ) : (
                 <button
                   type="button"

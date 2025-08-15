@@ -76,16 +76,18 @@ const ContractsTab = () => {
                 Скачать
               </a>
             )}
-            <label className="px-3 py-2 rounded-md bg-surface dark:bg-dark-surface border border-border dark:border-dark-border cursor-pointer">
-              <input
-                type="file"
-                accept=".doc,.docx"
-                className="hidden"
-                onChange={(e) => handleUpload(t.key, e.target.files?.[0])}
-                aria-label={`Загрузить ${t.label}`}
-              />
-              {uploading[t.key] ? 'Загрузка…' : meta ? 'Заменить .docx' : 'Загрузить .docx'}
-            </label>
+            {!meta && (
+              <label className="px-3 py-2 rounded-md bg-surface dark:bg-dark-surface border border-border dark:border-dark-border cursor-pointer">
+                <input
+                  type="file"
+                  accept=".doc,.docx"
+                  className="hidden"
+                  onChange={(e) => handleUpload(t.key, e.target.files?.[0])}
+                  aria-label={`Загрузить ${t.label}`}
+                />
+                {uploading[t.key] ? 'Загрузка…' : 'Загрузить .docx'}
+              </label>
+            )}
             {meta && (
               <button
                 type="button"
