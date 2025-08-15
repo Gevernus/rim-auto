@@ -126,7 +126,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/moto",
-    element: <Layout><ProtectedRoute><MotoPage /></ProtectedRoute></Layout>,
+    element: <Layout><MotoPage /></Layout>,
   },
   
   // Мобильная навигация
@@ -155,7 +155,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/reviews",
-    element: <Layout><ReviewsPage /></Layout>,
+    element: <Layout><ProtectedRoute><ReviewsPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/about",
@@ -175,7 +175,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/credit/:bank",
-    element: <Layout><BankCreditPage /></Layout>,
+    element: <Layout><ProtectedRoute><BankCreditPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/leasing",
@@ -183,7 +183,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/leasing/:company",
-    element: <Layout><LeasingCompanyPage /></Layout>,
+    element: <Layout><ProtectedRoute><LeasingCompanyPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/contracts",
@@ -195,7 +195,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/guarantee/:company",
-    element: <Layout><GuaranteeCompanyPage /></Layout>,
+    element: <Layout><ProtectedRoute><GuaranteeCompanyPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/sto",
@@ -203,7 +203,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/sto/:slug",
-    element: <Layout><StationServicesPage /></Layout>,
+    element: <Layout><ProtectedRoute><StationServicesPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/help",
@@ -211,7 +211,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/help/:slug",
-    element: <Layout><CompanyHelpServicesPage /></Layout>,
+    element: <Layout><ProtectedRoute><CompanyHelpServicesPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/wash",
@@ -219,7 +219,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/wash/:slug",
-    element: <Layout><CompanyWashServicesPage /></Layout>,
+    element: <Layout><ProtectedRoute><CompanyWashServicesPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/tire",
@@ -227,7 +227,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/tire/:slug",
-    element: <Layout><CompanyTireServicesPage /></Layout>,
+    element: <Layout><ProtectedRoute><CompanyTireServicesPage /></ProtectedRoute></Layout>,
   },
   {
     path: "/detailing",
@@ -235,7 +235,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/detailing/:slug",
-    element: <Layout><CompanyServicesPage /></Layout>,
+    element: <Layout><ProtectedRoute><CompanyServicesPage /></ProtectedRoute></Layout>,
   },
   
   // Дополнительные страницы
@@ -253,7 +253,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <Layout><AdminPage /></Layout>,
+    element: <Layout><ProtectedRoute><AdminPage /></ProtectedRoute></Layout>,
   },
   
   // Перенаправление с корневого пути на автомобили
