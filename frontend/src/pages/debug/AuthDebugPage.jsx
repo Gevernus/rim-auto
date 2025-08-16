@@ -8,6 +8,7 @@ import { useTelegramAuth } from '../../features/auth';
 import { Button } from '../../shared/ui';
 import { enableDebugMode, disableDebugMode } from '../../shared/lib/platform/telegram';
 import { getItemSync, removeItemSync } from '../../shared/lib/storage.js';
+import { systemApi, imagesApi, debugApi, adminApi } from '../../shared/api/client.js';
 
 export const AuthDebugPage = () => {
   const {
@@ -28,6 +29,9 @@ export const AuthDebugPage = () => {
   const [health, setHealth] = useState(null);
   const [imageStats, setImageStats] = useState(null);
   const [loadingImageStats, setLoadingImageStats] = useState(false);
+  const [volumesStats, setVolumesStats] = useState(null);
+  const [loadingVolumesStats, setLoadingVolumesStats] = useState(false);
+  const [volumesApiAvailable, setVolumesApiAvailable] = useState(true);
   const [cacheRefreshProgress, setCacheRefreshProgress] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   const [customSelector, setCustomSelector] = useState('');
@@ -36,13 +40,15 @@ export const AuthDebugPage = () => {
   // Загрузка статуса системы
   const loadHealth = async () => {
     try {
-      const response = await fetch('/api/health');
-      if (response.ok) {
-        const data = await response.json();
-        setHealth(data);
-      }
+      const response = await systemApi.getHealth();
+      setHealth(response.data);
     } catch (error) {
       console.error('Ошибка загрузки статуса системы:', error);
+      setHealth({ 
+        status: 'error', 
+        message: 'API недоступен или произошла ошибка',
+        error: error.message 
+      });
     }
   };
 
@@ -50,16 +56,62 @@ export const AuthDebugPage = () => {
   const loadImageStats = async () => {
     setLoadingImageStats(true);
     try {
-      const response = await fetch('/api/admin/image-stats');
-      if (response.ok) {
-        const data = await response.json();
-        setImageStats(data);
-      }
+      const response = await imagesApi.getStats();
+      setImageStats(response.data);
     } catch (error) {
       console.error('Ошибка загрузки статистики изображений:', error);
+      setImageStats({ 
+        status: 'error', 
+        message: 'API недоступен или произошла ошибка',
+        error: error.message 
+      });
     } finally {
       setLoadingImageStats(false);
     }
+  };
+
+  // Загрузка статистики томов
+  const loadVolumesStats = async () => {
+    if (!volumesApiAvailable) return;
+    
+    setLoadingVolumesStats(true);
+    try {
+      const response = await adminApi.getVolumesStats();
+      setVolumesStats(response.data);
+      setVolumesApiAvailable(true);
+    } catch (error) {
+      console.error('Ошибка загрузки статистики томов:', error);
+      
+      // Пробуем fallback через прямой fetch
+      try {
+        const fallbackResponse = await fetch('/api/volumes/stats');
+        if (fallbackResponse.ok) {
+          const data = await fallbackResponse.json();
+          setVolumesStats(data);
+          setVolumesApiAvailable(true);
+          return;
+        }
+      } catch (fallbackError) {
+        console.error('Fallback также не сработал:', fallbackError);
+      }
+      
+      // Если все попытки не удались, показываем ошибку
+      setVolumesStats({ 
+        status: 'error', 
+        message: 'API volumes недоступен',
+        error: 'Эндпоинт /api/volumes/stats не найден или недоступен',
+        suggestion: 'Проверьте, что backend запущен и эндпоинт существует'
+      });
+      setVolumesApiAvailable(false);
+    } finally {
+      setLoadingVolumesStats(false);
+    }
+  };
+
+  // Отключение API volumes
+  const disableVolumesApi = () => {
+    setVolumesApiAvailable(false);
+    setVolumesStats(null);
   };
 
   // Очистка изображений
@@ -67,14 +119,34 @@ export const AuthDebugPage = () => {
     if (!confirm('Вы уверены, что хотите очистить все изображения?')) return;
     
     try {
-      const response = await fetch('/api/admin/cleanup-images', { method: 'POST' });
-      if (response.ok) {
-        alert('Изображения очищены');
-        loadImageStats();
+      await imagesApi.cleanup();
+      alert('Изображения очищены');
+      loadImageStats();
+      if (volumesApiAvailable) {
+        loadVolumesStats();
       }
     } catch (error) {
       console.error('Ошибка очистки изображений:', error);
       alert('Ошибка очистки изображений');
+    }
+  };
+
+  // Очистка договоров
+  const handleCleanupContracts = async () => {
+    if (!confirm('Вы уверены, что хотите очистить все договоры?')) return;
+    
+    try {
+      const response = await fetch('/api/contracts/cleanup', { method: 'POST' });
+      if (response.ok) {
+        alert('Договоры очищены');
+        loadVolumesStats();
+      } else {
+        console.error('Ошибка очистки договоров:', response.status, response.statusText);
+        alert('Ошибка очистки договоров');
+      }
+    } catch (error) {
+      console.error('Ошибка очистки договоров:', error);
+      alert('Ошибка очистки договоров');
     }
   };
 
@@ -85,13 +157,14 @@ export const AuthDebugPage = () => {
     setCacheRefreshProgress({ status: 'starting', message: 'Запуск обновления кэша...' });
     
     try {
-      const response = await fetch('/api/admin/refresh-cache', { method: 'POST' });
-      if (response.ok) {
-        setCacheRefreshProgress({ status: 'success', message: 'Кэш успешно обновлен' });
-        setTimeout(() => setCacheRefreshProgress(null), 5000);
-      } else {
-        setCacheRefreshProgress({ status: 'error', message: 'Ошибка обновления кэша' });
+      await adminApi.refreshCache();
+      setCacheRefreshProgress({ status: 'success', message: 'Кэш успешно обновлен' });
+      // Обновляем статистику после успешного обновления кэша
+      loadImageStats();
+      if (volumesApiAvailable) {
+        loadVolumesStats();
       }
+      setTimeout(() => setCacheRefreshProgress(null), 5000);
     } catch (error) {
       console.error('Ошибка обновления кэша:', error);
       setCacheRefreshProgress({ status: 'error', message: 'Ошибка обновления кэша' });
@@ -101,7 +174,7 @@ export const AuthDebugPage = () => {
   // Отмена обновления кэша
   const handleCancelRefresh = async () => {
     try {
-      await fetch('/api/admin/cancel-refresh', { method: 'POST' });
+      // В backend нет эндпоинта для отмены, просто обновляем статус
       setCacheRefreshProgress({ status: 'cancelled', message: 'Обновление отменено' });
       setTimeout(() => setCacheRefreshProgress(null), 3000);
     } catch (error) {
@@ -112,11 +185,8 @@ export const AuthDebugPage = () => {
   // Тестирование селекторов
   const handleTestSelectors = async () => {
     try {
-      const response = await fetch('/api/admin/test-selectors');
-      if (response.ok) {
-        const data = await response.json();
-        setDebugInfo(data);
-      }
+      const response = await debugApi.testSelectors();
+      setDebugInfo(response.data);
     } catch (error) {
       console.error('Ошибка тестирования селекторов:', error);
       alert('Ошибка тестирования селекторов');
@@ -126,16 +196,15 @@ export const AuthDebugPage = () => {
   // Просмотр исходного кода страницы
   const handleViewPageSource = async () => {
     try {
-      const response = await fetch('/api/admin/page-source');
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'page-source.html';
-        a.click();
-        window.URL.revokeObjectURL(url);
-      }
+      const response = await debugApi.getPageSource();
+      // Создаем текстовый файл для скачивания
+      const blob = new Blob([response.data.content || 'HTML не найден'], { type: 'text/html' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'page-source.html';
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Ошибка получения исходного кода:', error);
       alert('Ошибка получения исходного кода');
@@ -147,15 +216,8 @@ export const AuthDebugPage = () => {
     if (!customSelector.trim()) return;
     
     try {
-      const response = await fetch('/api/admin/test-custom-selector', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selector: customSelector })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCustomSelectorResult(data);
-      }
+      const response = await debugApi.testCustomSelector(customSelector);
+      setCustomSelectorResult(response.data);
     } catch (error) {
       console.error('Ошибка тестирования селектора:', error);
       alert('Ошибка тестирования селектора');
@@ -167,6 +229,7 @@ export const AuthDebugPage = () => {
     if (showDevPanel) {
       loadHealth();
       loadImageStats();
+      loadVolumesStats();
     }
   }, [showDevPanel]);
 
@@ -305,25 +368,71 @@ export const AuthDebugPage = () => {
             <div className="space-y-4">
               {/* Статус системы */}
               {health && (
-                <div className="p-4 bg-green-50 dark:bg-green-900 rounded-lg">
-                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Статус системы:</h3>
-                  <div className="text-sm text-green-700 dark:text-green-300">
-                    <p>MongoDB: {health.services?.mongodb || 'Неизвестно'}</p>
-                    <p>Selenium: {health.services?.selenium || 'Неизвестно'}</p>
+                <div className={`p-4 rounded-lg ${
+                  health.status === 'error' 
+                    ? 'bg-red-50 dark:bg-red-900' 
+                    : 'bg-green-50 dark:bg-green-900'
+                }`}>
+                  <h3 className={`font-semibold mb-2 ${
+                    health.status === 'error'
+                      ? 'text-red-800 dark:text-red-200'
+                      : 'text-green-800 dark:text-green-200'
+                  }`}>
+                    Статус системы:
+                  </h3>
+                  <div className={`text-sm ${
+                    health.status === 'error'
+                      ? 'text-red-700 dark:text-red-300'
+                      : 'text-green-700 dark:text-green-300'
+                  }`}>
+                    {health.status === 'error' ? (
+                      <>
+                        <p><strong>Ошибка:</strong> {health.message}</p>
+                        <p><strong>Детали:</strong> {health.error}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p>MongoDB: {health.services?.mongodb || 'Неизвестно'}</p>
+                        <p>Selenium: {health.services?.selenium || 'Неизвестно'}</p>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
               {/* Статистика изображений */}
               {imageStats && (
-                <div className="p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
+                <div className={`p-4 rounded-lg ${
+                  imageStats.status === 'error' 
+                    ? 'bg-red-50 dark:bg-red-900' 
+                    : 'bg-blue-50 dark:bg-blue-900'
+                }`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Статистика изображений:</h3>
-                      <div className="text-sm text-blue-700 dark:text-blue-300">
-                        <p>Всего изображений: {imageStats.total_images}</p>
-                        <p>Размер: {imageStats.total_size_mb} MB</p>
-                        <p>Статус: {imageStats.status}</p>
+                      <h3 className={`font-semibold mb-2 ${
+                        imageStats.status === 'error'
+                          ? 'text-red-800 dark:text-red-200'
+                          : 'text-blue-800 dark:text-blue-200'
+                      }`}>
+                        Статистика изображений:
+                      </h3>
+                      <div className={`text-sm ${
+                        imageStats.status === 'error'
+                          ? 'text-red-700 dark:text-red-300'
+                          : 'text-blue-700 dark:text-blue-300'
+                      }`}>
+                        {imageStats.status === 'error' ? (
+                          <>
+                            <p><strong>Ошибка:</strong> {imageStats.message}</p>
+                            <p><strong>Детали:</strong> {imageStats.error}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p>Всего изображений: {imageStats.total_images}</p>
+                            <p>Размер: {imageStats.total_size_mb} MB</p>
+                            <p>Статус: {imageStats.status}</p>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -334,13 +443,108 @@ export const AuthDebugPage = () => {
                       >
                         {loadingImageStats ? 'Загрузка...' : 'Обновить'}
                       </button>
+                      {imageStats.status !== 'error' && (
+                        <button
+                          onClick={handleCleanupImages}
+                          className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                        >
+                          Очистить
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Статистика томов */}
+              {volumesApiAvailable && (
+                <div className={`p-4 rounded-lg ${
+                  volumesStats?.status === 'error' 
+                    ? 'bg-red-50 dark:bg-red-900' 
+                    : 'bg-purple-50 dark:bg-purple-900'
+                }`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className={`font-semibold mb-2 ${
+                        volumesStats?.status === 'error'
+                          ? 'text-red-800 dark:text-red-200'
+                          : 'text-purple-800 dark:text-purple-200'
+                      }`}>
+                        Статистика томов:
+                      </h3>
+                      <div className={`text-sm ${
+                        volumesStats?.status === 'error'
+                          ? 'text-red-700 dark:text-red-300'
+                          : 'text-purple-700 dark:text-purple-300'
+                      }`}>
+                        {!volumesStats ? (
+                          <p>Загрузка статистики...</p>
+                        ) : volumesStats.status === 'error' ? (
+                          <>
+                            <p><strong>Ошибка:</strong> {volumesStats.message}</p>
+                            <p><strong>Детали:</strong> {volumesStats.error}</p>
+                            {volumesStats.suggestion && (
+                              <p><strong>Совет:</strong> {volumesStats.suggestion}</p>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <p>Изображения: {volumesStats.volumes?.images?.files || 0} файлов, {volumesStats.volumes?.images?.size_mb || 0} MB</p>
+                            <p>Договоры: {volumesStats.volumes?.contracts?.files || 0} файлов, {volumesStats.volumes?.contracts?.size_mb || 0} MB</p>
+                            <p>Статус: {volumesStats.status}</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
                       <button
-                        onClick={handleCleanupImages}
-                        className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                        onClick={loadVolumesStats}
+                        disabled={loadingVolumesStats}
+                        className="px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors disabled:opacity-50"
                       >
-                        Очистить
+                        {loadingVolumesStats ? 'Загрузка...' : 'Обновить'}
+                      </button>
+                      {volumesStats && volumesStats.status !== 'error' && (
+                        <button
+                          onClick={handleCleanupContracts}
+                          className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                        >
+                          Очистить договоры
+                        </button>
+                      )}
+                      <button
+                        onClick={disableVolumesApi}
+                        className="px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                        title="Отключить API volumes если он недоступен"
+                      >
+                        Отключить
                       </button>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Информация о недоступности API volumes */}
+              {!volumesApiAvailable && (
+                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                        API Volumes отключен
+                      </h3>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        Эндпоинт /api/volumes/stats недоступен. Возможно, backend не запущен или эндпоинт не существует.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setVolumesApiAvailable(true);
+                        loadVolumesStats();
+                      }}
+                      className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                    >
+                      Попробовать снова
+                    </button>
                   </div>
                 </div>
               )}

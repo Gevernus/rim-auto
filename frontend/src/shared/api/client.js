@@ -150,6 +150,12 @@ export const debugApi = {
   testCustomSelector: (selector) => api.post('/debug/test-selector', { selector }),
 };
 
+export const adminApi = {
+  refreshCache: () => longOperationClient.post('/refresh-cache'),
+  getVolumesStats: () => api.get('/volumes/stats'),
+  cleanupContracts: () => api.post('/contracts/cleanup'),
+};
+
 export const applicationsApi = {
   submitCreditApplication: (applicationData) => api.post('/applications/credit', applicationData),
   submitLeasingApplication: (applicationData) => api.post('/applications/leasing', applicationData),
