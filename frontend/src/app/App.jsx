@@ -175,7 +175,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/credit/:bank",
-    element: <Layout><ProtectedRoute><BankCreditPage /></ProtectedRoute></Layout>,
+    element: <Layout><BankCreditPage /></Layout>,
   },
   {
     path: "/leasing",
@@ -183,7 +183,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/leasing/:company",
-    element: <Layout><ProtectedRoute><LeasingCompanyPage /></ProtectedRoute></Layout>,
+    element: <Layout><LeasingCompanyPage /></Layout>,
   },
   {
     path: "/contracts",
@@ -195,7 +195,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/guarantee/:company",
-    element: <Layout><ProtectedRoute><GuaranteeCompanyPage /></ProtectedRoute></Layout>,
+    element: <Layout><GuaranteeCompanyPage /></Layout>,
   },
   {
     path: "/sto",
@@ -203,7 +203,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/sto/:slug",
-    element: <Layout><ProtectedRoute><StationServicesPage /></ProtectedRoute></Layout>,
+    element: <Layout><StationServicesPage /></Layout>,
   },
   {
     path: "/help",
@@ -211,7 +211,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/help/:slug",
-    element: <Layout><ProtectedRoute><CompanyHelpServicesPage /></ProtectedRoute></Layout>,
+    element: <Layout><CompanyHelpServicesPage /></Layout>,
   },
   {
     path: "/wash",
@@ -219,7 +219,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/wash/:slug",
-    element: <Layout><ProtectedRoute><CompanyWashServicesPage /></ProtectedRoute></Layout>,
+    element: <Layout><CompanyWashServicesPage /></Layout>,
   },
   {
     path: "/tire",
@@ -227,7 +227,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/tire/:slug",
-    element: <Layout><ProtectedRoute><CompanyTireServicesPage /></ProtectedRoute></Layout>,
+    element: <Layout><CompanyTireServicesPage /></Layout>,
   },
   {
     path: "/detailing",
@@ -235,7 +235,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/detailing/:slug",
-    element: <Layout><ProtectedRoute><CompanyServicesPage /></ProtectedRoute></Layout>,
+    element: <Layout><CompanyServicesPage /></Layout>,
   },
   
   // Дополнительные страницы
