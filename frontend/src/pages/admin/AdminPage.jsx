@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTelegramAuth } from '../../features/auth';
-import { CreditTab, LeasingTab, ReviewsTab, ContractsTab, CitiesTab, DeliveryZonesTab } from './tabs';
+import { CreditTab, LeasingTab, ReviewsTab, ContractsTab, DeliveryManagementTab } from './tabs';
 
 const AdminPage = () => {
   const { user } = useTelegramAuth();
-  const [activeTab, setActiveTab] = useState('credit');
+  const [activeTab, setActiveTab] = useState('delivery');
 
   // Конфигурация табов с заделом под права (пока доступны всем)
   const permissions = user?.permissions || [];
@@ -12,15 +12,14 @@ const AdminPage = () => {
   const canSeeLeasing = permissions.includes('admin:leasing:view') || true;
   const canSeeReviews = permissions.includes('admin:reviews:view') || true;
   const canSeeContracts = permissions.includes('admin:contracts:view') || true;
-  const canSeeCities = permissions.includes('admin:cities:view') || true;
+  const canSeeDelivery = permissions.includes('admin:delivery:view') || true;
 
   const tabsConfig = [
     canSeeCredit && { key: 'credit', label: 'Кредитные заявки' },
     canSeeLeasing && { key: 'leasing', label: 'Лизинговые заявки' },
     canSeeReviews && { key: 'reviews', label: 'Отзывы' },
     canSeeContracts && { key: 'contracts', label: 'Договора' },
-    canSeeCities && { key: 'cities', label: 'Города доставки' },
-    canSeeCities && { key: 'delivery-zones', label: 'Зоны доставки' }
+    canSeeDelivery && { key: 'delivery', label: 'Управление доставкой' }
   ].filter(Boolean);
 
   return (
@@ -54,8 +53,7 @@ const AdminPage = () => {
           {activeTab === 'leasing' && <LeasingTab />}
           {activeTab === 'reviews' && <ReviewsTab />}
           {activeTab === 'contracts' && <ContractsTab />}
-          {activeTab === 'cities' && <CitiesTab />}
-          {activeTab === 'delivery-zones' && <DeliveryZonesTab />}
+          {activeTab === 'delivery' && <DeliveryManagementTab />}
         </div>
       </div>
     </div>
