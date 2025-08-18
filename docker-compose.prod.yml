@@ -53,6 +53,7 @@ services:
     volumes:
       - car_images:/app/static/images
       - contracts:/app/static/contracts  # Volume для договоров
+      - direct_leasing_docs:/app/static/direct_leasing_docs  # Volume для документов Директ лизинга
     networks:
       - web
     depends_on:
@@ -121,6 +122,7 @@ volumes:
   mongo_data:
   car_images:
   contracts:
+  direct_leasing_docs:
 
 networks:
   web:

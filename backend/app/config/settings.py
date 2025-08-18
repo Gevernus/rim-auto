@@ -4,6 +4,7 @@ from pathlib import Path
 # Пути для статических файлов (Docker volumes)
 STATIC_IMAGES_DIR = Path("static/images")
 CONTRACTS_DIR = Path("static/contracts")
+DIRECT_LEASING_DOCS_DIR = Path("static/direct_leasing_docs")
 
 # Telegram Bot Token
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
@@ -36,3 +37,9 @@ SCRAPING_DELAY = 1
 # Allowed contract types and extensions
 ALLOWED_CONTRACT_TYPES = {"agency", "consignment", "sale"}
 ALLOWED_CONTRACT_EXT = {".docx", ".doc"}
+
+# Allowed document types for Direct Leasing
+ALLOWED_DOCUMENT_TYPES = {
+    "anketa", "passport", "accounting", "account51", "bankStatements"
+}
+ALLOWED_DOCUMENT_EXT = {".pdf", ".jpg", ".jpeg", ".png", ".xlsx", ".xls"}

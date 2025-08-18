@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTelegramAuth } from '../../features/auth';
-import { CreditTab, LeasingTab, ReviewsTab, ContractsTab, DeliveryManagementTab } from './tabs';
+import { CreditTab, LeasingTab, ReviewsTab, ContractsTab, DeliveryManagementTab, DirectLeasingTab } from './tabs';
 
 const AdminPage = () => {
   const { user } = useTelegramAuth();
@@ -10,6 +10,7 @@ const AdminPage = () => {
   const permissions = user?.permissions || [];
   const canSeeCredit = permissions.includes('admin:credit:view') || true;
   const canSeeLeasing = permissions.includes('admin:leasing:view') || true;
+  const canSeeDirectLeasing = permissions.includes('admin:direct-leasing:view') || true;
   const canSeeReviews = permissions.includes('admin:reviews:view') || true;
   const canSeeContracts = permissions.includes('admin:contracts:view') || true;
   const canSeeDelivery = permissions.includes('admin:delivery:view') || true;
@@ -17,6 +18,7 @@ const AdminPage = () => {
   const tabsConfig = [
     canSeeCredit && { key: 'credit', label: 'Кредитные заявки' },
     canSeeLeasing && { key: 'leasing', label: 'Лизинговые заявки' },
+    canSeeDirectLeasing && { key: 'direct-leasing', label: 'Direct лизинг' },
     canSeeReviews && { key: 'reviews', label: 'Отзывы' },
     canSeeContracts && { key: 'contracts', label: 'Договора' },
     canSeeDelivery && { key: 'delivery', label: 'Управление доставкой' }
@@ -51,6 +53,7 @@ const AdminPage = () => {
         <div>
           {activeTab === 'credit' && <CreditTab />}
           {activeTab === 'leasing' && <LeasingTab />}
+          {activeTab === 'direct-leasing' && <DirectLeasingTab />}
           {activeTab === 'reviews' && <ReviewsTab />}
           {activeTab === 'contracts' && <ContractsTab />}
           {activeTab === 'delivery' && <DeliveryManagementTab />}

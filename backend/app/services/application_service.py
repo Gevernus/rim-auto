@@ -208,10 +208,23 @@ def get_applications_stats():
             "rejected": leasing_applications.count_documents({"status": "rejected"})
         }
         
+        # Импортируем коллекцию для Директ лизинга
+        from app.config.database import direct_leasing_applications
+        
+        # Статистика заявок Директ лизинг
+        direct_leasing_stats = {
+            "total": direct_leasing_applications.count_documents({}),
+            "new": direct_leasing_applications.count_documents({"status": "new"}),
+            "processing": direct_leasing_applications.count_documents({"status": "processing"}),
+            "approved": direct_leasing_applications.count_documents({"status": "approved"}),
+            "rejected": direct_leasing_applications.count_documents({"status": "rejected"})
+        }
+        
         return {
             "credit": credit_stats,
             "leasing": leasing_stats,
-            "total_applications": credit_stats["total"] + leasing_stats["total"]
+            "direct_leasing": direct_leasing_stats,
+            "total_applications": credit_stats["total"] + leasing_stats["total"] + direct_leasing_stats["total"]
         }
         
     except Exception as e:

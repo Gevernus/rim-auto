@@ -29,6 +29,12 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    // Если отправляем FormData — удаляем Content-Type, чтобы браузер сам выставил boundary
+    if (config.data instanceof FormData) {
+      if (config.headers && 'Content-Type' in config.headers) {
+        delete config.headers['Content-Type'];
+      }
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -40,6 +46,11 @@ longOperationClient.interceptors.request.use(
     const token = getItemSync('authToken');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (config.data instanceof FormData) {
+      if (config.headers && 'Content-Type' in config.headers) {
+        delete config.headers['Content-Type'];
+      }
     }
     return config;
   },
@@ -168,14 +179,24 @@ export const adminApi = {
 export const applicationsApi = {
   submitCreditApplication: (applicationData) => api.post('/applications/credit', applicationData),
   submitLeasingApplication: (applicationData) => api.post('/applications/leasing', applicationData),
+  submitDirectLeasingApplication: (applicationData) => {
+    if (applicationData instanceof FormData) {
+      return api.post('/applications/direct-leasing', applicationData);
+    } else {
+      return api.post('/applications/direct-leasing', applicationData);
+    }
+  },
   submitInsuranceApplication: (applicationData) => api.post('/applications/insurance', applicationData),
   submitGuaranteeApplication: (applicationData) => api.post('/applications/guarantee', applicationData),
   getStats: () => api.get('/applications/stats'),
   getCreditApplications: (params = {}) => api.get('/applications/credit', { params }),
   getLeasingApplications: (params = {}) => api.get('/applications/leasing', { params }),
+  getDirectLeasingApplications: (params = {}) => api.get('/applications/direct-leasing', { params }),
   getInsuranceApplications: (params = {}) => api.get('/applications/insurance', { params }),
   getGuaranteeApplications: (params = {}) => api.get('/applications/guarantee', { params }),
   updateApplicationStatus: (applicationType, applicationId, status) => api.put(`/applications/${applicationType}/${applicationId}/status`, { status }),
+  updateDirectLeasingStatus: (applicationId, status) => api.put(`/applications/direct-leasing/${applicationId}/status`, { status }),
+  deleteDirectLeasingApplication: (applicationId) => api.delete(`/applications/direct-leasing/${applicationId}`),
 };
 
 export const contractsApi = {
@@ -184,9 +205,7 @@ export const contractsApi = {
   upload: (type, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/contracts/${type}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post(`/contracts/${type}`, formData);
   },
   remove: (type) => api.delete(`/contracts/${type}`),
 };

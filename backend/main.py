@@ -41,6 +41,14 @@ from app.services.application_service import (
     get_leasing_applications,
     update_application_status
 )
+from app.services.direct_leasing_service import (
+    submit_direct_leasing_application,
+    get_direct_leasing_stats,
+    get_direct_leasing_applications,
+    get_direct_leasing_application,
+    update_direct_leasing_status,
+    delete_direct_leasing_application
+)
 from app.services.city_service import (
     create_city,
     get_cities,
@@ -407,10 +415,67 @@ def api_submit_leasing_application(application_data: dict, current_user = Depend
     """Отправка заявки на лизинг"""
     return submit_leasing_application(application_data, current_user)
 
+@app.post("/api/applications/direct-leasing")
+async def api_submit_direct_leasing_application(
+    request: Request,
+    current_user = Depends(get_current_user)
+):
+    """Отправка заявки на Директ лизинг с документами"""
+    try:
+        # Парсим multipart/form-data
+        form = await request.form()
+        
+        # Отладочная информация
+        print("🔍 Полученные данные формы:")
+        for key, value in form.items():
+            print(f"   {key}: {value}")
+        
+        # Извлекаем данные заявки
+        application_data = {}
+        files = {}
+        
+        for key, value in form.multi_items():
+            if key.startswith('documents.'):
+                doc_type = key.replace('documents.', '')
+                if hasattr(value, 'filename') and value.filename:
+                    # Кладём список файлов по типу
+                    files.setdefault(doc_type, []).append(value)
+                    print(f"📁 Файл {doc_type}: {value.filename}")
+            elif key == 'telegramUser':
+                try:
+                    import json
+                    application_data[key] = json.loads(value)
+                    print(f"📱 Telegram данные: {application_data[key]}")
+                except:
+                    application_data[key] = value
+            elif key in ['propertyValue', 'term', 'downPayment']:
+                try:
+                    application_data[key] = float(value) if value else None
+                    print(f"📊 Числовые данные {key}: {application_data[key]}")
+                except:
+                    application_data[key] = value
+            else:
+                application_data[key] = value
+                print(f"📝 Данные {key}: {value}")
+        
+        print(f"📊 Итоговые данные заявки: {application_data}")
+        print(f"📁 Файлы: {list(files.keys())}")
+        
+        return await submit_direct_leasing_application(application_data, files, current_user)
+        
+    except Exception as e:
+        print(f"❌ Ошибка в эндпойнте: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to submit application: {str(e)}")
+
 @app.get("/api/applications/stats")
 def api_get_applications_stats():
     """Получение статистики заявок"""
     return get_applications_stats()
+
+@app.get("/api/applications/direct-leasing/stats")
+def api_get_direct_leasing_stats():
+    """Получение статистики заявок Директ лизинг"""
+    return get_direct_leasing_stats()
 
 @app.get("/api/applications/credit")
 def api_get_credit_applications(
@@ -430,7 +495,21 @@ def api_get_leasing_applications(
     """Получение списка лизинговых заявок"""
     return get_leasing_applications(page, page_size, status)
 
-@app.put("/api/applications/{application_type}/{application_id}/status")
+@app.get("/api/applications/direct-leasing")
+def api_get_direct_leasing_applications(
+    page: int = 1,
+    page_size: int = 10,
+    status: Optional[str] = None,
+):
+    """Получение списка заявок Директ лизинг"""
+    return get_direct_leasing_applications(page, page_size, status)
+
+@app.get("/api/applications/direct-leasing/{application_id}")
+def api_get_direct_leasing_application(application_id: str):
+    """Получение заявки Директ лизинг по ID"""
+    return get_direct_leasing_application(application_id)
+
+@app.put("/api/applications/{application_type:credit|leasing}/{application_id}/status")
 def api_update_application_status(
     application_type: str,
     application_id: str,
@@ -438,6 +517,19 @@ def api_update_application_status(
 ):
     """Обновление статуса заявки"""
     return update_application_status(application_type, application_id, status_data)
+
+@app.put("/api/applications/direct-leasing/{application_id}/status")
+def api_update_direct_leasing_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса заявки Директ лизинг"""
+    return update_direct_leasing_status(application_id, status_data)
+
+@app.delete("/api/applications/direct-leasing/{application_id}")
+def api_delete_direct_leasing_application(application_id: str):
+    """Удаление заявки Директ лизинг"""
+    return delete_direct_leasing_application(application_id)
 
 # ====== ОТЗЫВЫ ======
 @app.get("/api/reviews")

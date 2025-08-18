@@ -1,2 +1,4 @@
 export { LeasingPage } from './LeasingPage';
-export { LeasingCompanyPage } from './LeasingCompanyPage'; 
+export { AspectLeasingPage } from './AspectLeasingPage';
+export { DirectLeasingPage } from './DirectLeasingPage';
+export { CarcadeLeasingPage } from './CarcadeLeasingPage'; 

@@ -5,16 +5,16 @@ import directLogo from '../../assets/leasing/leasing_direct.jpg';
 import carcadeLogo from '../../assets/leasing/leasing_carcade.jpg';
 
 const COMPANIES = [
-  { key: 'aspect', name: 'Аспект лизинг', logo: aspectLogo },
-  { key: 'direct', name: 'Директ лизинг', logo: directLogo },
-  { key: 'carcade', name: 'Каркаде', logo: carcadeLogo },
+  { key: 'aspect', name: 'Аспект лизинг', logo: aspectLogo, route: routes.aspectLeasing },
+  { key: 'direct', name: 'Директ лизинг', logo: directLogo, route: routes.directLeasing },
+  { key: 'carcade', name: 'Каркаде', logo: carcadeLogo, route: routes.carcadeLeasing },
 ];
 
 const CompanyCard = ({ company, onOpen }) => {
   return (
     <button
       type="button"
-      onClick={() => onOpen(company.key)}
+      onClick={() => onOpen(company.route)}
       className="w-full p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors"
       aria-label={`Открыть компанию ${company.name}`}
     >
@@ -28,8 +28,8 @@ const CompanyCard = ({ company, onOpen }) => {
 const LeasingPage = () => {
   const { navigateTo } = useAppNavigation();
 
-  const handleOpen = (companyKey) => {
-    navigateTo(routes.leasingCompany(companyKey));
+  const handleOpen = (route) => {
+    navigateTo(route);
   };
 
   return (

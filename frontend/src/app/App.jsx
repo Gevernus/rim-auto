@@ -13,7 +13,7 @@ import { OrderPage } from '../pages/order';
 import { AboutPage } from '../pages/about';
 import { AuthDebugPage } from '../pages/debug/AuthDebugPage';
 import { CreditPage, BankCreditPage } from '../pages/credit';
-import { LeasingPage, LeasingCompanyPage } from '../pages/leasing';
+import { LeasingPage, AspectLeasingPage, DirectLeasingPage, CarcadeLeasingPage } from '../pages/leasing';
 import { AdminPage } from '../pages/admin';
 import { FavoritesPage } from '../pages/favorites';
 import { MessagesPage } from '../pages/messages';
@@ -182,8 +182,20 @@ const router = createBrowserRouter([
     element: <Layout><LeasingPage /></Layout>,
   },
   {
+    path: "/leasing/aspect",
+    element: <Layout><AspectLeasingPage /></Layout>,
+  },
+  {
+    path: "/leasing/direct",
+    element: <Layout><DirectLeasingPage /></Layout>,
+  },
+  {
+    path: "/leasing/carcade",
+    element: <Layout><CarcadeLeasingPage /></Layout>,
+  },
+  {
     path: "/leasing/:company",
-    element: <Layout><LeasingCompanyPage /></Layout>,
+    element: <Layout><AspectLeasingPage /></Layout>,
   },
   {
     path: "/contracts",

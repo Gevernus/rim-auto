@@ -17,6 +17,7 @@ services:
       - ./backend:/app
       - car-images:/app/static/images  # Уточняем путь для изображений
       - contracts:/app/static/contracts  # Volume для договоров
+      - direct-leasing-docs:/app/static/direct_leasing_docs  # Volume для документов Директ лизинга
     depends_on:
       - mongo
       - selenium
@@ -87,6 +88,7 @@ volumes:
   mongo-data:
   car-images:
   contracts:
+  direct-leasing-docs:
 
 networks:
   my_network:
