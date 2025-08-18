@@ -144,7 +144,7 @@ const Footer = () => {
                   />
                 </svg>
                 <span className="text-footer-text-secondary dark:text-dark-footer-text-secondary">
-                  г. Москва, пр. Дмитревский, 63а
+					г.Москва Дмитровское шоссе, 163А к1
                 </span>
               </li>
             </ul>

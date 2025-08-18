@@ -4,8 +4,6 @@ import { useAppNavigation, useAppLocation, routes } from '../../shared/lib/navig
 import { useTelegramAuth } from '../../features/auth';
 import { TelegramLoginButton, UserProfile } from '../../features/auth';
 import logo from '../../assets/logo.jpg';
-import { requestUserPhone, showTelegramAlert } from '../../shared/lib/platform/telegram.js';
-import { authApi } from '../../shared/api/client.js';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,11 +13,8 @@ const Header = () => {
   // Авторизация
   const {
     isAuthenticated,
-    user,
-    telegramUser,
     isLoading: authLoading,
     handleTelegramWebAuth,
-    logout,
     isTelegramWebApp,
     initialize,
   } = useTelegramAuth();
@@ -111,7 +106,7 @@ const Header = () => {
           {/* Информация о компании */}
           <div className="hidden lg:flex flex-col items-start gap-1">
             <span className="text-sm text-text-secondary dark:text-dark-text-secondary">
-              г. Москва, пр. Дмитревский, 63а
+				г.Москва Дмитровское шоссе, 163А к1
             </span>
             <span className="text-sm text-text-secondary dark:text-dark-text-secondary">
               8-905-705-24-09

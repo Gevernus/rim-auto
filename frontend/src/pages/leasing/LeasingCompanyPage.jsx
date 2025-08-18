@@ -144,7 +144,7 @@ const LeasingCompanyPage = () => {
                 <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">Телефон *</label>
                 <input
                   type="tel"
-                  {...register('phone', { required: 'Телефон обязателен', pattern: { value: /^\+?[0-9\s\-\(\)]+$/, message: 'Введите корректный номер телефона' } })}
+                  {...register('phone', { required: 'Телефон обязателен', pattern: { value: /^\+?[0-9\s\-()]+$/, message: 'Введите корректный номер телефона' } })}
                   className="w-full px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface-secondary dark:bg-dark-surface-secondary text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="+7 (999) 123-45-67"
                 />

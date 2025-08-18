@@ -198,7 +198,8 @@ const DeliveryManagementTab = () => {
           )}
         </div>
 
-        <div className="bg-surface dark:bg-dark-surface rounded-lg border border-border dark:border-dark-border overflow-hidden">
+        {/* Десктопная таблица */}
+        <div className="hidden sm:block bg-surface dark:bg-dark-surface rounded-lg border border-border dark:border-dark-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-border dark:divide-dark-border">
               <thead className="bg-gray-50 dark:bg-gray-800">
@@ -259,6 +260,46 @@ const DeliveryManagementTab = () => {
             </table>
           </div>
         </div>
+
+        {/* Мобильные карточки */}
+        <div className="sm:hidden space-y-3">
+          {zones.map((zone) => (
+            <div key={zone.id} className="bg-surface dark:bg-dark-surface rounded-lg border border-border dark:border-dark-border p-4">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-medium text-text-primary dark:text-dark-text-primary">
+                  {zone.name}
+                </h3>
+                <Button
+                  onClick={() => handleZoneEdit(zone)}
+                  variant="info"
+                  className="text-xs px-3 py-1"
+                >
+                  Изменить
+                </Button>
+              </div>
+              <div className="space-y-3">
+                <p className="text-text-secondary dark:text-dark-text-secondary text-sm">
+                  {zone.description}
+                </p>
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-text-primary dark:text-dark-text-primary">
+                    Дни доставки:
+                  </h4>
+                  {countries.map(country => (
+                    <div key={country.key} className="flex justify-between text-sm">
+                      <span className="font-medium text-text-primary dark:text-dark-text-primary">
+                        {country.label}:
+                      </span>
+                      <span className="text-text-secondary dark:text-dark-text-secondary">
+                        {zone[country.key] || '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Города доставки */}
@@ -280,7 +321,8 @@ const DeliveryManagementTab = () => {
           </div>
         </div>
 
-        <div className="bg-surface dark:bg-dark-surface rounded-lg border border-border dark:border-dark-border overflow-hidden">
+        {/* Десктопная таблица */}
+        <div className="hidden sm:block bg-surface dark:bg-dark-surface rounded-lg border border-border dark:border-dark-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-border dark:divide-dark-border">
               <thead className="bg-gray-50 dark:bg-gray-800">
@@ -347,6 +389,50 @@ const DeliveryManagementTab = () => {
             </table>
           </div>
         </div>
+
+        {/* Мобильные карточки */}
+        <div className="sm:hidden space-y-3">
+          {cities.map((city) => (
+            <div key={city.id} className="bg-surface dark:bg-dark-surface rounded-lg border border-border dark:border-dark-border p-4">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-medium text-text-primary dark:text-dark-text-primary">
+                  {city.name}
+                </h3>
+                <Badge className={city.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                  {city.is_active ? 'Активен' : 'Неактивен'}
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-secondary dark:text-dark-text-secondary">Регион:</span>
+                  <span className="text-text-primary dark:text-dark-text-primary font-medium">{city.region}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-secondary dark:text-dark-text-secondary">Зона:</span>
+                  <Badge className={deliveryZones[city.delivery_zone]?.color}>
+                    {deliveryZones[city.delivery_zone]?.name}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex space-x-2 mt-4">
+                <Button
+                  onClick={() => handleCityEdit(city)}
+                  variant="info"
+                  className="flex-1 text-xs px-3 py-1"
+                >
+                  Изменить
+                </Button>
+                <Button
+                  onClick={() => handleCityDelete(city.id)}
+                  variant="danger"
+                  className="flex-1 text-xs px-3 py-1"
+                >
+                  Удалить
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
 
@@ -395,15 +481,15 @@ const DeliveryManagementTab = () => {
                 <option value="Дальний Восток">Дальний Восток</option>
               </select>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               <label className="flex items-center">
                 <input
                   type="checkbox"
                   checked={cityFormData.is_active}
                   onChange={(e) => setCityFormData({...cityFormData, is_active: e.target.checked})}
-                  className="mr-2"
+                  className="mr-2 w-5 h-5"
                 />
-                <span className="text-sm text-text-primary dark:text-dark-text-primary">
+                <span className="text-lg text-text-primary dark:text-dark-text-primary">
                   Активен
                 </span>
               </label>
