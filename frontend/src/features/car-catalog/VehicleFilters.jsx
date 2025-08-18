@@ -42,7 +42,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
     handleFiltersUpdate();
   }, [filters]); // Зависимость от filters
 
-  // Обработчик изменения экспортируемой страны
+  // Обработчик изменения страны импорта
   const handleCountryChange = (country) => {
     console.log('🔍 handleCountryChange:', country);
     updateCountriesFilter(country === 'all' ? ['all'] : [country]);
@@ -78,7 +78,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
     resetFilters();
   };
 
-  // Список экспортируемых стран
+  // Список стран импорта
   const countries = [
     { value: 'all', label: 'Страны' },
     { value: 'china', label: 'Китай' },
@@ -138,7 +138,7 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
       {/* Грид-сетка фильтров */}
       <div className="grid grid-cols-3 gap-2">
 
-		{/* Экспортируемая страна */}
+		{/* Страна импорта (фильтр для будущего использования) */}
         <div className="col-span-3">
           <select
             value={filters.countries.includes('all') ? 'all' : filters.countries[0] || 'all'}

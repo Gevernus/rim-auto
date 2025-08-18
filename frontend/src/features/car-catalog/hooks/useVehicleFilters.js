@@ -64,8 +64,8 @@ export const useVehicleFilters = () => {
     setFilters(prev => ({
       ...prev,
       countries,
-      brand: '', // Сбрасываем бренд при изменении страны
-      model: ''  // Сбрасываем модель при изменении страны
+      brand: '', // Сбрасываем бренд при изменении страны для UI логики
+      model: ''  // Сбрасываем модель при изменении страны для UI логики
     }));
   }, []);
 
@@ -96,30 +96,13 @@ export const useVehicleFilters = () => {
     // Если нет данных из API, используем статические
     if (!brands || brands.length === 0) {
     //   console.log('⚠️ Используем статические бренды');
-      if (filters.countries.length === 0 || filters.countries.includes('all')) {
-        return Object.keys(BRAND_TO_COUNTRY);
-      }
-      
-      return Object.entries(BRAND_TO_COUNTRY)
-        .filter(([brand, country]) => filters.countries.includes(country))
-        .map(([brand]) => brand);
+      return Object.keys(BRAND_TO_COUNTRY);
     }
 
-    // Если выбраны все страны или не выбрана ни одна, показываем все бренды
-    if (filters.countries.length === 0 || filters.countries.includes('all')) {
-    //   console.log('✅ Показываем все бренды из API');
-      return brands;
-    }
-
-    // Фильтруем бренды по выбранным странам
-    const filteredBrands = brands.filter(brand => {
-      const country = BRAND_TO_COUNTRY[brand];
-      return country && filters.countries.includes(country);
-    });
-    
-    // console.log('✅ Отфильтрованные бренды:', filteredBrands);
-    return filteredBrands;
-  }, [brands, filters.countries]);
+    // Показываем все бренды из API - фильтр стран теперь не влияет на бренды
+    // console.log('✅ Показываем все бренды из API');
+    return brands;
+  }, [brands]);
 
   // Получение моделей для выбранного бренда
   const getAvailableModels = useMemo(() => {
@@ -137,6 +120,7 @@ export const useVehicleFilters = () => {
   // Проверка активности фильтров
   const hasActiveFilters = useMemo(() => {
     return (
+      // Включаем проверку фильтра стран для UI (кнопка сброса)
       filters.countries.length > 0 ||
       filters.vehicleCondition !== 'all' ||
       filters.brand !== '' ||
@@ -190,18 +174,19 @@ export const useVehicleFilters = () => {
     //   console.log('✅ Добавлен фильтр по году до:', filters.yearRange.to);
     }
 
-    // Добавляем фильтрацию по странам
+    //  фильтр стран для совместимости с DeliveryInfo
+    // Но не используем его для фильтрации на бэкенде
     if (filters.countries.length > 0) {
       if (filters.countries.includes('all')) {
         apiFilters.country = 'all';
-        // console.log('✅ Добавлен фильтр по стране: все страны');
+        // console.log('✅ Добавлен фильтр по стране: все страны (только для UI)');
       } else if (filters.countries.length === 1) {
         apiFilters.country = filters.countries[0];
-        // console.log('✅ Добавлен фильтр по стране:', filters.countries[0]);
+        // console.log('✅ Добавлен фильтр по стране (только для UI):', filters.countries[0]);
       } else {
         // Если выбрано несколько стран, пока используем первую
         apiFilters.country = filters.countries[0];
-        // console.log('✅ Добавлен фильтр по стране (первая из выбранных):', filters.countries[0]);
+        // console.log('✅ Добавлен фильтр по стране (только для UI, первая из выбранных):', filters.countries[0]);
       }
     }
 

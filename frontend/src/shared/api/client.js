@@ -91,6 +91,12 @@ export const api = {
 };
 
 export const carsApi = {
+  // Функция для фильтрации параметров API - исключаем country
+  _filterApiParams: (params) => {
+    const { country: Country, ...apiParams } = params;
+    return apiParams;
+  },
+
   getCars: (params = {}) => {
     const {
       page = 1,
@@ -100,17 +106,20 @@ export const carsApi = {
       price_to,
       year_from,
       year_to,
-      country,
       sort_by,
       sort_order
     } = params;
     return api.get('/cars', { 
-      params: { page, page_size, title, price_from, price_to, year_from, year_to, country, sort_by, sort_order }
+      params: { page, page_size, title, price_from, price_to, year_from, year_to, sort_by, sort_order }
     });
   },
   scrapeCars: () => api.get('/scrape-cars'),
   refreshCache: (signal = null) => longOperationClient.post('/refresh-cache', {}, signal ? { signal } : {}),
-  searchCars: (query, filters = {}) => api.get('/cars', { params: { title: query, ...filters } }),
+  searchCars: (query, filters = {}) => {
+    // Фильтруем параметры, исключая country
+    const apiFilters = carsApi._filterApiParams(filters);
+    return api.get('/cars', { params: { title: query, ...apiFilters } });
+  },
   getCarById: (id) => api.get(`/cars/${id}`),
   getPopularCars: () => api.get('/cars', { params: { page: 1, page_size: 10 } }),
 };
