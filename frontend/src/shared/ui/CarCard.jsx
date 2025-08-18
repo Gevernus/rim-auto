@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { Badge } from './Badge';
-import { RimAutoPrice } from '../../features/delivery';
+import { RimAutoPrice } from '../../features/calculator/RimAutoPrice';
 
 /**
  * @typedef {import('../types/vehicle').Vehicle} Vehicle

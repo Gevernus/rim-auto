@@ -132,7 +132,7 @@ const CatalogPage = () => {
           {/* Информация о доставке */}
           {selectedDeliveryCity && (
             <div className="flex-1/3">
-              <DeliveryInfo city={selectedDeliveryCity} />
+              <DeliveryInfo city={selectedDeliveryCity} filters={currentFilters} />
             </div>
           )}
         </div>

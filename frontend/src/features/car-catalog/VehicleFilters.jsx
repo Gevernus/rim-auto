@@ -81,10 +81,11 @@ const VehicleFilters = ({ onFiltersChange, className, loading }) => {
   // Список экспортируемых стран
   const countries = [
     { value: 'all', label: 'Страны' },
+    { value: 'china', label: 'Китай' },
     { value: 'japan', label: 'Япония' },
-    { value: 'korea', label: 'Корея' },
     { value: 'uae', label: 'О.А.Э.' },
-    { value: 'china', label: 'Китай' }
+    { value: 'korea', label: 'Корея' },
+    { value: 'europe', label: 'Европа' }
   ];
 
   // Опции наличия

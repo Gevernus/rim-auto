@@ -1,13 +1,9 @@
-import { useDelivery } from '../hooks/useDelivery';
+import { useDelivery } from '../delivery/hooks/useDelivery';
 
 const RimAutoPrice = ({ vehicle, className = '' }) => {
-  const { calculateTotalPriceInRubles, selectedCity } = useDelivery();
+  const { selectedCity } = useDelivery();
   
   if (!vehicle?.price?.amount || !selectedCity) return null;
-
-  const priceInfo = calculateTotalPriceInRubles(vehicle.price.amount, 'CNY');
-  
-  if (!priceInfo) return null;
 
   return (
     <div className={`${className}`}>
@@ -22,24 +18,24 @@ const RimAutoPrice = ({ vehicle, className = '' }) => {
           </span>
         </div>
         <div className="text-xl font-bold text-primary-600 dark:text-primary-400">
-          {priceInfo.formattedTotal}
+          {vehicle.price.amount} CNY
         </div>
       </div>
 
-      {/* Детализация цены */}
+      {/* Информация о доставке */}
       <div className="text-xs text-text-muted dark:text-dark-text-muted space-y-1">
         <div className="flex justify-between">
           <span>Стоимость авто:</span>
-          <span>{priceInfo.formattedPrice}</span>
+          <span>{vehicle.price.amount} CNY</span>
         </div>
         <div className="flex justify-between">
           <span>Доставка:</span>
-          <span>{priceInfo.formattedDelivery}</span>
+          <span>Рассчитывается отдельно</span>
         </div>
         <div className="border-t border-border dark:border-dark-border pt-1 mt-1">
           <div className="flex justify-between font-medium text-text-primary dark:text-dark-text-primary">
             <span>Итого:</span>
-            <span>{priceInfo.formattedTotal}</span>
+            <span>{vehicle.price.amount} CNY + доставка</span>
           </div>
         </div>
       </div>

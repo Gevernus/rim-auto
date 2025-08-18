@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useAutoCarousel } from "../../shared/hooks/useAutoCarousel";
 import { useAccordion } from "../../shared/hooks/useAccordion";
 import Albert from "../../assets/about/Albert.jpg";
@@ -12,6 +12,7 @@ import Nikita from "../../assets/about/Nikita.jpg";
 import Rasskazov from "../../assets/about/Rasskazov.jpg";
 import Sergei from "../../assets/about/Sergei.jpg";
 import Valeria from "../../assets/about/Valeria.jpg";
+import LiChang from "../../assets/about/liChan.jpg";
 import bankAlfa from "../../assets/partners/bank_alfa.jpg";
 import bankOtp from "../../assets/partners/bank_otp.jpg";
 import bankRshb from "../../assets/partners/bank_rshb.jpg";
@@ -37,6 +38,7 @@ const team = [
   { photo: Dmitry, name: "Дмитрий", role: "Менеджер", socials: {} },
   { photo: Valeria, name: "Валерия", role: "Бухгалтер", socials: {} },
   { photo: Denis, name: "Денис", role: "Юрист", socials: {} },
+  { photo: LiChang, name: "Ли Чан", role: "Руководитель авто салона г.Хоргос (Китай)", socials: {} },
 ];
 
 const offices = [
@@ -100,7 +102,7 @@ const partners = [
 const AboutPage = () => {
   const carouselRef = useRef(null);
   const { attach, pause, resume } = useAutoCarousel({ step: 192, intervalMs: 2500, enabled: true, loop: true });
-  const { openIndex, isOpen, toggle } = useAccordion();
+  const { isOpen, toggle } = useAccordion();
 
   useEffect(() => {
     if (!carouselRef.current) return;

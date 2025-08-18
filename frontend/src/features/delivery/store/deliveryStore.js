@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { getCityById, getDeliveryZoneInfo, searchCities, convertToRubles, formatPriceInRubles } from '../utils/cities';
+import { getDeliveryZoneInfo, searchCities, fetchCities } from '../utils/cities';
 
 const useDeliveryStore = create((set, get) => ({
   // Состояние
-  selectedCity: getCityById('moscow'), // Москва по умолчанию
+  selectedCity: null, // Будет загружен асинхронно
   isLoading: false,
   searchQuery: '',
   searchResults: [],
@@ -13,24 +13,40 @@ const useDeliveryStore = create((set, get) => ({
   
   setIsLoading: (loading) => set({ isLoading: loading }),
   
-  setSearchQuery: (query) => {
-    const results = query.length >= 2 ? searchCities(query) : [];
-    set({ searchQuery: query, searchResults: results });
+  setSearchQuery: async (query) => {
+    if (query.length >= 2) {
+      try {
+        const results = await searchCities(query);
+        set({ searchQuery: query, searchResults: results });
+      } catch (error) {
+        console.error('Error searching cities:', error);
+        set({ searchQuery: query, searchResults: [] });
+      }
+    } else {
+      set({ searchQuery: query, searchResults: [] });
+    }
   },
   
-  selectCity: (cityId) => {
+  selectCity: async (city) => {
     set({ isLoading: true });
     
-    // Имитация загрузки (для будущего API)
-    setTimeout(() => {
-      const city = getCityById(cityId);
-      set({ 
-        selectedCity: city,
-        searchQuery: '',
-        searchResults: [],
-        isLoading: false 
-      });
-    }, 300);
+    try {
+      // Если city - это объект города, используем его напрямую
+      if (typeof city === 'object' && city.id) {
+        set({ 
+          selectedCity: city,
+          searchQuery: '',
+          searchResults: [],
+          isLoading: false 
+        });
+      } else {
+        console.error('Invalid city object:', city);
+        set({ isLoading: false });
+      }
+    } catch (error) {
+      console.error('Error selecting city:', error);
+      set({ isLoading: false });
+    }
   },
   
   clearCity: () => set({ 
@@ -40,59 +56,37 @@ const useDeliveryStore = create((set, get) => ({
   }),
 
   // Вычисляемые значения
-  getDeliveryInfo: () => {
+  getDeliveryInfo: async () => {
     const { selectedCity } = get();
     if (!selectedCity) return null;
 
-    const zoneInfo = getDeliveryZoneInfo(selectedCity.delivery_zone);
+    const zoneInfo = await getDeliveryZoneInfo(selectedCity.delivery_zone);
     
     return {
       city: selectedCity,
+      city_name: selectedCity.name,
+      delivery_zone: selectedCity.delivery_zone,
       zone: zoneInfo,
-      estimated_days: selectedCity.delivery_days
+      estimated_days: null // Поле delivery_days больше не используется
     };
   },
 
-  calculateDeliveryCost: (vehiclePrice = 0) => {
-    const { selectedCity } = get();
-    if (!selectedCity) return null;
 
-    const zoneInfo = getDeliveryZoneInfo(selectedCity.delivery_zone);
-    
-    // Базовая логика расчета
-    const baseCost = zoneInfo.base_cost;
-    const vehicleValueFactor = Math.min(vehiclePrice * 0.01, 50000); // 1% от стоимости, но не более 50к
-    
-    const totalCost = baseCost + vehicleValueFactor;
-    
-    return {
-      base_cost: baseCost,
-      vehicle_factor: vehicleValueFactor,
-      total_cost: Math.round(totalCost),
-      delivery_days: selectedCity.delivery_days,
-      zone_name: zoneInfo.name
-    };
+  // Инициализация города по умолчанию
+  initializeDefaultCity: async () => {
+    try {
+      // Получаем все города и выбираем Москву
+      const cities = await fetchCities();
+      const moscowCity = cities.find(city => city.name === 'Москва');
+      if (moscowCity) {
+        set({ selectedCity: moscowCity });
+      }
+    } catch (error) {
+      console.warn('Could not load default city:', error);
+    }
   },
 
-  calculateTotalPriceInRubles: (vehiclePrice, vehicleCurrency = 'CNY') => {
-    const { calculateDeliveryCost } = get();
-    
-    if (!vehiclePrice) return null;
-    
-    const priceInRubles = convertToRubles(vehiclePrice, vehicleCurrency);
-    const deliveryCost = calculateDeliveryCost(priceInRubles);
-    
-    if (!deliveryCost) return { priceInRubles, totalPrice: priceInRubles };
-    
-    return {
-      priceInRubles,
-      deliveryCost: deliveryCost.total_cost,
-      totalPrice: priceInRubles + deliveryCost.total_cost,
-      formattedPrice: formatPriceInRubles(priceInRubles),
-      formattedDelivery: formatPriceInRubles(deliveryCost.total_cost),
-      formattedTotal: formatPriceInRubles(priceInRubles + deliveryCost.total_cost)
-    };
-  }
+
 }));
 
 export { useDeliveryStore }; 

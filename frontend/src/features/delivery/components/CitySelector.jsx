@@ -20,16 +20,16 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
   // Уведомляем родительский компонент о выбранном городе при инициализации
   useEffect(() => {
     if (selectedCity && onCitySelect) {
-      onCitySelect(selectedCity.id);
+      onCitySelect(selectedCity);
     }
   }, [selectedCity, onCitySelect]);
 
-  const handleCitySelect = (cityId) => {
-    selectCity(cityId);
+  const handleCitySelect = (city) => {
+    selectCity(city);
     setIsOpen(false);
     
     if (onCitySelect) {
-      onCitySelect(cityId);
+      onCitySelect(city);
     }
   };
 
@@ -75,7 +75,7 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
                 {selectedCity.name}
               </div>
               <div className="text-xs text-primary-600 dark:text-primary-400">
-                {selectedCity.region} • Зона {selectedCity.delivery_zone} • {selectedCity.delivery_days} дней
+                {selectedCity.region} • Зона {selectedCity.delivery_zone}
               </div>
             </div>
             <Button
@@ -130,7 +130,7 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
             {searchResults.map((city) => (
               <button
                 key={city.id}
-                onClick={() => handleCitySelect(city.id)}
+                onClick={() => handleCitySelect(city)}
                 className="w-full text-left px-3 py-2 rounded-md hover:bg-surface dark:hover:bg-dark-surface-secondary 
                          transition-colors group"
               >
@@ -138,7 +138,7 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
                   {city.name}
                 </div>
                 <div className="text-xs text-text-secondary dark:text-dark-text-secondary">
-                  {city.region} • Зона {city.delivery_zone} • {city.delivery_days} дней
+                  {city.region} • Зона {city.delivery_zone}
                 </div>
               </button>
             ))}

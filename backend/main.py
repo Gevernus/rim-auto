@@ -41,6 +41,22 @@ from app.services.application_service import (
     get_leasing_applications,
     update_application_status
 )
+from app.services.city_service import (
+    create_city,
+    get_cities,
+    get_city_by_id,
+    update_city,
+    delete_city,
+    search_cities,
+    get_delivery_regions,
+    initialize_default_cities
+)
+from app.services.delivery_zone_service import (
+    create_delivery_zone, get_delivery_zones, get_delivery_zone_by_id,
+    update_delivery_zone, delete_delivery_zone, initialize_default_delivery_zones
+)
+from app.models.city import CityCreate, CityUpdate
+from app.models.delivery_zone import DeliveryZoneCreate, DeliveryZoneUpdate
 from app.services.review_service import (
     get_reviews, 
     create_review, 
@@ -75,6 +91,22 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Автоматическая инициализация при запуске
+@app.on_event("startup")
+async def startup_event():
+    """Автоматическая инициализация базовых данных при запуске"""
+    print("🚀 Запуск приложения...")
+    
+    # Инициализируем зоны доставки
+    print("📦 Инициализация зон доставки...")
+    initialize_default_delivery_zones()
+    
+    # Инициализируем города
+    print("🏙️ Инициализация городов...")
+    initialize_default_cities()
+    
+    print("✅ Приложение готово к работе!")
 
 # Пути для статических файлов (Docker volumes)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -484,6 +516,130 @@ def api_test_custom_selector(data: dict):
             "message": "Selector is required"
         }
     return test_custom_selector(selector)
+
+# ====== ГОРОДА ДОСТАВКИ ======
+@app.get("/api/cities")
+def api_get_cities(
+    skip: int = 0,
+    limit: int = 100,
+    region: Optional[str] = None,
+    delivery_zone: Optional[str] = None,
+    is_active: Optional[bool] = None
+):
+    """Получение списка городов с фильтрацией"""
+    return get_cities(skip, limit, region, delivery_zone, is_active)
+
+@app.get("/api/cities/search")
+def api_search_cities(query: str = Query(..., min_length=2), limit: int = 10):
+    """Поиск городов по названию или региону"""
+    return search_cities(query, limit)
+
+@app.get("/api/cities/{city_id}")
+def api_get_city(city_id: str):
+    """Получение города по ID"""
+    city = get_city_by_id(city_id)
+    if not city:
+        raise HTTPException(status_code=404, detail="City not found")
+    return city
+
+@app.post("/api/cities")
+def api_create_city(city_data: dict, current_user = Depends(get_current_user_or_debug)):
+    """Создание нового города (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    return create_city(CityCreate(**city_data))
+
+@app.put("/api/cities/{city_id}")
+def api_update_city(city_id: str, city_data: dict, current_user = Depends(get_current_user_or_debug)):
+    """Обновление города (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    city = update_city(city_id, CityUpdate(**city_data))
+    if not city:
+        raise HTTPException(status_code=404, detail="City not found")
+    return city
+
+@app.delete("/api/cities/{city_id}")
+def api_delete_city(city_id: str, current_user = Depends(get_current_user_or_debug)):
+    """Удаление города (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    success = delete_city(city_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="City not found")
+    
+    return {"success": True, "message": "City deleted"}
+
+@app.get("/api/cities/regions/delivery")
+def api_get_delivery_regions():
+    """Получение информации о регионах доставки"""
+    return get_delivery_regions()
+
+@app.post("/api/cities/initialize")
+def api_initialize_cities(current_user = Depends(get_current_user_or_debug)):
+    """Инициализация базовых городов (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    initialize_default_cities()
+    return {"success": True, "message": "Default cities initialized"}
+
+# ====== ЗОНЫ ДОСТАВКИ ======
+@app.get("/api/delivery-zones")
+def api_get_delivery_zones(skip: int = 0, limit: int = 100):
+    """Получение списка зон доставки"""
+    return get_delivery_zones(skip, limit)
+
+@app.get("/api/delivery-zones/{zone_id}")
+def api_get_delivery_zone(zone_id: str):
+    """Получение зоны доставки по ID"""
+    zone = get_delivery_zone_by_id(zone_id)
+    if not zone:
+        raise HTTPException(status_code=404, detail="Delivery zone not found")
+    return zone
+
+@app.post("/api/delivery-zones")
+def api_create_delivery_zone(zone_data: dict, current_user = Depends(get_current_user_or_debug)):
+    """Создание новой зоны доставки (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    return create_delivery_zone(DeliveryZoneCreate(**zone_data))
+
+@app.put("/api/delivery-zones/{zone_id}")
+def api_update_delivery_zone(zone_id: str, zone_data: dict, current_user = Depends(get_current_user_or_debug)):
+    """Обновление зоны доставки (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    zone = update_delivery_zone(zone_id, DeliveryZoneUpdate(**zone_data))
+    if not zone:
+        raise HTTPException(status_code=404, detail="Delivery zone not found")
+    return zone
+
+@app.delete("/api/delivery-zones/{zone_id}")
+def api_delete_delivery_zone(zone_id: str, current_user = Depends(get_current_user_or_debug)):
+    """Удаление зоны доставки (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    success = delete_delivery_zone(zone_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Delivery zone not found")
+    
+    return {"success": True, "message": "Delivery zone deleted"}
+
+@app.post("/api/delivery-zones/initialize")
+def api_initialize_delivery_zones(current_user = Depends(get_current_user_or_debug)):
+    """Инициализация базовых зон доставки (только для админов)"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    initialize_default_delivery_zones()
+    return {"success": True, "message": "Default delivery zones initialized"}
 
 # ====== КОРНЕВОЙ ЭНДПОИНТ ======
 @app.get("/")

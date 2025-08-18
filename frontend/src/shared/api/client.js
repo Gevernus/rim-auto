@@ -190,5 +190,25 @@ export const reviewsApi = {
   updateReview: (id, data) => api.patch(`/reviews/${id}`, data),
 };
 
+export const citiesApi = {
+  getCities: (params = {}) => api.get('/cities', { params }),
+  searchCities: (query, limit = 10) => api.get('/cities/search', { params: { query, limit } }),
+  getCityById: (id) => api.get(`/cities/${id}`),
+  createCity: (data) => api.post('/cities', data),
+  updateCity: (id, data) => api.put(`/cities/${id}`, data),
+  deleteCity: (id) => api.delete(`/cities/${id}`),
+  getDeliveryRegions: () => api.get('/cities/regions/delivery'),
+  initializeCities: () => api.post('/cities/initialize'),
+};
+
+export const deliveryZonesApi = {
+  getDeliveryZones: (params = {}) => api.get('/delivery-zones', { params }),
+  getDeliveryZoneById: (id) => api.get(`/delivery-zones/${id}`),
+  createDeliveryZone: (data) => api.post('/delivery-zones', data),
+  updateDeliveryZone: (id, data) => api.put(`/delivery-zones/${id}`, data),
+  deleteDeliveryZone: (id) => api.delete(`/delivery-zones/${id}`),
+  initializeDeliveryZones: () => api.post('/delivery-zones/initialize'),
+};
+
 export default apiClient;
 export { apiClient }; 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTelegramAuth } from '../../features/auth';
-import { CreditTab, LeasingTab, ReviewsTab, ContractsTab } from './tabs';
+import { CreditTab, LeasingTab, ReviewsTab, ContractsTab, CitiesTab, DeliveryZonesTab } from './tabs';
 
 const AdminPage = () => {
   const { user } = useTelegramAuth();
@@ -12,12 +12,15 @@ const AdminPage = () => {
   const canSeeLeasing = permissions.includes('admin:leasing:view') || true;
   const canSeeReviews = permissions.includes('admin:reviews:view') || true;
   const canSeeContracts = permissions.includes('admin:contracts:view') || true;
+  const canSeeCities = permissions.includes('admin:cities:view') || true;
 
   const tabsConfig = [
     canSeeCredit && { key: 'credit', label: 'Кредитные заявки' },
     canSeeLeasing && { key: 'leasing', label: 'Лизинговые заявки' },
     canSeeReviews && { key: 'reviews', label: 'Отзывы' },
-    canSeeContracts && { key: 'contracts', label: 'Договора' }
+    canSeeContracts && { key: 'contracts', label: 'Договора' },
+    canSeeCities && { key: 'cities', label: 'Города доставки' },
+    canSeeCities && { key: 'delivery-zones', label: 'Зоны доставки' }
   ].filter(Boolean);
 
   return (
@@ -37,7 +40,7 @@ const AdminPage = () => {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === t.key
                   ? 'bg-primary-600 text-white'
-                  : 'bg-surface-elevated dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-surface dark:hover:bg-dark-surface'
+                  : 'bg-surface-elevated dark:bg-dark-surface-elevated text-text-primary dark:text-dark-text-primary hover:bg-primary-400 dark:hover:bg-primary-400'
               }`}
             >
               {t.label}
@@ -51,6 +54,8 @@ const AdminPage = () => {
           {activeTab === 'leasing' && <LeasingTab />}
           {activeTab === 'reviews' && <ReviewsTab />}
           {activeTab === 'contracts' && <ContractsTab />}
+          {activeTab === 'cities' && <CitiesTab />}
+          {activeTab === 'delivery-zones' && <DeliveryZonesTab />}
         </div>
       </div>
     </div>

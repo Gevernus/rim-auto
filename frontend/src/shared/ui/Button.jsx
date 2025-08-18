@@ -18,6 +18,7 @@ const Button = forwardRef(({
     outline: 'border border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-500 dark:hover:bg-primary-900/20',
     ghost: 'border border-secondary-100 text-secondary-600 hover:bg-secondary-100 focus:ring-secondary-500 dark:text-secondary-300 dark:hover:bg-secondary-700',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm',
+	info: 'border border-secondary-100 text-secondary-600 bg-info-300 dark:bg-dark-info-300 hover:bg-info-500 focus:ring-info-500 dark:text-secondary-300 dark:hover:bg-dark-info-500',
   };
   
   const sizes = {
