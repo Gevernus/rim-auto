@@ -519,4 +519,106 @@
   .shadow-strong {
     box-shadow: 0 8px 32px rgb(0 0 0 / 0.16);
   }
+
+  /* Swiper стили */
+  .swiper {
+    width: 100%;
+    height: 100%;
+  }
+
+  .swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .swiper-button-next:hover::after,
+  .swiper-button-prev:hover::after {
+    color: var(--color-primary-700);
+  }
+
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-size: 18px;
+    font-weight: bold;
+	color: var(--color-primary-600);
+  }
+
+  /* Кастомизация пагинации через переменные только для нашей карусели */
+  .carousel-swiper {
+    --swiper-pagination-color: var(--color-primary-600);
+    --swiper-pagination-bullet-inactive-color: var(--color-primary-500);
+    --swiper-pagination-bullet-inactive-opacity: 0.5;
+    --swiper-pagination-bullet-size: 8px;
+    --swiper-pagination-bullet-horizontal-gap: 6px;
+  }
+
+  .swiper-pagination .swiper-pagination-bullet {
+    background: var(--color-primary-500);
+    opacity: 0.5;
+  }
+
+  .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: var(--color-primary-600);
+  }
+
+  /* Темная тема для Swiper */
+  [data-theme="dark"] .swiper-button-next::after,
+  [data-theme="dark"] .swiper-button-prev::after {
+    color: var(--color-primary-600);
+  }
+
+  [data-theme="dark"] .swiper-button-next:hover::after,
+  [data-theme="dark"] .swiper-button-prev:hover::after {
+    color: var(--color-primary-400);
+  }
+
+  [data-theme="dark"] .swiper-pagination-bullet {
+    background: var(--color-primary-600);
+  }
+
+  [data-theme="dark"] .swiper-pagination-bullet-active {
+    background: var(--color-primary-400);
+  }
+
+  /* Fallback карусель для случаев когда Swiper недоступен */
+  .carousel-fallback {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .carousel-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .carousel-item {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+  }
+
+  /* Скрываем скроллбар для fallback карусели */
+  .carousel-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 } 

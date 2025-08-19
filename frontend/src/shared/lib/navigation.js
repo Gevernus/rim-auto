@@ -81,6 +81,7 @@ export const routes = {
   order: '/order',
   admin: '/admin',
   detailingCompany: (slug) => `/detailing/${slug}`,
+  detailingService: (companySlug, serviceSlug) => `/detailing/${companySlug}/service/${serviceSlug}`,
 };
 
 // Функция для навигации без хуков (для использования в обработчиках)

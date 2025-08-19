@@ -22,7 +22,7 @@ import { MotoPage } from '../pages/moto';
 import { SpecialTechPage } from '../pages/special-tech';
 import { PartsPage } from '../pages/parts';
 import { ContractsPage } from '../pages/contracts';
-import { DetailingCompaniesPage, CompanyServicesPage } from '../pages/detailing';
+import { DetailingCompaniesPage, PrimeWrapPage, PrimeWrapDetailPage } from '../pages/detailing';
 import { InsurancePage, InsuranceCompanyPage } from '../pages/insurance';
 import { GuaranteePage, GuaranteeCompanyPage } from '../pages/guarantee';
 import { StationsPage, StationServicesPage } from '../pages/sto';
@@ -247,7 +247,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/detailing/:slug",
-    element: <Layout><CompanyServicesPage /></Layout>,
+    element: <Layout><PrimeWrapPage /></Layout>,
+  },
+  {
+    path: "/detailing/:companySlug/service/:serviceSlug",
+    element: <Layout><PrimeWrapDetailPage /></Layout>,
   },
   
   // Дополнительные страницы

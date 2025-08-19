@@ -9,7 +9,7 @@ export const openURL = (url, options = {}) => {
     try {
       window.Telegram.WebApp.openLink(url, { try_instant_view: false, same_window: false });
       return;
-    } catch (_) {
+    } catch {
       // fallthrough to web
     }
   }
@@ -32,7 +32,7 @@ export const openPhoneDialer = (phone) => {
     try {
       window.Telegram.WebApp.openLink(telUrl, { same_window: true });
       return;
-    } catch (_) {
+    } catch {
       // fallthrough
     }
   }

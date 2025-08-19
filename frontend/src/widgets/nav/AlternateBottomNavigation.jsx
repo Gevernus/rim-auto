@@ -1,13 +1,24 @@
+import { useState } from 'react';
 import { useBottomNav } from '../../shared/lib/bottom-nav/context';
+import { ChatPopup } from '../../shared/ui';
+import { buildTelegramUrl, buildWhatsAppUrl } from '../../shared/lib/platform';
 
 const AlternateBottomNavigation = () => {
   const { config } = useBottomNav();
+  const [isChatOpen, setIsChatOpen] = useState(false);
   if (!config) return null;
 
   const {
-    chat: { onClick: onChatClick, label: chatLabel = 'Чат', icon: chatIcon } = {},
+    chat: { onClick: onChatClick, label: chatLabel = 'Чат', icon: chatIcon, telegramUrl, whatsAppUrl } = {},
     call: { onClick: onCallClick, label: callLabel = 'Звонок', icon: callIcon } = {},
   } = config;
+
+  // Нормализация вынесена в платформенный модуль (web/RN)
+
+  // Фолбэк телефона ищем в разных местах конфига
+  const fallbackPhone = config?.chat?.phone || config?.phone || config?.call?.phone;
+  const normalizedWhatsAppUrl = buildWhatsAppUrl(whatsAppUrl, fallbackPhone);
+  const normalizedTelegramUrl = buildTelegramUrl(telegramUrl, fallbackPhone);
 
   const Button = ({ onClick, icon, label }) => (
     <button
@@ -46,7 +57,7 @@ const AlternateBottomNavigation = () => {
 
       {/* Основной контейнер */}
       <div className="relative flex justify-around items-center h-20 px-4 gap-4">
-        <Button onClick={onChatClick} icon={chatIcon ?? (
+        <Button onClick={onChatClick ?? (() => setIsChatOpen(true))} icon={chatIcon ?? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
@@ -61,6 +72,14 @@ const AlternateBottomNavigation = () => {
 
       {/* Дополнительная тень снизу с градиентом */}
       <div className="absolute inset-x-0 -bottom-1 h-2 bg-gradient-to-t from-black/20 via-black/10 to-transparent" />
+
+      <ChatPopup 
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        telegramUrl={normalizedTelegramUrl}
+        whatsAppUrl={normalizedWhatsAppUrl}
+        title={chatLabel}
+      />
     </nav>
   );
 };

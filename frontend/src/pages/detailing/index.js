@@ -1,2 +1,3 @@
 export { DetailingCompaniesPage } from './DetailingCompaniesPage';
-export { CompanyServicesPage } from './CompanyServicesPage'; 
+export { PrimeWrapPage } from './PrimeWrapPage';
+export { PrimeWrapDetailPage } from './PrimeWrapDetailPage'; 

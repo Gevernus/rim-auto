@@ -192,6 +192,23 @@ export const adaptVehicle = (backendCar) => {
 };
 ```
 
+#### 4. UI компоненты (`shared/ui/Carousel.jsx`)
+```javascript
+// Платформо-независимая карусель
+<Carousel
+  items={images}
+  renderItem={(image) => <img src={image} />}
+  showNavigation={true}
+  autoplay={true}
+/>
+```
+
+**Архитектура карусели:**
+- **Веб**: Swiper.js с условным импортом + fallback
+- **RN**: Нативные ScrollView + Gesture Handler
+- **API**: Единый интерфейс для обеих платформ
+- **SSR**: Поддержка серверного рендеринга
+
 ### Этапы миграции:
 1. **Заменить роутинг**: `react-router-dom` → `react-navigation`
 2. **Адаптировать стили**: TailwindCSS → NativeWind
