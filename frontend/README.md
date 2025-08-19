@@ -203,6 +203,32 @@ export const adaptVehicle = (backendCar) => {
 />
 ```
 
+#### 5. Видеокарусель (`shared/ui/VideoCarousel.jsx` и `VideoPlayer.jsx`)
+```jsx
+import { VideoCarousel } from './shared/ui';
+
+<VideoCarousel
+  items={[
+    { src: '/src/assets/detailing/vinyl/vinyl-wrap-1.mp4', poster: '/src/assets/detailing/primeWrap.jpg', title: 'Оклейка винилом' },
+    // можно добавлять ещё ролики
+  ]}
+  autoPlayActive={true}
+  muted={true}
+  showNavigation={true}
+  showPagination={true}
+/>
+```
+
+Особенности:
+- **Автопауза и автоплей активного слайда**: при смене слайда все видео, кроме текущего, ставятся на паузу и сбрасываются
+- **Единый API** с `Carousel` для последующей миграции на RN
+- **Платформо-независимость**: в RN будет доступна реализация `VideoPlayer.native.js` и `Carousel.native.js`
+
+Рекомендации по ассетам:
+- Формат: MP4 (H.264)
+- Разрешение: 720p–1080p
+- Размер: до 10–15 МБ
+
 **Архитектура карусели:**
 - **Веб**: Swiper.js с условным импортом + fallback
 - **RN**: Нативные ScrollView + Gesture Handler

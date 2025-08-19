@@ -7,6 +7,7 @@ import logo from '../../assets/logo.jpg';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDetailingDropdownOpen, setIsDetailingDropdownOpen] = useState(false);
   const { navigateTo } = useAppNavigation();
   const { pathname } = useAppLocation();
   
@@ -23,7 +24,31 @@ const Header = () => {
     initialize();
   }, [initialize]);
 
+  // Закрытие выпадающего меню при клике вне его области
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDetailingDropdownOpen && !event.target.closest('.detailing-dropdown')) {
+        setIsDetailingDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDetailingDropdownOpen]);
+
   const isTest = true;
+
+  // Услуги детейлинга
+  const detailingServices = [
+    { name: 'Оклейка в броне плёнку', href: routes.detailingService('prime-wrap', 'armor-film') },
+    { name: 'Оклейка в виниловую пленку', href: routes.detailingService('prime-wrap', 'vinyl-wrap') },
+    { name: 'Полировка/Керамика', href: routes.detailingService('prime-wrap', 'polish-ceramic') },
+    { name: 'Бронирование лобового стекла', href: routes.detailingService('prime-wrap', 'windshield-protection') },
+    { name: 'Шумоизоляция', href: routes.detailingService('prime-wrap', 'soundproofing') },
+    { name: 'Окрас дисков/Суппортов', href: routes.detailingService('prime-wrap', 'wheel-painting') },
+    { name: 'Установка доводчиков', href: routes.detailingService('prime-wrap', 'door-closers') },
+    { name: 'Анти хром', href: routes.detailingService('prime-wrap', 'anti-chrome') },
+  ];
 
   // Основное меню
   const mainNavigation = [
@@ -59,6 +84,16 @@ const Header = () => {
   const handleNavClick = (href) => {
     navigateTo(href);
     setIsMobileMenuOpen(false);
+    setIsDetailingDropdownOpen(false);
+  };
+
+  const handleDetailingClick = () => {
+    setIsDetailingDropdownOpen(!isDetailingDropdownOpen);
+  };
+
+  const handleServiceClick = (href) => {
+    navigateTo(href);
+    setIsDetailingDropdownOpen(false);
   };
 
   const handleOrderClick = () => {
@@ -101,6 +136,48 @@ const Header = () => {
                 {item.name}
               </button>
             ))}
+            
+            {/* Детейлинг с выпадающим меню */}
+            <div className="relative detailing-dropdown">
+              <button
+                onClick={handleDetailingClick}
+                className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
+                  pathname.includes('/detailing')
+                    ? 'text-primary-600 border-b-2 border-primary-600'
+                    : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary'
+                }`}
+              >
+                Детейлинг
+                <svg 
+                  className={`w-4 h-4 transition-transform ${isDetailingDropdownOpen ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {/* Выпадающее меню */}
+              {isDetailingDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg shadow-lg z-50">
+                  <div className="py-2">
+                    <div className="px-4 py-2 text-xs font-semibold text-text-primary dark:text-dark-text-primary uppercase tracking-wider">
+                      Prime Wrap
+                    </div>
+                    {detailingServices.map((service) => (
+                      <button
+                        key={service.name}
+                        onClick={() => handleServiceClick(service.href)}
+                        className="w-full px-4 py-2 text-sm text-left text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors"
+                      >
+                        {service.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Информация о компании */}
@@ -132,9 +209,7 @@ const Header = () => {
                 )}
               </div>
             )}
-            <Button onClick={handleOrderClick}>
-              Заказать авто
-            </Button>
+
           </div>
 
           {/* Планшетное меню */}
@@ -160,7 +235,7 @@ const Header = () => {
         </div>
 
         {/* Дополнительная навигация (десктоп) */}
-        <div className="hidden xl:block border-t border-border dark:border-dark-border">
+        <div className="hidden xl:flex  justify-between items-center  border-t border-border dark:border-dark-border">
           <nav className="flex space-x-6 py-2">
             {secondaryNavigation.map((item) => (
               <button
@@ -190,6 +265,9 @@ const Header = () => {
               </button>
             ))}
           </nav>
+		  <Button onClick={handleOrderClick}>
+              Заказать авто
+            </Button>
         </div>
 
         {/* Мобильное выпадающее меню */}
@@ -238,6 +316,18 @@ const Header = () => {
                     {item.name}
                   </button>
                 ))}
+                
+                {/* Детейлинг в мобильном меню */}
+                <button
+                  onClick={() => handleNavClick(routes.detailingCompany('prime-wrap'))}
+                  className={`block px-3 py-2 text-base font-medium w-full text-left rounded-md transition-colors ${
+                    pathname.includes('/detailing')
+                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                      : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary'
+                  }`}
+                >
+                  Детейлинг
+                </button>
               </div>
 
               {/* Дополнительное меню */}
@@ -346,6 +436,18 @@ const Header = () => {
                     {item.name}
                   </button>
                 ))}
+                
+                {/* Детейлинг в планшетном меню */}
+                <button
+                  onClick={() => handleNavClick(routes.detailingCompany('prime-wrap'))}
+                  className={`block px-3 py-2 text-base font-medium w-full text-left rounded-md transition-colors ${
+                    pathname.includes('/detailing')
+                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                      : 'text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary'
+                  }`}
+                >
+                  Детейлинг
+                </button>
               </div>
 
               {/* Дополнительное меню */}

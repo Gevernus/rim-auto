@@ -59,8 +59,8 @@ const COMPANY_META = {
     name: 'Prime Wrap',
     logo: primeWrap,
     phone: '+7 (965) 285-58-04',
-    whatsAppUrl: 'https://wa.me/79652855804',
-    telegramUrl: 'https://t.me/79652855804',
+    whatsAppUrl: 'https://wa.me/7 965 285-58-04',
+    // telegramUrl: 'https://t.me/7 965 285-58-04',
     description: 'Профессиональные услуги детейлинга и оклейки автомобилей в Москве. Более 5 лет опыта в сфере тюнинга и защиты автомобилей.',
     address: 'г. Москва, Дмитровское шоссе, 163А к1',
     workingHours: 'Пн-Вс: 10:00 - 22:00'

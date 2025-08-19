@@ -1,8 +1,8 @@
 import { openURL, openPhoneDialer, buildTelegramUrl, buildWhatsAppUrl } from '../lib/platform';
 
 const DesktopContactBar = ({ telegramUrl, whatsAppUrl, phone, className = '' }) => {
-  const normalizedWhatsApp = buildWhatsAppUrl(whatsAppUrl, phone);
-  const normalizedTelegram = buildTelegramUrl(telegramUrl, phone);
+  const normalizedWhatsApp = whatsAppUrl ? buildWhatsAppUrl(whatsAppUrl) : '';
+  const normalizedTelegram = telegramUrl ? buildTelegramUrl(telegramUrl) : '';
 
   const handleOpen = (url) => {
     if (!url) return;

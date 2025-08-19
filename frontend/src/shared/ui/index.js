@@ -18,3 +18,5 @@ export { ThemeToggle } from './ThemeToggle';
 export { ArrowRight } from './ArrowRight'; 
 export { ChatPopup } from './ChatPopup';
 export { DesktopContactBar } from './DesktopContactBar';
+export { VideoPlayer } from './VideoPlayer';
+export { VideoCarousel } from './VideoCarousel';

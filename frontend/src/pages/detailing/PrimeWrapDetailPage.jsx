@@ -1,8 +1,27 @@
 import { useAppParams, useAppNavigation, routes } from '../../shared/lib/navigation';
 import { useEffect, useMemo } from 'react';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { Carousel, DesktopContactBar } from '../../shared/ui';
+import { Carousel, DesktopContactBar, VideoPlayer, VideoCarousel } from '../../shared/ui';
 import primeWrap from '../../assets/detailing/primeWrap.jpg';
+import vinylWrapVideo from '../../assets/detailing/vinyl/vinyl-wrap-1.mp4';
+import vinylWrapVideo2 from '../../assets/detailing/vinyl/vinyl-wrap-2.mp4';
+import armorFilmVideo from '../../assets/detailing/vinyl/vinyl-wrap-3.mp4';
+import vinylAuto1 from '../../assets/detailing/vinyl/auto1.jpg';
+import vinylAuto2 from '../../assets/detailing/vinyl/auto2.jpg';
+import vinylAuto3 from '../../assets/detailing/vinyl/auto3.jpg';
+import armorFilmAuto1 from '../../assets/detailing/armor/auto-1.jpg';
+import armorFilmAuto2 from '../../assets/detailing/armor/auto-2.jpg';
+import armorFilmAuto3 from '../../assets/detailing/armor/auto-3.jpg';
+
+
+// Утилита для управления видео файлами
+const VIDEO_ASSETS = {
+  'vinyl-wrap': [vinylWrapVideo, vinylWrapVideo2],
+  'armor-film': [armorFilmVideo],
+  // Добавляйте новые видео здесь по мере появления
+  // 'armor-film': armorFilmVideo,
+  // 'polish-ceramic': polishVideo,
+};
 
 
 
@@ -27,11 +46,11 @@ const SERVICE_DETAILS = {
       <p>Процесс включает в себя тщательную подготовку поверхности, точную раскройку пленки по размерам деталей и профессиональную установку с использованием специальных инструментов.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      armorFilmAuto1,
+      armorFilmAuto2,
+      armorFilmAuto3
     ],
-    // video: 'https://example.com/armor-film-demo.mp4',
+    videos: VIDEO_ASSETS['armor-film'],
     price: 'от 15,000 ₽',
     duration: '1-2 дня'
   },
@@ -55,11 +74,11 @@ const SERVICE_DETAILS = {
       <p>Полная оклейка кузова, частичная оклейка элементов, создание уникальных дизайнов и рекламных изображений.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      vinylAuto1,
+      vinylAuto2,
+      vinylAuto3
     ],
-    // video: 'https://example.com/vinyl-wrap-demo.mp4',
+    videos: VIDEO_ASSETS['vinyl-wrap'],
     price: 'от 25,000 ₽',
     duration: '3-5 дней'
   },
@@ -234,8 +253,8 @@ const COMPANY_META = {
   'prime-wrap': {
     name: 'Prime Wrap',
     logo: primeWrap,
-	whatsAppUrl: 'https://wa.me/79652855804',
-    telegramUrl: 'https://t.me/79652855804',
+	whatsAppUrl: 'https://wa.me/7 965 285-58-04',
+	phone: '+7 (965) 285-58-04',
   },
 };
 
@@ -256,7 +275,7 @@ const PrimeWrapDetailPage = () => {
       label: 'Звонок',
       phone: company?.phone,
     },
-  }), [company?.chatUrl, company?.phone]);
+  }), [company?.telegramUrl, company?.whatsAppUrl, company?.phone]);
 
   const { activate, deactivate } = useAltBottomNav(altNavConfig);
 
@@ -315,7 +334,7 @@ const PrimeWrapDetailPage = () => {
         {/* Фото галерея */}
         {service.images && service.images.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-text-primary dark:text-dark-text-primary mb-4">
+            <h2 className="text-xl font-semibold text-primary-700 dark:text-primary-600 mb-4">
               Фотографии работ
             </h2>
             <Carousel
@@ -347,27 +366,30 @@ const PrimeWrapDetailPage = () => {
         )}
 
         {/* Видео */}
-        {service.video && (
+        {(service.videos?.length > 0 || service.video) && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-text-primary dark:text-dark-text-primary mb-4">
+            <h2 className="text-xl font-semibold text-primary-700 dark:text-primary-600 mb-4">
               Видео процесса
             </h2>
-            <div className="aspect-video bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg overflow-hidden">
-              <video
-                controls
-                className="w-full h-full object-cover"
-                poster="/src/assets/detailing/video-poster.jpg"
-              >
-                <source src={service.video} type="video/mp4" />
-                Ваш браузер не поддерживает видео.
-              </video>
-            </div>
+            {service.videos?.length > 0 ? (
+              <VideoCarousel
+                items={service.videos.map((src) => ({ src, poster: primeWrap, title: service.title }))}
+                autoPlayActive={true}
+                muted={true}
+              />
+            ) : (
+              <VideoPlayer
+                src={service.video}
+                poster={primeWrap}
+                title={service.title}
+              />
+            )}
           </div>
         )}
 
         {/* Описание услуги */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-text-primary dark:text-dark-text-primary mb-4">
+          <h2 className="text-xl font-semibold text-primary-700 dark:text-primary-600 mb-4">
             Подробное описание
           </h2>
           <div 
@@ -378,7 +400,6 @@ const PrimeWrapDetailPage = () => {
 
         {/* Контакты для десктопа */}
         <DesktopContactBar
-          telegramUrl={company?.chatUrl}
           whatsAppUrl={company?.whatsAppUrl}
           phone={company?.phone}
           className="mt-6"
