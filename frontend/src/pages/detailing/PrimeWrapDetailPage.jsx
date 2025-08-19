@@ -6,12 +6,15 @@ import primeWrap from '../../assets/detailing/primeWrap.jpg';
 import vinylWrapVideo from '../../assets/detailing/vinyl/vinyl-wrap-1.mp4';
 import vinylWrapVideo2 from '../../assets/detailing/vinyl/vinyl-wrap-2.mp4';
 import armorFilmVideo from '../../assets/detailing/vinyl/vinyl-wrap-3.mp4';
-import vinylAuto1 from '../../assets/detailing/vinyl/auto1.jpg';
-import vinylAuto2 from '../../assets/detailing/vinyl/auto2.jpg';
-import vinylAuto3 from '../../assets/detailing/vinyl/auto3.jpg';
-import armorFilmAuto1 from '../../assets/detailing/armor/auto-1.jpg';
-import armorFilmAuto2 from '../../assets/detailing/armor/auto-2.jpg';
-import armorFilmAuto3 from '../../assets/detailing/armor/auto-3.jpg';
+import vinylAuto1 from '../../assets/detailing/vinyl/auto1.JPG';
+import vinylAuto2 from '../../assets/detailing/vinyl/auto2.JPG';
+import vinylAuto3 from '../../assets/detailing/vinyl/auto3.JPG';
+import armorFilmAuto1 from '../../assets/detailing/armor/auto-1.JPG';
+import armorFilmAuto2 from '../../assets/detailing/armor/auto-2.JPG';
+import armorFilmAuto3 from '../../assets/detailing/armor/auto-3.JPG';
+import auto1 from '../../assets/detailing/auto-1.jpg';
+import auto2 from '../../assets/detailing/auto-2.jpg';
+import auto3 from '../../assets/detailing/auto-3.jpg';
 
 
 // Утилита для управления видео файлами
@@ -102,9 +105,9 @@ const SERVICE_DETAILS = {
       <p>Автомобиль приобретает зеркальный блеск, защиту от загрязнений и водоотталкивающие свойства на 2-3 года.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      auto1,
+      auto2,
+      auto3
     ],
     // video: 'https://example.com/polish-demo.mp4',
     price: 'от 8,000 ₽',
@@ -130,9 +133,9 @@ const SERVICE_DETAILS = {
       <p>Идеально подходит для новых автомобилей и автомобилей с дорогими стеклами.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      auto1,
+      auto2,
+      auto3
     ],
     // video: 'https://example.com/windshield-demo.mp4',
     price: 'от 12,000 ₽',
@@ -157,9 +160,9 @@ const SERVICE_DETAILS = {
       <p>Крыша, двери, пол, капот, багажник, колесные арки.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      auto1,
+      auto2,
+      auto3
     ],
     // video: 'https://example.com/soundproof-demo.mp4',
     price: 'от 35,000 ₽',
@@ -184,9 +187,9 @@ const SERVICE_DETAILS = {
       <p>Классические цвета, металлики, хамелеоны, матовые и глянцевые покрытия.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      auto1,
+      auto2,
+      auto3
     ],
     // video: 'https://example.com/wheels-demo.mp4',
     price: 'от 8,000 ₽',
@@ -211,9 +214,9 @@ const SERVICE_DETAILS = {
       <p>Удобство использования, защита от повреждений, бесшумность работы.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      auto1,
+      auto2,
+      auto3
     ],
     // video: 'https://example.com/doors-demo.mp4',
     price: 'от 3,000 ₽',
@@ -239,9 +242,9 @@ const SERVICE_DETAILS = {
       <p>Современный внешний вид без хромированных элементов.</p>
     `,
     images: [
-      '/src/assets/detailing/auto-1.jpg',
-      '/src/assets/detailing/auto-2.jpg',
-      '/src/assets/detailing/auto-3.jpg'
+      auto1,
+      auto2,
+      auto3
     ],
     // video: 'https://example.com/anti-chrome-demo.mp4',
     price: 'от 5,000 ₽',
