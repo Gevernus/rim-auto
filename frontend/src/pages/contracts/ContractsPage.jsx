@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useAppLocation } from '../../shared/lib/navigation';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { openURL, openPhoneDialer, buildAbsoluteUrl } from '../../shared/lib/platform';
+import { buildAbsoluteUrl } from '../../shared/lib/platform';
 import { BackToMenuButton, DocxPreview } from '../../shared/ui';
 import { useFileDownload } from '../../shared/hooks';
 import { contractsApi } from '../../shared/api/client';
@@ -13,9 +13,11 @@ const DOC_TITLES = {
 };
 
 // Контакты для альтернативного меню на странице договоров
-const CONTRACTS_CONTACT = {
+const COMPANY_META = {
   phone: '+7-905-705-24-09',
-  chatUrl: 'https://t.me/userinfobot',
+  whatsAppUrl: 'https://wa.me/7 905 705-24-09',
+//   telegramUrl: 'https://t.me/7 905 705-24-09',
+  managerName: 'Рим-Авто'
 };
 
 const ContractsPage = () => {
@@ -36,22 +38,10 @@ const ContractsPage = () => {
     ? { title: DOC_TITLES[selectedType], type: selectedType, file: buildAbsoluteUrl(meta?.url || '') }
     : null;
 
-  // Альтернативное меню: Чат и Звонок
+  // Альтернативное меню: Чат и Звонок (стабильная ссылка через useMemo)
   const altNavConfig = useMemo(() => ({
-    chat: {
-      label: 'Чат',
-      onClick: () => {
-        if (!CONTRACTS_CONTACT.chatUrl) return;
-        openURL(CONTRACTS_CONTACT.chatUrl);
-      },
-    },
-    call: {
-      label: 'Звонок',
-      onClick: () => {
-        if (!CONTRACTS_CONTACT.phone) return;
-        openPhoneDialer(CONTRACTS_CONTACT.phone);
-      },
-    },
+	chat: { label: 'Чат', whatsAppUrl: COMPANY_META.whatsAppUrl, managerName: COMPANY_META.managerName },
+	call: { label: 'Звонок', phone: COMPANY_META.phone },
   }), []);
 
   const { activate, deactivate } = useAltBottomNav(altNavConfig);

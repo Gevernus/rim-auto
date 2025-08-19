@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useBottomNav } from '../../shared/lib/bottom-nav/context';
 import { ChatPopup } from '../../shared/ui';
-import { buildTelegramUrl, buildWhatsAppUrl } from '../../shared/lib/platform';
+import { buildTelegramUrl, buildWhatsAppUrl, openPhoneDialer } from '../../shared/lib/platform';
 
 const AlternateBottomNavigation = () => {
   const { config } = useBottomNav();
@@ -9,16 +9,18 @@ const AlternateBottomNavigation = () => {
   if (!config) return null;
 
   const {
-    chat: { onClick: onChatClick, label: chatLabel = 'Чат', icon: chatIcon, telegramUrl, whatsAppUrl } = {},
+    chat: { onClick: onChatClick, label: chatLabel = 'Чат', icon: chatIcon, telegramUrl, whatsAppUrl, managerName } = {},
     call: { onClick: onCallClick, label: callLabel = 'Звонок', icon: callIcon } = {},
   } = config;
 
   // Нормализация вынесена в платформенный модуль (web/RN)
-
   // Фолбэк телефона ищем в разных местах конфига
   const fallbackPhone = config?.chat?.phone || config?.phone || config?.call?.phone;
-  const normalizedWhatsAppUrl = buildWhatsAppUrl(whatsAppUrl, fallbackPhone);
-  const normalizedTelegramUrl = buildTelegramUrl(telegramUrl, fallbackPhone);
+  // Формируем ссылки только из явных значений в конфиге
+  const normalizedWhatsAppUrl = whatsAppUrl ? buildWhatsAppUrl(whatsAppUrl) : '';
+  const normalizedTelegramUrl = telegramUrl ? buildTelegramUrl(telegramUrl) : '';
+  const handleCallClick = onCallClick ?? (() => { if (fallbackPhone) openPhoneDialer(fallbackPhone); });
+  const chatTitle = managerName ? `${chatLabel} — ${managerName}` : chatLabel;
 
   const Button = ({ onClick, icon, label }) => (
     <button
@@ -63,7 +65,7 @@ const AlternateBottomNavigation = () => {
           </svg>
         )} label={chatLabel} />
 
-        <Button onClick={onCallClick} icon={callIcon ?? (
+        <Button onClick={handleCallClick} icon={callIcon ?? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h2.28a2 2 0 011.94 1.515l.7 2.8a2 2 0 01-.52 1.938l-1.3 1.3a16 16 0 006.364 6.364l1.3-1.3a2 2 0 011.938-.52l2.8.7A2 2 0 0121 18.72V21a2 2 0 01-2 2h-1C9.82 23 1 14.18 1 4V3a2 2 0 012-2h2z" />
           </svg>
@@ -78,7 +80,7 @@ const AlternateBottomNavigation = () => {
         onClose={() => setIsChatOpen(false)}
         telegramUrl={normalizedTelegramUrl}
         whatsAppUrl={normalizedWhatsAppUrl}
-        title={chatLabel}
+        title={chatTitle}
       />
     </nav>
   );

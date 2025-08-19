@@ -1,8 +1,7 @@
 import { useAppParams, useAppNavigation, routes } from '../../shared/lib/navigation';
 import { useEffect, useMemo } from 'react';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { openPhoneDialer } from '../../shared/lib/platform';
-import { BackToMenuButton, Carousel, DesktopContactBar } from '../../shared/ui';
+import { Carousel, DesktopContactBar } from '../../shared/ui';
 import primeWrap from '../../assets/detailing/primeWrap.jpg';
 
 
@@ -235,8 +234,8 @@ const COMPANY_META = {
   'prime-wrap': {
     name: 'Prime Wrap',
     logo: primeWrap,
-    phone: '+7-905-705-24-09',
-    chatUrl: 'https://t.me/userinfobot',
+	whatsAppUrl: 'https://wa.me/79652855804',
+    telegramUrl: 'https://t.me/79652855804',
   },
 };
 
@@ -250,15 +249,11 @@ const PrimeWrapDetailPage = () => {
   const altNavConfig = useMemo(() => ({
     chat: {
       label: 'Чат',
-      telegramUrl: company?.chatUrl,
-      phone: company?.phone,
+      telegramUrl: company?.telegramUrl,
+      whatsAppUrl: company?.whatsAppUrl,
     },
     call: {
       label: 'Звонок',
-      onClick: () => {
-        if (!company?.phone) return;
-        openPhoneDialer(company.phone);
-      },
       phone: company?.phone,
     },
   }), [company?.chatUrl, company?.phone]);

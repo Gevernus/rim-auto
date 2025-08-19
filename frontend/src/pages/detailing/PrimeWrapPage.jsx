@@ -1,7 +1,6 @@
 import { useAppParams, useAppNavigation, routes } from '../../shared/lib/navigation';
 import { useEffect, useMemo } from 'react';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { openPhoneDialer } from '../../shared/lib/platform';
 import primeWrap from '../../assets/detailing/primeWrap.jpg';
 import { BackToMenuButton, ArrowRight } from '../../shared/ui';
 
@@ -57,7 +56,6 @@ const services = [
 ];
 
 const COMPANY_META = {
-  'prime-wrap': {
     name: 'Prime Wrap',
     logo: primeWrap,
     phone: '+7 (965) 285-58-04',
@@ -66,7 +64,6 @@ const COMPANY_META = {
     description: 'Профессиональные услуги детейлинга и оклейки автомобилей в Москве. Более 5 лет опыта в сфере тюнинга и защиты автомобилей.',
     address: 'г. Москва, Дмитровское шоссе, 163А к1',
     workingHours: 'Пн-Вс: 10:00 - 22:00'
-  },
 };
 
 const ServiceCard = ({ service, onOpen }) => (
@@ -94,24 +91,12 @@ const ServiceCard = ({ service, onOpen }) => (
 const PrimeWrapPage = () => {
   const { slug } = useAppParams();
   const { navigateTo } = useAppNavigation();
-  const company = COMPANY_META[slug] || { name: 'Детейлинг', logo: primeWrap, phone: '', chatUrl: '' };
+  const company = COMPANY_META;
 
   const altNavConfig = useMemo(() => ({
-    chat: {
-      label: 'Чат',
-      // передаём любые доступные источники, нормализация произойдёт в AlternateBottomNavigation
-      telegramUrl: company.chatUrl,
-      phone: company.phone,
-    },
-    call: {
-      label: 'Звонок',
-      onClick: () => {
-        if (!company.phone) return;
-        openPhoneDialer(company.phone);
-      },
-      phone: company.phone,
-    },
-  }), [company.chatUrl, company.phone]);
+    chat: { label: 'Чат', telegramUrl: COMPANY_META.telegramUrl, whatsAppUrl: COMPANY_META.whatsAppUrl, managerName: COMPANY_META.managerName },
+    call: { label: 'Звонок', phone: COMPANY_META.phone },
+  }), []);
 
   const { activate, deactivate } = useAltBottomNav(altNavConfig);
 

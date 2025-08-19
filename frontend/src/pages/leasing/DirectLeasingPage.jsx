@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { useTelegramAuth } from '../../features/auth';
 import { applicationsApi } from '../../shared/api/client';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { openPhoneDialer } from '../../shared/lib/platform';
 import { useAppNavigation, routes } from '../../shared/lib/navigation';
 import { DesktopContactBar } from '../../shared/ui';
 import directLogo from '../../assets/leasing/leasing_direct.jpg';
@@ -13,7 +12,8 @@ const COMPANY_META = {
   logo: directLogo,
   phone: '+7 925 467-29-38',
   whatsAppUrl: 'https://wa.me/7 925 467-29-38',
-  telegramUrl: 'https://t.me/7 925 467-29-38'
+  telegramUrl: 'https://t.me/7 925 467-29-38',
+  managerName: 'Генадий'
 };
 
 // Нормализацию перенесли в AlternateBottomNavigation
@@ -33,8 +33,8 @@ const DirectLeasingPage = () => {
   } = useForm();
 
   const altNavConfig = useMemo(() => ({
-    chat: { label: 'Чат', telegramUrl: COMPANY_META.telegramUrl, whatsAppUrl: COMPANY_META.whatsAppUrl, phone: COMPANY_META.phone },
-    call: { label: 'Звонок', onClick: () => { if (COMPANY_META.phone) openPhoneDialer(COMPANY_META.phone); }, phone: COMPANY_META.phone },
+    chat: { label: 'Чат', telegramUrl: COMPANY_META.telegramUrl, whatsAppUrl: COMPANY_META.whatsAppUrl, managerName: COMPANY_META.managerName },
+    call: { label: 'Звонок', phone: COMPANY_META.phone },
   }), []);
 
   const { activate, deactivate } = useAltBottomNav(altNavConfig);

@@ -47,26 +47,27 @@ const ChatPopup = ({
 
         <div className="flex-1 md:flex-none">
           <h4 className="font-medium text-text-primary dark:text-dark-text-primary hidden md:block">{title}</h4>
-
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            <button
-              type="button"
-              onClick={() => handleOpen(telegramUrl)}
-              disabled={!telegramUrl}
-              className="flex items-center justify-center gap-2 px-4 py-3 md:py-2 rounded-md border border-blue-500/50 dark:border-blue-500/20 text-text-primary dark:text-dark-text-primary bg-surface-elevated dark:bg-dark-surface-elevated hover:bg-blue-500/50 dark:hover:bg-blue-500/20 disabled:opacity-50"
-            >
-              <TelegramIcon />
-              <span>Telegram</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleOpen(whatsAppUrl)}
-              disabled={!whatsAppUrl}
-              className="flex items-center justify-center gap-2 px-4 py-3 md:py-2 rounded-md border border-green-500/50 dark:border-green-500/20 text-text-primary dark:text-dark-text-primary bg-surface-elevated dark:bg-dark-surface-elevated hover:bg-green-500/50 dark:hover:bg-green-500/20 disabled:opacity-50"
-            >
-              <WhatsAppIcon />
-              <span>WhatsApp</span>
-            </button>
+          <div className={`grid ${telegramUrl && whatsAppUrl ? 'grid-cols-2' : 'grid-cols-1'} gap-3 mt-2`}>
+            {telegramUrl && (
+              <button
+                type="button"
+                onClick={() => handleOpen(telegramUrl)}
+                className="flex items-center justify-center gap-2 px-4 py-3 md:py-2 rounded-md border border-blue-500/50 dark:border-blue-500/20 text-text-primary dark:text-dark-text-primary bg-surface-elevated dark:bg-dark-surface-elevated hover:bg-blue-500/50 dark:hover:bg-blue-500/20"
+              >
+                <TelegramIcon />
+                <span>Telegram</span>
+              </button>
+            )}
+            {whatsAppUrl && (
+              <button
+                type="button"
+                onClick={() => handleOpen(whatsAppUrl)}
+                className="flex items-center justify-center gap-2 px-4 py-3 md:py-2 rounded-md border border-green-500/50 dark:border-green-500/20 text-text-primary dark:text-dark-text-primary bg-surface-elevated dark:bg-dark-surface-elevated hover:bg-green-500/50 dark:hover:bg-green-500/20"
+              >
+                <WhatsAppIcon />
+                <span>WhatsApp</span>
+              </button>
+            )}
           </div>
         </div>
 
