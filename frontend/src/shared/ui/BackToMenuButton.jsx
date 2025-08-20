@@ -20,7 +20,7 @@ const BackToMenuButton = ({ className = '' }) => {
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       aria-label="Вернуться в меню"
-      className={`inline-flex items-center gap-2 px-3 py-2 rounded-md border border-border dark:border-dark-border bg-surface-elevated dark:bg-dark-surface-elevated text-primary-700 dark:text-primary-600 hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors ${className}`}
+      className={`md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-md border border-border dark:border-dark-border bg-surface-elevated dark:bg-dark-surface-elevated text-primary-700 dark:text-primary-600 hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors ${className}`}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

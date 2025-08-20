@@ -75,7 +75,7 @@ const ServiceCard = ({ service, onOpen }) => (
   >
     <div className="flex-1">
       <div className="text-base m:text-lg font-semibold text-text-primary dark:text-dark-text-primary l:mb-2" >{service.title}</div>
-      <div className="text-sm m:text-base text-text-secondary dark:text-text-secondary">{service.description}</div>
+      <div className="text-sm m:text-base text-text-secondary dark:text-dark-text-secondary">{service.description}</div>
     </div>
     <div className="flex items-center gap-2 text-primary-700 dark:text-primary-600">
       <span className="text-sm font-medium">Подробнее</span>
@@ -127,8 +127,8 @@ const PrimeWrapPage = () => {
 
         {company.description && (
           <div className="mb-6 p-4 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
-            <p className="text-sm m:text-base text-text-secondary dark:text-text-secondary mb-2">{company.description}</p>
-            <div className="text-sm text-text-secondary dark:text-text-secondary">
+            <p className="text-sm m:text-base text-text-secondary dark:text-dark-text-secondary mb-2">{company.description}</p>
+            <div className="text-sm text-text-secondary dark:text-dark-text-secondary">
               <div>{company.address}</div>
               <div>{company.workingHours}</div>
             </div>

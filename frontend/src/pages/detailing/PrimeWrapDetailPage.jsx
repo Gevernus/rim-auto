@@ -325,10 +325,10 @@ const PrimeWrapDetailPage = () => {
           <h1 className="text-3xl font-bold text-text-primary dark:text-dark-text-primary mb-2">
             {service.title}
           </h1>
-          <p className="text-lg text-text-secondary dark:text-text-secondary mb-4">
+          <p className="text-lg text-text-secondary dark:text-dark-text-secondary mb-4">
             {service.description}
           </p>
-          <div className="flex flex-wrap gap-4 text-sm text-text-secondary dark:text-text-secondary">
+          <div className="flex flex-wrap gap-4 text-sm text-text-secondary dark:text-dark-text-secondary">
             <span>Стоимость: <strong className="text-text-primary dark:text-dark-text-primary">{service.price}</strong></span>
             <span>Время работы: <strong className="text-text-primary dark:text-dark-text-primary">{service.duration}</strong></span>
           </div>

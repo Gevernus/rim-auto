@@ -47,10 +47,11 @@ const Footer = () => {
             onClick={handleLogoClick}
           >
             <img src={logo} alt="Logo" className="w-10 h-10 rounded-lg" />
-            <span className="text-xl font-bold text-footer-text dark:text-dark-footer-text">Рим - Авто</span>
+            <span className="text-xl font-bold text-primary-600 dark:text-primary-600">Рим</span>
+            <span className="text-xl font-bold text-dark-text-primary dark:text-dark-text-primary"> - Авто</span>
           </div>
             <p className="text-footer-text-secondary dark:text-dark-footer-text-secondary mb-6 max-w-md">
-              Специализируемся на поставке автомобилей из Китая. 
+              Специализируемся на поставке автомобилей. 
               Полное сопровождение сделки от заказа до постановки на учет.
             </p>
             <div className="flex space-x-4">
@@ -210,7 +211,7 @@ const Footer = () => {
         <div className="border-t border-footer-border dark:border-dark-footer-border mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-footer-text-muted dark:text-dark-footer-text-muted text-sm">
-              © 2024 Рим Авто. Все права защищены.
+              © 2025 Рим Авто. Все права защищены.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a

@@ -24,14 +24,14 @@ const CompanyCard = ({ company, onOpen }) => {
         	<img
         	  src={company.logo}
         	  alt={company.name}
-        	  className="w-18 h-18 object-contain rounded-md bg-dark-surface-elevated dark:bg-dark-surface"
+        	  className="w-20 h-20 object-contain rounded-md bg-dark-surface-elevated dark:bg-dark-surface"
         	/>
         	<div className="l:hidden text-base m:text-lg font-semibold text-text-primary dark:text-dark-text-primary">{company.name}</div>
 		</div>
       <div className="flex flex-col gap-1 text-left">
 	  	<div className="hidden l:block text-base m:text-lg font-semibold text-text-primary dark:text-dark-text-primary">{company.name}</div>        
-        <div className="text-sm text-text-secondary dark:text-text-secondary">{company.description}</div>
-        <div className="shrink-0 text-sm text-text-secondary dark:text-text-secondary">{company.hours}</div>        
+        <div className="text-sm text-text-secondary dark:text-dark-text-secondary">{company.description}</div>
+        <div className="shrink-0 text-sm text-text-secondary dark:text-dark-text-secondary">{company.hours}</div>        
       </div>
     </button>
   );
