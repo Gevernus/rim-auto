@@ -3,15 +3,17 @@ import { useForm } from 'react-hook-form';
 import { useTelegramAuth } from '../../features/auth';
 import { applicationsApi } from '../../shared/api/client';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
-import { openURL, openPhoneDialer } from '../../shared/lib/platform';
 import { useAppNavigation, routes } from '../../shared/lib/navigation';
+import { DesktopContactBar } from '../../shared/ui';
 import carcadeLogo from '../../assets/leasing/leasing_carcade.jpg';
 
 const COMPANY_META = {
   name: 'Каркаде',
   logo: carcadeLogo,
-  phone: '+7-000-000-00-12',
-  chatUrl: 'https://t.me/userinfobot'
+  phone: '+7 926 900-87-91',
+  whatsAppUrl: 'https://wa.me/79269008791',
+  telegramUrl: 'https://t.me/+79269008791',
+  managerName: 'Лилия'
 };
 
 const CarcadeLeasingPage = () => {
@@ -29,8 +31,8 @@ const CarcadeLeasingPage = () => {
   } = useForm();
 
   const altNavConfig = useMemo(() => ({
-    chat: { label: 'Чат', onClick: () => { if (COMPANY_META.chatUrl) openURL(COMPANY_META.chatUrl); } },
-    call: { label: 'Звонок', onClick: () => { if (COMPANY_META.phone) openPhoneDialer(COMPANY_META.phone); } },
+    chat: { label: 'Чат', telegramUrl: COMPANY_META.telegramUrl, whatsAppUrl: COMPANY_META.whatsAppUrl, managerName: COMPANY_META.managerName },
+    call: { label: 'Звонок', phone: COMPANY_META.phone },
   }), []);
 
   const { activate, deactivate } = useAltBottomNav(altNavConfig);
@@ -38,23 +40,51 @@ const CarcadeLeasingPage = () => {
   useEffect(() => {
     activate();
     return () => deactivate();
-  }, []);
+  }, [activate, deactivate]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setSubmitError('');
     try {
-      const payload = {
-        company: 'carcade',
-        ...data,
-        telegramUser: user ? {
+      const formData = new FormData();
+      
+      // Добавляем основные данные формы
+      Object.keys(data).forEach(key => {
+        if (data[key] !== undefined && data[key] !== '') {
+          formData.append(key, data[key]);
+        }
+      });
+
+      // Добавляем документы
+      const fileInputs = document.querySelectorAll('input[type="file"]');
+      fileInputs.forEach(input => {
+        if (input.files && input.files.length > 0) {
+          const fieldName = input.getAttribute('data-field-name') || input.name;
+          Array.from(input.files).forEach((file) => {
+            formData.append(`documents.${fieldName}`, file);
+          });
+        }
+      });
+
+      // Добавляем информацию о пользователе
+      if (user) {
+        formData.append('telegramUser', JSON.stringify({
           id: user.id,
           username: user.username,
           first_name: user.first_name,
           last_name: user.last_name,
-        } : null,
-      };
-      const response = await applicationsApi.submitLeasingApplication(payload);
+        }));
+      }
+
+      formData.append('company', 'carcade');
+
+      // Отладочная информация
+      console.log('📤 Отправляемые данные:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`   ${key}:`, value);
+      }
+
+      const response = await applicationsApi.submitCarcadeLeasingApplication(formData);
       console.log('Carcade leasing application submitted:', response.data);
       setSubmitSuccess(true);
       reset();
@@ -64,6 +94,15 @@ const CarcadeLeasingPage = () => {
       setSubmitError(error.response?.data?.detail || error.message || 'Произошла ошибка при отправке заявки');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleFileChange = (e, fieldName) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Устанавливаем атрибут для идентификации поля
+      e.target.setAttribute('data-field-name', fieldName);
+      e.target.setAttribute('data-file-name', file.name);
     }
   };
 
@@ -238,6 +277,93 @@ const CarcadeLeasingPage = () => {
           </div>
 
           <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary mb-4">Список ТС</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">
+                  1. Анкета; Карточка (реквизиты) компании
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'anketa')}
+                  data-field-name="anketa"
+                  className="w-full px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface-secondary dark:bg-dark-surface-secondary text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-1">Скан копия</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">
+                  2. Копия паспорта Руководителя организации, Учредителей (страницы 2,3,5,6,14,19)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'passport')}
+                  data-field-name="passport"
+                  className="w-full px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface-secondary dark:bg-dark-surface-secondary text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-1">Скан копия</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary mb-4">Финансовые документы</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">
+                  3. Бухгалтерская отчетность (форма №1 и форма №2)
+                </label>
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
+                  За 2024 г., за 1 кв. 2025 г., за 2 кв. 2024г. и за 3 кв. 2024 г.
+                </p>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'accounting')}
+                  data-field-name="accounting"
+                  className="w-full px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface-secondary dark:bg-dark-surface-secondary text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-1">Скан копия</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">
+                  4. Карточка счета 51 (развернутый по субсчетам и банкам) за последние три месяца
+                </label>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={(e) => handleFileChange(e, 'account51')}
+                  data-field-name="account51"
+                  className="w-full px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface-secondary dark:bg-dark-surface-secondary text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-1">В формате Excel</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">
+                  5. Справки из обслуживающих банков об ежемесячных оборотах по Р/С за последние 12 месяцев
+                </label>
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mb-2">
+                  О наличии/отсутствии ссудной задолженности и наличии/отсутствии картотеки №2
+                </p>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileChange(e, 'bankStatements')}
+                  data-field-name="bankStatements"
+                  className="w-full px-3 py-2 border border-border dark:border-dark-border rounded-md bg-surface-secondary dark:bg-dark-surface-secondary text-text-primary dark:text-dark-text-primary focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+                <p className="text-xs text-text-secondary dark:text-dark-text-secondary mt-1">Скан копия</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-6">
             <h3 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary mb-4">Дополнительная информация</h3>
             <div>
               <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-2">Комментарий</label>
@@ -260,6 +386,13 @@ const CarcadeLeasingPage = () => {
             </button>
           </div>
         </form>
+        {/* Контакты для десктопа */}
+        <DesktopContactBar
+          telegramUrl={COMPANY_META.telegramUrl}
+          whatsAppUrl={COMPANY_META.whatsAppUrl}
+          phone={COMPANY_META.phone}
+          className="mt-6"
+        />
       </div>
     </div>
   );

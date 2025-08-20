@@ -30,7 +30,6 @@ const ChatPopup = ({
     <Popup 
       isOpen={isOpen}
       onClose={onClose}
-      className="md:p-4 md:w-96 w-full h-full md:h-auto md:rounded-lg rounded-none"
       align="center"
       mobileFullScreen={true}
     >

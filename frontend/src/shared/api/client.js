@@ -186,17 +186,27 @@ export const applicationsApi = {
       return api.post('/applications/direct-leasing', applicationData);
     }
   },
+  submitCarcadeLeasingApplication: (applicationData) => {
+    if (applicationData instanceof FormData) {
+      return api.post('/applications/carcade-leasing', applicationData);
+    } else {
+      return api.post('/applications/carcade-leasing', applicationData);
+    }
+  },
   submitInsuranceApplication: (applicationData) => api.post('/applications/insurance', applicationData),
   submitGuaranteeApplication: (applicationData) => api.post('/applications/guarantee', applicationData),
   getStats: () => api.get('/applications/stats'),
   getCreditApplications: (params = {}) => api.get('/applications/credit', { params }),
   getLeasingApplications: (params = {}) => api.get('/applications/leasing', { params }),
   getDirectLeasingApplications: (params = {}) => api.get('/applications/direct-leasing', { params }),
+  getCarcadeLeasingApplications: (params = {}) => api.get('/applications/carcade-leasing', { params }),
   getInsuranceApplications: (params = {}) => api.get('/applications/insurance', { params }),
   getGuaranteeApplications: (params = {}) => api.get('/applications/guarantee', { params }),
   updateApplicationStatus: (applicationType, applicationId, status) => api.put(`/applications/${applicationType}/${applicationId}/status`, { status }),
   updateDirectLeasingStatus: (applicationId, status) => api.put(`/applications/direct-leasing/${applicationId}/status`, { status }),
+  updateCarcadeLeasingStatus: (applicationId, status) => api.put(`/applications/carcade-leasing/${applicationId}/status`, { status }),
   deleteDirectLeasingApplication: (applicationId) => api.delete(`/applications/direct-leasing/${applicationId}`),
+  deleteCarcadeLeasingApplication: (applicationId) => api.delete(`/applications/carcade-leasing/${applicationId}`),
 };
 
 export const contractsApi = {

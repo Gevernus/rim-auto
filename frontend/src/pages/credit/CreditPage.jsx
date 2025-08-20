@@ -3,6 +3,7 @@ import otpLogo from '../../assets/credit/bank_otp.jpg';
 import alfaLogo from '../../assets/credit/bank_alfa.jpg';
 import rshbLogo from '../../assets/credit/bank_rshb.jpg';
 import uralLogo from '../../assets/credit/bank_ural.jpg';
+import renesansLogo from '../../assets/credit/bank_renesans.jpg';
 import { BackToMenuButton } from '../../shared/ui';
 
 const BANKS = [
@@ -10,6 +11,7 @@ const BANKS = [
   { key: 'alfa', name: 'Альфа банк', logo: alfaLogo },
   { key: 'rshb', name: 'Россельхоз Банк', logo: rshbLogo },
   { key: 'ural', name: 'Уралсиб банк', logo: uralLogo },
+  { key: 'renesans', name: 'Ренессанс кредит', logo: renesansLogo },
 ];
 
 const BankCard = ({ bank, onOpen }) => {

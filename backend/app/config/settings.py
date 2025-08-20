@@ -5,6 +5,7 @@ from pathlib import Path
 STATIC_IMAGES_DIR = Path("static/images")
 CONTRACTS_DIR = Path("static/contracts")
 DIRECT_LEASING_DOCS_DIR = Path("static/direct_leasing_docs")
+CARCADE_LEASING_DOCS_DIR = Path("static/carcade_leasing_docs")
 
 # Telegram Bot Token
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")

@@ -145,7 +145,7 @@ const DirectLeasingTab = () => {
 			) : (
 				applications.map((app) => (
 					<div key={app.id} className="bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg p-4 mb-4">
-						<div className="flex justify-between items-start mb-3">
+						<div className="flex flex-col-reverse m:flex-row justify-between items-start mb-3">
 							<div>
 								<h3 className="font-semibold text-text-primary dark:text-dark-text-primary">
 									{app.personal_data.first_name} {app.personal_data.last_name}
@@ -159,7 +159,7 @@ const DirectLeasingTab = () => {
 									</p>
 								)}
 							</div>
-							<div className="text-right">
+							<div className="text-right w-full">
 								<StatusBadge status={app.status} />
 								<p className="text-xs text-text-muted dark:text-dark-text-muted mt-1">
 									{formatDate(app.created_at)}
@@ -231,7 +231,7 @@ const DirectLeasingTab = () => {
 							</div>
 						)}
 
-						<div className="flex gap-2">
+						<div className="flex flex-col m:flex-row gap-2">
 							{app.status === 'new' && (
 								<>
 									<button onClick={() => onUpdateStatus(app.id, 'processing')} className="px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded">В обработку</button>

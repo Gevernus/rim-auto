@@ -18,6 +18,7 @@ services:
       - car-images:/app/static/images  # Уточняем путь для изображений
       - contracts:/app/static/contracts  # Volume для договоров
       - direct-leasing-docs:/app/static/direct_leasing_docs  # Volume для документов Директ лизинга
+      - carcade-leasing-docs:/app/static/carcade_leasing_docs  # Volume для документов Каркаде лизинга
     depends_on:
       - mongo
       - selenium
@@ -89,6 +90,7 @@ volumes:
   car-images:
   contracts:
   direct-leasing-docs:
+  carcade-leasing-docs:
 
 networks:
   my_network:

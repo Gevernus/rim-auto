@@ -58,12 +58,9 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
     <div className={`relative ${className}`}>
       {/* Заголовок */}
       <div className="mb-2">
-        <label className="block text-sm font-medium text-text-primary dark:text-dark-text-primary mb-1">
+        <label className="block text-sm font-medium text-primary-700 dark:text-primary-300 mb-1">
           Город доставки
         </label>
-        {/* <p className="text-xs text-text-secondary dark:text-dark-text-secondary">
-          Выберите город для расчета стоимости доставки
-        </p> */}
       </div>
 
       {/* Выбранный город */}
@@ -102,11 +99,11 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
             onChange={handleInputChange}
             onFocus={handleInputFocus}
             placeholder="Начните вводить название города..."
-            className="w-full px-4 py-3 border border-border dark:border-dark-border rounded-lg 
-                     bg-surface-elevated dark:bg-dark-surface-elevated
-                     text-text-primary dark:text-dark-text-primary
-                     placeholder-text-muted dark:placeholder-dark-text-muted
-                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+            className="w-full px-4 py-3 border border-primary-200 dark:border-primary-700 rounded-lg 
+                     bg-primary-50 dark:bg-primary-900/20
+                     text-primary-700 dark:text-primary-300
+                     placeholder-primary-500 dark:placeholder-primary-400
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
                      transition-colors"
           />
           
@@ -115,7 +112,7 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
             ) : (
-              <svg className="w-5 h-5 text-text-muted dark:text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-primary-500 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             )}
@@ -125,19 +122,19 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
           <Popup 
             isOpen={isOpen && searchResults.length > 0} 
             onClose={() => setIsOpen(false)}
-            className="w-full max-h-64 overflow-y-auto p-2"
+            className="w-full max-h-64 overflow-y-auto p-2 bg-white dark:bg-gray-800 border border-primary-200 dark:border-primary-700 rounded-lg shadow-lg"
           >
             {searchResults.map((city) => (
               <button
                 key={city.id}
                 onClick={() => handleCitySelect(city)}
-                className="w-full text-left px-3 py-2 rounded-md hover:bg-surface dark:hover:bg-dark-surface-secondary 
+                className="w-full text-left px-3 py-2 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 
                          transition-colors group"
               >
-                <div className="font-medium text-text-primary dark:text-dark-text-primary group-hover:text-primary-600">
+                <div className="font-medium text-primary-700 dark:text-primary-300 group-hover:text-primary-800 dark:group-hover:text-primary-200">
                   {city.name}
                 </div>
-                <div className="text-xs text-text-secondary dark:text-dark-text-secondary">
+                <div className="text-xs text-primary-600 dark:text-primary-400">
                   {city.region} • Зона {city.delivery_zone}
                 </div>
               </button>
@@ -148,14 +145,14 @@ const CitySelector = ({ onCitySelect, className = '' }) => {
 
       {/* Подсказка */}
       {!selectedCity && searchQuery.length > 0 && searchQuery.length < 2 && (
-        <p className="mt-2 text-xs text-text-muted dark:text-dark-text-muted">
+        <p className="mt-2 text-xs text-primary-500 dark:text-primary-400">
           Введите минимум 2 символа для поиска
         </p>
       )}
 
       {/* Нет результатов */}
       {!selectedCity && searchQuery.length >= 2 && searchResults.length === 0 && (
-        <p className="mt-2 text-xs text-text-secondary dark:text-dark-text-secondary">
+        <p className="mt-2 text-xs text-primary-600 dark:text-primary-400">
           Город не найден. Попробуйте другой запрос.
         </p>
       )}

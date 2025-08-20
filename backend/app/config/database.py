@@ -12,4 +12,5 @@ users_collection = db.users
 credit_applications = db.credit_applications
 leasing_applications = db.leasing_applications
 direct_leasing_applications = db.direct_leasing_applications
+carcade_leasing_applications = db.carcade_leasing_applications
 reviews_collection = db.reviews
