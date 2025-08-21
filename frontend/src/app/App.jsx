@@ -12,7 +12,7 @@ import { CarPage } from '../pages/car';
 import { OrderPage } from '../pages/order';
 import { AboutPage } from '../pages/about';
 import { AuthDebugPage } from '../pages/debug/AuthDebugPage';
-import { CreditPage, BankCreditPage } from '../pages/credit';
+import { CreditPage, OTPCreditPage, AlfaCreditPage, RSHBCreditPage, UralCreditPage, RenesansCreditPage } from '../pages/credit';
 import { LeasingPage, AspectLeasingPage, DirectLeasingPage, CarcadeLeasingPage } from '../pages/leasing';
 import { AdminPage } from '../pages/admin';
 import { FavoritesPage } from '../pages/favorites';
@@ -174,8 +174,24 @@ const router = createBrowserRouter([
     element: <Layout><CreditPage /></Layout>,
   },
   {
-    path: "/credit/:bank",
-    element: <Layout><BankCreditPage /></Layout>,
+    path: "/credit/otp",
+    element: <Layout><OTPCreditPage /></Layout>,
+  },
+  {
+    path: "/credit/alfa",
+    element: <Layout><AlfaCreditPage /></Layout>,
+  },
+  {
+    path: "/credit/rshb",
+    element: <Layout><RSHBCreditPage /></Layout>,
+  },
+  {
+    path: "/credit/ural",
+    element: <Layout><UralCreditPage /></Layout>,
+  },
+  {
+    path: "/credit/renesans",
+    element: <Layout><RenesansCreditPage /></Layout>,
   },
   {
     path: "/leasing",

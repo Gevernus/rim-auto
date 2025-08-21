@@ -40,7 +40,7 @@ def _save_document(file: UploadFile, application_id: str, document_type: str) ->
         "filename": file.filename,
         "path": relative_path,
         "url": url,
-        "size": getattr(file, 'size', 0) or 0,
+        "size": len(content) if content is not None else 0,
         "content_type": file.content_type,
     }
 
@@ -86,7 +86,7 @@ async def submit_direct_leasing_application(
                 "email": application.email
             },
             "leasing_data": {
-                "leasing_type": application.leasingType,
+                "leasing_type": application.leasingType.value,
                 "property_value": application.propertyValue,
                 "term": application.term,
                 "down_payment": application.downPayment
@@ -164,9 +164,13 @@ def get_direct_leasing_applications(page: int = 1, page_size: int = 10, status: 
 
         # Пагинация
         skip = (page - 1) * page_size
-        applications = list(direct_leasing_applications.find(
-            filter_query
-        ).skip(skip).limit(page_size).sort("created_at", -1))
+        applications = list(
+            direct_leasing_applications
+            .find(filter_query)
+            .sort("created_at", -1)
+            .skip(skip)
+            .limit(page_size)
+        )
 
         # Конвертируем ObjectId в строки для JSON сериализации
         for app in applications:
@@ -212,7 +216,7 @@ def update_direct_leasing_status(application_id: str, status_data: dict):
             {"_id": application_id},
             {
                 "$set": {
-                    "status": update_data.status,
+                    "status": update_data.status.value,
                     "updated_at": datetime.utcnow()
                 }
             }
@@ -223,7 +227,7 @@ def update_direct_leasing_status(application_id: str, status_data: dict):
 
         return {
             "success": True,
-            "message": f"Application status updated to {update_data.status}"
+            "message": f"Application status updated to {update_data.status.value}"
         }
 
     except HTTPException:

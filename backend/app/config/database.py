@@ -14,3 +14,10 @@ leasing_applications = db.leasing_applications
 direct_leasing_applications = db.direct_leasing_applications
 carcade_leasing_applications = db.carcade_leasing_applications
 reviews_collection = db.reviews
+
+# Credit bank collections
+otp_credit_applications = db.otp_credit_applications
+alfa_credit_applications = db.alfa_credit_applications
+rshb_credit_applications = db.rshb_credit_applications
+ural_credit_applications = db.ural_credit_applications
+renesans_credit_applications = db.renesans_credit_applications

@@ -1,24 +1,25 @@
+import React from 'react';
 import { useAppNavigation, routes } from '../../shared/lib/navigation';
+import { BackToMenuButton } from '../../shared/ui';
 import otpLogo from '../../assets/credit/bank_otp.jpg';
 import alfaLogo from '../../assets/credit/bank_alfa.jpg';
 import rshbLogo from '../../assets/credit/bank_rshb.jpg';
 import uralLogo from '../../assets/credit/bank_ural.jpg';
 import renesansLogo from '../../assets/credit/bank_renesans.jpg';
-import { BackToMenuButton } from '../../shared/ui';
 
 const BANKS = [
-  { key: 'otp', name: 'ОТП банк', logo: otpLogo },
-  { key: 'alfa', name: 'Альфа банк', logo: alfaLogo },
-  { key: 'rshb', name: 'Россельхоз Банк', logo: rshbLogo },
-  { key: 'ural', name: 'Уралсиб банк', logo: uralLogo },
-  { key: 'renesans', name: 'Ренессанс кредит', logo: renesansLogo },
+  { key: 'otp', name: 'ОТП банк', logo: otpLogo, route: routes.otpCredit },
+  { key: 'alfa', name: 'Альфа банк', logo: alfaLogo, route: routes.alfaCredit },
+  { key: 'rshb', name: 'Россельхоз Банк', logo: rshbLogo, route: routes.rshbCredit },
+  { key: 'ural', name: 'Уралсиб банк', logo: uralLogo, route: routes.uralCredit },
+  { key: 'renesans', name: 'Ренессанс кредит', logo: renesansLogo, route: routes.renesansCredit },
 ];
 
 const BankCard = ({ bank, onOpen }) => {
   return (
     <button
       type="button"
-      onClick={() => onOpen(bank.key)}
+      onClick={() => onOpen(bank.route)}
       className="w-full p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-lg hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors"
       aria-label={`Открыть банк ${bank.name}`}
     >
@@ -32,8 +33,8 @@ const BankCard = ({ bank, onOpen }) => {
 const CreditPage = () => {
   const { navigateTo } = useAppNavigation();
 
-  const handleOpen = (bankKey) => {
-    navigateTo(routes.creditBank(bankKey));
+  const handleOpen = (route) => {
+    navigateTo(route);
   };
 
   return (

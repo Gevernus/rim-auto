@@ -65,8 +65,8 @@ const Header = () => {
     { name: 'Отзывы', href: routes.reviews },
     { name: 'О нас', href: routes.about },
     { name: 'Страховка', href: routes.insurance },
-    { name: 'Кредит получить', href: routes.credit },
-    { name: 'Лизинг получить', href: routes.leasing },
+    { name: 'Кредит', href: routes.credit },
+    { name: 'Лизинг', href: routes.leasing },
   ];
 
   // Админ меню (только для авторизованных пользователей)

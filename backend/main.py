@@ -95,6 +95,46 @@ from app.services.system_service import (
     test_selectors,
     test_custom_selector
 )
+from app.services.otp_credit_service import (
+    submit_otp_credit_application,
+    get_otp_credit_stats,
+    get_otp_credit_applications,
+    get_otp_credit_application,
+    update_otp_credit_status,
+    delete_otp_credit_application
+)
+from app.services.alfa_credit_service import (
+    submit_alfa_credit_application,
+    get_alfa_credit_stats,
+    get_alfa_credit_applications,
+    get_alfa_credit_application,
+    update_alfa_credit_status,
+    delete_alfa_credit_application
+)
+from app.services.rshb_credit_service import (
+    submit_rshb_credit_application,
+    get_rshb_credit_stats,
+    get_rshb_credit_applications,
+    get_rshb_credit_application,
+    update_rshb_credit_status,
+    delete_rshb_credit_application
+)
+from app.services.ural_credit_service import (
+    submit_ural_credit_application,
+    get_ural_credit_stats,
+    get_ural_credit_applications,
+    get_ural_credit_application,
+    update_ural_credit_status,
+    delete_ural_credit_application
+)
+from app.services.renesans_credit_service import (
+    submit_renesans_credit_application,
+    get_renesans_credit_stats,
+    get_renesans_credit_applications,
+    get_renesans_credit_application,
+    update_renesans_credit_status,
+    delete_renesans_credit_application
+)
 
 app = FastAPI()
 
@@ -527,6 +567,191 @@ async def api_submit_carcade_leasing_application(
         print(f"❌ Ошибка в эндпойнте Каркаде: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to submit application: {str(e)}")
 
+@app.post("/api/applications/otp-credit")
+def api_submit_otp_credit_application(application_data: dict, current_user = Depends(get_current_user)):
+    """Отправка заявки на кредит ОТП банка"""
+    return submit_otp_credit_application(application_data, current_user)
+
+@app.get("/api/applications/otp-credit/stats")
+def api_get_otp_credit_stats():
+    """Получение статистики заявок ОТП кредит"""
+    return get_otp_credit_stats()
+
+@app.get("/api/applications/otp-credit")
+def api_get_otp_credit_applications(
+    page: int = 1,
+    page_size: int = 10,
+    status: Optional[str] = None,
+):
+    """Получение списка заявок ОТП кредит"""
+    return get_otp_credit_applications(page, page_size, status)
+
+@app.get("/api/applications/otp-credit/{application_id}")
+def api_get_otp_credit_application(application_id: str):
+    """Получение заявки ОТП кредит по ID"""
+    return get_otp_credit_application(application_id)
+
+@app.put("/api/applications/otp-credit/{application_id}/status")
+def api_update_otp_credit_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса заявки ОТП кредит"""
+    return update_otp_credit_status(application_id, status_data)
+
+@app.delete("/api/applications/otp-credit/{application_id}")
+def api_delete_otp_credit_application(application_id: str):
+    """Удаление заявки ОТП кредит"""
+    return delete_otp_credit_application(application_id)
+
+@app.post("/api/applications/alfa-credit")
+def api_submit_alfa_credit_application(application_data: dict, current_user = Depends(get_current_user)):
+    """Отправка заявки на кредит Альфа банка"""
+    return submit_alfa_credit_application(application_data, current_user)
+
+@app.get("/api/applications/alfa-credit/stats")
+def api_get_alfa_credit_stats():
+    """Получение статистики заявок Альфа кредит"""
+    return get_alfa_credit_stats()
+
+@app.get("/api/applications/alfa-credit")
+def api_get_alfa_credit_applications(
+    page: int = 1,
+    page_size: int = 10,
+    status: Optional[str] = None,
+):
+    """Получение списка заявок Альфа кредит"""
+    return get_alfa_credit_applications(page, page_size, status)
+
+@app.get("/api/applications/alfa-credit/{application_id}")
+def api_get_alfa_credit_application(application_id: str):
+    """Получение заявки Альфа кредит по ID"""
+    return get_alfa_credit_application(application_id)
+
+@app.put("/api/applications/alfa-credit/{application_id}/status")
+def api_update_alfa_credit_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса заявки Альфа кредит"""
+    return update_alfa_credit_status(application_id, status_data)
+
+@app.delete("/api/applications/alfa-credit/{application_id}")
+def api_delete_alfa_credit_application(application_id: str):
+    """Удаление заявки Альфа кредит"""
+    return delete_alfa_credit_application(application_id)
+
+@app.post("/api/applications/rshb-credit")
+def api_submit_rshb_credit_application(application_data: dict, current_user = Depends(get_current_user)):
+    """Отправка заявки на кредит Россельхоз банка"""
+    return submit_rshb_credit_application(application_data, current_user)
+
+@app.get("/api/applications/rshb-credit/stats")
+def api_get_rshb_credit_stats():
+    """Получение статистики заявок РСХБ кредит"""
+    return get_rshb_credit_stats()
+
+@app.get("/api/applications/rshb-credit")
+def api_get_rshb_credit_applications(
+    page: int = 1,
+    page_size: int = 10,
+    status: Optional[str] = None,
+):
+    """Получение списка заявок РСХБ кредит"""
+    return get_rshb_credit_applications(page, page_size, status)
+
+@app.get("/api/applications/rshb-credit/{application_id}")
+def api_get_rshb_credit_application(application_id: str):
+    """Получение заявки РСХБ кредит по ID"""
+    return get_rshb_credit_application(application_id)
+
+@app.put("/api/applications/rshb-credit/{application_id}/status")
+def api_update_rshb_credit_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса заявки РСХБ кредит"""
+    return update_rshb_credit_status(application_id, status_data)
+
+@app.delete("/api/applications/rshb-credit/{application_id}")
+def api_delete_rshb_credit_application(application_id: str):
+    """Удаление заявки РСХБ кредит"""
+    return delete_rshb_credit_application(application_id)
+
+@app.post("/api/applications/ural-credit")
+def api_submit_ural_credit_application(application_data: dict, current_user = Depends(get_current_user)):
+    """Отправка заявки на кредит Уралсиб банка"""
+    return submit_ural_credit_application(application_data, current_user)
+
+@app.get("/api/applications/ural-credit/stats")
+def api_get_ural_credit_stats():
+    """Получение статистики заявок Уралсиб кредит"""
+    return get_ural_credit_stats()
+
+@app.get("/api/applications/ural-credit")
+def api_get_ural_credit_applications(
+    page: int = 1,
+    page_size: int = 10,
+    status: Optional[str] = None,
+):
+    """Получение списка заявок Уралсиб кредит"""
+    return get_ural_credit_applications(page, page_size, status)
+
+@app.get("/api/applications/ural-credit/{application_id}")
+def api_get_ural_credit_application(application_id: str):
+    """Получение заявки Уралсиб кредит по ID"""
+    return get_ural_credit_application(application_id)
+
+@app.put("/api/applications/ural-credit/{application_id}/status")
+def api_update_ural_credit_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса заявки Уралсиб кредит"""
+    return update_ural_credit_status(application_id, status_data)
+
+@app.delete("/api/applications/ural-credit/{application_id}")
+def api_delete_ural_credit_application(application_id: str):
+    """Удаление заявки Уралсиб кредит"""
+    return delete_ural_credit_application(application_id)
+
+@app.post("/api/applications/renesans-credit")
+def api_submit_renesans_credit_application(application_data: dict, current_user = Depends(get_current_user)):
+    """Отправка заявки на кредит Ренессанс"""
+    return submit_renesans_credit_application(application_data, current_user)
+
+@app.get("/api/applications/renesans-credit/stats")
+def api_get_renesans_credit_stats():
+    """Получение статистики заявок Ренессанс кредит"""
+    return get_renesans_credit_stats()
+
+@app.get("/api/applications/renesans-credit")
+def api_get_renesans_credit_applications(
+    page: int = 1,
+    page_size: int = 10,
+    status: Optional[str] = None,
+):
+    """Получение списка заявок Ренессанс кредит"""
+    return get_renesans_credit_applications(page, page_size, status)
+
+@app.get("/api/applications/renesans-credit/{application_id}")
+def api_get_renesans_credit_application(application_id: str):
+    """Получение заявки Ренессанс кредит по ID"""
+    return get_renesans_credit_application(application_id)
+
+@app.put("/api/applications/renesans-credit/{application_id}/status")
+def api_update_renesans_credit_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса заявки Ренессанс кредит"""
+    return update_renesans_credit_status(application_id, status_data)
+
+@app.delete("/api/applications/renesans-credit/{application_id}")
+def api_delete_renesans_credit_application(application_id: str):
+    """Удаление заявки Ренессанс кредит"""
+    return delete_renesans_credit_application(application_id)
+
 @app.get("/api/applications/stats")
 def api_get_applications_stats():
     """Получение статистики заявок"""
@@ -588,14 +813,21 @@ def api_get_carcade_leasing_application(application_id: str):
     """Получение заявки Каркаде лизинг по ID"""
     return get_carcade_leasing_application(application_id)
 
-@app.put("/api/applications/{application_type:credit|leasing}/{application_id}/status")
-def api_update_application_status(
-    application_type: str,
+@app.put("/api/applications/credit/{application_id}/status")
+def api_update_credit_application_status(
     application_id: str,
     status_data: dict,
 ):
-    """Обновление статуса заявки"""
-    return update_application_status(application_type, application_id, status_data)
+    """Обновление статуса кредитной заявки"""
+    return update_application_status("credit", application_id, status_data)
+
+@app.put("/api/applications/leasing/{application_id}/status")
+def api_update_leasing_application_status(
+    application_id: str,
+    status_data: dict,
+):
+    """Обновление статуса лизинговой заявки"""
+    return update_application_status("leasing", application_id, status_data)
 
 @app.put("/api/applications/direct-leasing/{application_id}/status")
 def api_update_direct_leasing_status(

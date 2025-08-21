@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { useTelegramAuth } from '../../features/auth';
-import { CreditTab, LeasingTab, ReviewsTab, ContractsTab, DeliveryManagementTab, DirectLeasingTab, CarcadeLeasingTab } from './tabs';
+import { 
+  CreditTab, 
+  LeasingTab, 
+  ReviewsTab, 
+  ContractsTab, 
+  DeliveryManagementTab, 
+  DirectLeasingTab, 
+  CarcadeLeasingTab,
+  OTPCreditTab,
+  AlfaCreditTab,
+  RSHBCreditTab,
+  UralCreditTab,
+  RenesansCreditTab
+} from './tabs';
 
 const AdminPage = () => {
   const { user } = useTelegramAuth();
@@ -18,6 +31,11 @@ const AdminPage = () => {
 
   const tabsConfig = [
     canSeeCredit && { key: 'credit', label: 'Кредитные заявки' },
+    canSeeCredit && { key: 'otp-credit', label: 'ОТП кредит' },
+    canSeeCredit && { key: 'alfa-credit', label: 'Альфа кредит' },
+    canSeeCredit && { key: 'rshb-credit', label: 'РСХБ кредит' },
+    canSeeCredit && { key: 'ural-credit', label: 'Уралсиб кредит' },
+    canSeeCredit && { key: 'renesans-credit', label: 'Ренессанс кредит' },
     canSeeLeasing && { key: 'leasing', label: 'Лизинговые заявки' },
     canSeeDirectLeasing && { key: 'direct-leasing', label: 'Direct лизинг' },
     canSeeCarcadeLeasing && { key: 'carcade-leasing', label: 'Каркаде лизинг' },
@@ -54,6 +72,11 @@ const AdminPage = () => {
         {/* Контент табов */}
         <div>
           {activeTab === 'credit' && <CreditTab />}
+          {activeTab === 'otp-credit' && <OTPCreditTab />}
+          {activeTab === 'alfa-credit' && <AlfaCreditTab />}
+          {activeTab === 'rshb-credit' && <RSHBCreditTab />}
+          {activeTab === 'ural-credit' && <UralCreditTab />}
+          {activeTab === 'renesans-credit' && <RenesansCreditTab />}
           {activeTab === 'leasing' && <LeasingTab />}
           {activeTab === 'direct-leasing' && <DirectLeasingTab />}
           {activeTab === 'carcade-leasing' && <CarcadeLeasingTab />}

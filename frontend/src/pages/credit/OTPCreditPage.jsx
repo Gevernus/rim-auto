@@ -4,24 +4,17 @@ import { useTelegramAuth } from '../../features/auth';
 import { applicationsApi } from '../../shared/api/client';
 import { useAltBottomNav } from '../../shared/lib/bottom-nav/context';
 import { openURL, openPhoneDialer } from '../../shared/lib/platform';
-import { useAppNavigation, useAppParams, routes } from '../../shared/lib/navigation';
+import { useAppNavigation, routes } from '../../shared/lib/navigation';
 import otpLogo from '../../assets/credit/bank_otp.jpg';
-import alfaLogo from '../../assets/credit/bank_alfa.jpg';
-import rshbLogo from '../../assets/credit/bank_rshb.jpg';
-import uralLogo from '../../assets/credit/bank_ural.jpg';
-import renesansLogo from '../../assets/credit/bank_renesans.jpg';
 
 const BANK_META = {
-  otp: { name: 'ОТП банк', logo: otpLogo, phone: '+7-000-000-00-00', chatUrl: 'https://t.me/userinfobot' },
-  alfa: { name: 'Альфа банк', logo: alfaLogo, phone: '+7-000-000-00-01', chatUrl: 'https://t.me/userinfobot' },
-  rshb: { name: 'Россельхоз Банк', logo: rshbLogo, phone: '+7-000-000-00-02', chatUrl: 'https://t.me/userinfobot' },
-  ural: { name: 'Уралсиб банк', logo: uralLogo, phone: '+7-000-000-00-03', chatUrl: 'https://t.me/userinfobot' },
-  renesans: { name: 'Ренессанс кредит', logo: renesansLogo, phone: '+7 951 600-83-47', chatUrl: 'https://t.me/userinfobot' },
+  name: 'ОТП банк',
+  logo: otpLogo,
+  phone: '+7-000-000-00-00',
+  chatUrl: 'https://t.me/userinfobot'
 };
 
-const BankCreditPage = () => {
-  const { bank } = useAppParams();
-  const bankInfo = BANK_META[bank] || { name: 'Банк', logo: otpLogo, phone: '', chatUrl: '' };
+const OTPCreditPage = () => {
   const { navigateTo } = useAppNavigation();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,27 +32,27 @@ const BankCreditPage = () => {
   const altNavConfig = useMemo(() => ({
     chat: {
       label: 'Чат',
-      onClick: () => { if (bankInfo.chatUrl) openURL(bankInfo.chatUrl); },
+      onClick: () => { if (BANK_META.chatUrl) openURL(BANK_META.chatUrl); },
     },
     call: {
       label: 'Звонок',
-      onClick: () => { if (bankInfo.phone) openPhoneDialer(bankInfo.phone); },
+      onClick: () => { if (BANK_META.phone) openPhoneDialer(BANK_META.phone); },
     },
-  }), [bankInfo.chatUrl, bankInfo.phone]);
+  }), []);
 
   const { activate, deactivate } = useAltBottomNav(altNavConfig);
 
   useEffect(() => {
     activate();
     return () => deactivate();
-  }, [bank]);
+  }, []);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setSubmitError('');
     try {
       const applicationData = {
-        bank,
+        bank: 'otp',
         ...data,
         telegramUser: user ? {
           id: user.id,
@@ -68,13 +61,13 @@ const BankCreditPage = () => {
           last_name: user.last_name,
         } : null,
       };
-      const response = await applicationsApi.submitCreditApplication(applicationData);
-      console.log('Credit application submitted:', response.data);
+      const response = await applicationsApi.submitOTPCreditApplication(applicationData);
+      console.log('OTP Credit application submitted:', response.data);
       setSubmitSuccess(true);
       reset();
       setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (error) {
-      console.error('Error submitting credit application:', error);
+      console.error('Error submitting OTP credit application:', error);
       setSubmitError(error.response?.data?.detail || error.message || 'Произошла ошибка при отправке заявки');
     } finally {
       setIsSubmitting(false);
@@ -88,7 +81,7 @@ const BankCreditPage = () => {
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-8">
             <div className="text-green-600 dark:text-green-400 text-6xl mb-4">✓</div>
             <h2 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary mb-4">
-              Заявка отправлена в {bankInfo.name}!
+              Заявка отправлена в {BANK_META.name}!
             </h2>
             <p className="text-text-secondary dark:text-dark-text-secondary">
               Наш специалист свяжется с вами в ближайшее время.
@@ -108,16 +101,18 @@ const BankCreditPage = () => {
     <div className="container section-padding">
       <div className="max-w-2xl mx-auto">
 
-        <button
-          type="button"
-          onClick={() => navigateTo(routes.credit)}
-          aria-label="Вернуться к выбору банков"
-          className="flex items-center justify-between gap-3 w-full mb-6 focus:outline-none underline-offset-4 hover:underline focus:underline"
-        >
-          <img src={bankInfo.logo} alt={bankInfo.name} className=" h-16 max-w-48 m:max-w-67 object-contain rounded-md " />
-          <span className="mr-4 text-2xl font-bold text-primary-700 dark:text-primary-600">назад</span>
-        </button>
-
+        <div className="mb-6">
+          <button
+            type="button"
+            onClick={() => navigateTo(routes.credit)}
+            className="flex items-center justify-between gap-3 w-full mb-4 focus:outline-none underline-offset-4 hover:underline focus:underline"
+            aria-label="Вернуться к выбору банков"
+          >
+            <img src={BANK_META.logo} alt={BANK_META.name} className="h-16 max-w-48 m:max-w-67 object-contain rounded-md " />
+            <span className="text-2xl font-bold text-primary-700 dark:text-primary-600">назад</span>
+          </button>
+          <h1 className="text-3xl font-bold text-center text-text-primary dark:text-dark-text-primary">{BANK_META.name}</h1>
+        </div>
 
         {submitError && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -245,7 +240,7 @@ const BankCreditPage = () => {
               disabled={isSubmitting}
               className="bg-button-primary hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
             >
-              {isSubmitting ? 'Отправка...' : `Отправить заявку в ${bankInfo.name}`}
+              {isSubmitting ? 'Отправка...' : `Отправить заявку в ${BANK_META.name}`}
             </button>
           </div>
         </form>
@@ -254,4 +249,4 @@ const BankCreditPage = () => {
   );
 };
 
-export { BankCreditPage }; 
+export { OTPCreditPage };

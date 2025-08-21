@@ -1,12 +1,7 @@
 from pydantic import BaseModel, Field, field_validator, EmailStr
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 from enum import Enum
-
-class LeasingType(str, Enum):
-    OPERATIONAL = "operational"
-    FINANCIAL = "financial"
-    RETURN = "return"
 
 class ApplicationStatus(str, Enum):
     NEW = "new"
@@ -14,22 +9,18 @@ class ApplicationStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
 
-class DirectLeasingApplicationCreate(BaseModel):
+class AlfaCreditApplicationCreate(BaseModel):
     # Личные данные
     firstName: str = Field(..., min_length=1, max_length=100, description="Имя заявителя")
     lastName: str = Field(..., min_length=1, max_length=100, description="Фамилия заявителя")
     phone: str = Field(..., min_length=10, max_length=32, description="Номер телефона")
     email: Optional[EmailStr] = Field(None, max_length=255, description="Email адрес")
     
-    # Информация о лизинге
-    leasingType: LeasingType = Field(..., description="Тип лизинга")
-    propertyValue: float = Field(..., gt=0, le=50000000, description="Стоимость имущества в рублях")
-    term: int = Field(..., ge=12, le=60, description="Срок лизинга в месяцах")
+    # Информация о кредите
+    amount: float = Field(..., gt=0, le=10000000, description="Сумма кредита в рублях")
+    term: int = Field(..., ge=12, le=60, description="Срок кредита в месяцах")
     downPayment: Optional[float] = Field(None, ge=0, description="Первоначальный взнос")
-    
-    # Информация о компании
-    companyName: Optional[str] = Field(None, max_length=255, description="Название компании")
-    inn: Optional[str] = Field(None, min_length=10, max_length=12, description="ИНН")
+    monthlyIncome: float = Field(..., gt=0, description="Ежемесячный доход")
     
     # Дополнительная информация
     comment: Optional[str] = Field(None, max_length=1000, description="Комментарий к заявке")
@@ -47,38 +38,27 @@ class DirectLeasingApplicationCreate(BaseModel):
             raise ValueError('Номер телефона должен содержать минимум 10 цифр')
         return digits
 
-    @field_validator('inn')
-    @classmethod
-    def validate_inn(cls, v: Optional[str]) -> Optional[str]:
-        if v is None or v == '':
-            return None
-        if not str(v).isdigit():
-            raise ValueError('ИНН должен содержать только цифры')
-        if len(str(v)) not in (10, 12):
-            raise ValueError('ИНН должен содержать 10 или 12 цифр')
-        return v
-
     @field_validator('term', mode='before')
     @classmethod
     def cast_term_int(cls, v):
         if v is None or v == '':
             return v
-        return int(v)
+        return int(float(v))
 
-    @field_validator('propertyValue', 'downPayment', mode='before')
+    @field_validator('amount', 'downPayment', 'monthlyIncome', mode='before')
     @classmethod
     def cast_money_float(cls, v):
         if v is None or v == '':
             return None
         return float(v)
 
-class DirectLeasingApplicationUpdate(BaseModel):
+class AlfaCreditApplicationUpdate(BaseModel):
     status: ApplicationStatus = Field(..., description="Новый статус заявки")
     comment: Optional[str] = Field(None, max_length=1000, description="Комментарий к изменению статуса")
 
-class DirectLeasingApplicationResponse(BaseModel):
+class AlfaCreditApplicationResponse(BaseModel):
     id: str = Field(..., description="ID заявки")
-    application_type: str = Field(default="direct_leasing", description="Тип заявки")
+    application_type: str = Field(default="alfa_credit", description="Тип заявки")
     status: ApplicationStatus = Field(..., description="Статус заявки")
     created_at: datetime = Field(..., description="Дата создания")
     updated_at: datetime = Field(..., description="Дата последнего обновления")
@@ -86,14 +66,8 @@ class DirectLeasingApplicationResponse(BaseModel):
     # Личные данные
     personal_data: dict = Field(..., description="Личные данные заявителя")
     
-    # Информация о лизинге
-    leasing_data: dict = Field(..., description="Данные о лизинге")
-    
-    # Информация о компании
-    company_data: dict = Field(..., description="Данные о компании")
-    
-    # Документы
-    documents: dict = Field(..., description="Загруженные документы")
+    # Информация о кредите
+    credit_data: dict = Field(..., description="Данные о кредите")
     
     # Дополнительная информация
     comment: Optional[str] = Field(None, description="Комментарий к заявке")
@@ -102,15 +76,15 @@ class DirectLeasingApplicationResponse(BaseModel):
     telegram_data: Optional[dict] = Field(None, description="Данные Telegram пользователя")
     user_id: Optional[str] = Field(None, description="ID пользователя")
 
-class DirectLeasingStats(BaseModel):
+class AlfaCreditStats(BaseModel):
     total: int = Field(..., description="Общее количество заявок")
     new: int = Field(..., description="Количество новых заявок")
     processing: int = Field(..., description="Количество заявок в обработке")
     approved: int = Field(..., description="Количество одобренных заявок")
     rejected: int = Field(..., description="Количество отклоненных заявок")
 
-class DirectLeasingListResponse(BaseModel):
+class AlfaCreditListResponse(BaseModel):
     total: int = Field(..., description="Общее количество заявок")
     page: int = Field(..., description="Текущая страница")
     page_size: int = Field(..., description="Размер страницы")
-    data: List[DirectLeasingApplicationResponse] = Field(..., description="Список заявок")
+    data: list[AlfaCreditApplicationResponse] = Field(..., description="Список заявок")

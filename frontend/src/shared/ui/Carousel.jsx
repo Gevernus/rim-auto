@@ -85,11 +85,9 @@ const Carousel = forwardRef(({
     loop, // Добавляем поддержку бесконечной прокрутки
     // Улучшенные настройки для большого количества элементов
     watchSlidesProgress: true,
-    watchSlidesVisibility: true,
     breakpoints,
     // Дополнительные настройки для корректной работы loop
     loopAdditionalSlides: 2,
-    loopedSlides: items.length,
           onSwiper: (swiper) => {
         console.log('Swiper initialized:', swiper);
         if (props.onSwiper) {
@@ -97,7 +95,7 @@ const Carousel = forwardRef(({
         }
       },
     ...props
-  }), [spaceBetween, slidesPerView, showNavigation, paginationConfig, autoplay, autoplayDelay, loop, breakpoints, items.length, props]);
+  }), [spaceBetween, slidesPerView, showNavigation, paginationConfig, autoplay, autoplayDelay, loop, breakpoints, props]);
 
   // Fallback для случаев когда Swiper недоступен
   if (!isSwiperAvailable) {
