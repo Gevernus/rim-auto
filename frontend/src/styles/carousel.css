@@ -1,0 +1,112 @@
+/* Улучшенные стили для карусели партнеров */
+
+.partners-carousel .swiper-pagination {
+  position: relative;
+  margin-top: 20px;
+}
+
+.partners-carousel .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: #d6441fb6;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  margin: 0 4px;
+}
+
+.partners-carousel .swiper-pagination-bullet-active {
+  background: var(--color-primary-500);
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.partners-carousel .swiper-pagination-bullet:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
+}
+
+.partners-carousel .swiper-button-next,
+.partners-carousel .swiper-button-prev {
+  background: rgba(206, 202, 202, 0.9);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.partners-carousel .swiper-button-next:hover,
+.partners-carousel .swiper-button-prev:hover {
+  background: rgb(121, 118, 118);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.partners-carousel .swiper-button-next:after,
+.partners-carousel .swiper-button-prev:after {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+  .partners-carousel .swiper-pagination-bullet {
+    width: 6px;
+    height: 6px;
+    margin: 0 3px;
+  }
+  
+  .partners-carousel .swiper-button-next,
+  .partners-carousel .swiper-button-prev {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .partners-carousel .swiper-button-next:after,
+  .partners-carousel .swiper-button-prev:after {
+    font-size: 14px;
+  }
+}
+
+/* Темная тема */
+/* @media (prefers-color-scheme: dark) {
+  .partners-carousel .swiper-pagination-bullet {
+    background: #6b7280;
+  }
+  
+  .partners-carousel .swiper-pagination-bullet-active {
+    background: #60a5fa;
+  }
+  
+  .partners-carousel .swiper-button-next,
+  .partners-carousel .swiper-button-prev {
+    background: rgba(55, 65, 81, 0.9);
+    color: #60a5fa;
+  }
+  
+  .partners-carousel .swiper-button-next:hover,
+  .partners-carousel .swiper-button-prev:hover {
+    background: rgba(55, 65, 81, 1);
+  }
+} */
+
+/* Анимации для плавности */
+.partners-carousel .swiper-slide {
+  transition: transform 0.3s ease;
+}
+
+.partners-carousel .swiper-slide:hover {
+  transform: translateY(-2px);
+}
+
+/* Улучшенная доступность */
+.partners-carousel .swiper-button-next:focus,
+.partners-carousel .swiper-button-prev:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.partners-carousel .swiper-pagination-bullet:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

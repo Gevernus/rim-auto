@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
-import { useAutoCarousel } from "../../shared/hooks/useAutoCarousel";
 import { useAccordion } from "../../shared/hooks/useAccordion";
+import { Carousel } from "../../shared/ui/Carousel";
+import "../../styles/carousel.css";
 import Albert from "../../assets/about/Albert.jpg";
 import Anastasia from "../../assets/about/Anastasia.jpg";
 import Artem from "../../assets/about/Artem.jpg";
@@ -24,10 +24,11 @@ import leasingAspect from "../../assets/partners/leasing_aspect.jpg";
 import leasingCarcade from "../../assets/partners/leasing_carcade.jpg";
 import leasingDirect from "../../assets/partners/leasing_direct.jpg";
 import serviceFit from "../../assets/partners/service_fit.jpg";
-import primeWrap from "../../assets/partners/primeWrap.png";
+import primeWrap from "../../assets/partners/primeWrap.jpg";
 
 const team = [
   { photo: Rasskazov, name: "Рассказов Руслан Викторович", role: "Директор компании", socials: {} },
+  { photo: LiChang, name: "Ли Чан", role: "Руководитель авто салона г.Хоргос (Китай)", socials: {} },
   { photo: Albert, name: "Альберт", role: "Руководитель авто салона г. Москва", socials: {} },
   { photo: Irina, name: "Ирина", role: "Руководитель авто салона г.Бишкек", socials: {} },
   { photo: Anastasia, name: "Анастасия", role: "Руководитель авто салона г. Кемерово", socials: {} },
@@ -38,7 +39,6 @@ const team = [
   { photo: Dmitry, name: "Дмитрий", role: "Менеджер", socials: {} },
   { photo: Valeria, name: "Валерия", role: "Бухгалтер", socials: {} },
   { photo: Denis, name: "Денис", role: "Юрист", socials: {} },
-  { photo: LiChang, name: "Ли Чан", role: "Руководитель авто салона г.Хоргос (Китай)", socials: {} },
 ];
 
 const offices = [
@@ -85,6 +85,7 @@ const services = [
 ];
 
 const partners = [
+  primeWrap,
   serviceFit,
   bankUral,
   guaranteeKarso,
@@ -96,31 +97,16 @@ const partners = [
   bankRshb,
   bankAlfa,
   bankRenesans,
-  primeWrap,
 ];
 
 const AboutPage = () => {
-  const carouselRef = useRef(null);
-  const { attach, pause, resume } = useAutoCarousel({ step: 192, intervalMs: 2500, enabled: true, loop: true });
   const { isOpen, toggle } = useAccordion();
 
-  useEffect(() => {
-    if (!carouselRef.current) return;
-    const el = carouselRef.current;
-
-    const controller = {
-      getScrollLeft: () => el.scrollLeft,
-      getScrollWidth: () => el.scrollWidth,
-      scrollBy: (dx, behavior = 'smooth') => el.scrollBy({ left: dx, behavior }),
-      scrollTo: (left, behavior = 'auto') => el.scrollTo({ left, behavior }),
-      addEventListener: (event, handler) => el.addEventListener(event, handler),
-      removeEventListener: (event, handler) => el.removeEventListener(event, handler),
-    };
-
-    attach(controller);
-  }, [attach]);
-
-  const loopedPartners = [...partners, ...partners];
+  const renderPartnerItem = (logo) => (
+    <div className="shrink-0">
+      <img src={logo} alt="Партнёр" loading="lazy" className="w-full h-50 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-xl object-contain p-1.5" />
+    </div>
+  );
 
   return (
     <div className="container section-padding">
@@ -181,28 +167,48 @@ const AboutPage = () => {
         <h2 className="text-2xl text-primary-700 dark:text-primary-600 font-bold mb-6">Наши партнёры</h2>
 
         {/* Mobile carousel */}
-        <div className="sm:hidden -mx-4 px-4">
-          <div
-            ref={carouselRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2"
-            onMouseEnter={pause}
-            onMouseLeave={resume}
-            onTouchStart={pause}
-            onTouchEnd={resume}
-          >
-            {loopedPartners.map((logo, idx) => (
-              <div key={idx} className="shrink-0 snap-start w-52">
-                <img src={logo} alt="Партнёр" loading="lazy" className="w-full h-20 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-xl object-contain p-1.5" />
-              </div>
-            ))}
-          </div>
+        <div className="sm:hidden px-4">
+          <Carousel
+            items={partners}
+            renderItem={renderPartnerItem}
+            keyExtractor={(item, index) => `partner-${index}`}
+            showNavigation={true}
+            showPagination={true}
+            compactPagination={true}
+            maxVisibleBullets={7}
+            slidesPerView={1.2}
+            spaceBetween={16}
+            autoplay={true}
+            autoplayDelay={2500}
+            loop={true}
+            className="partners-carousel"
+          />
+        </div>
+
+        {/* Tablet carousel */}
+        <div className="hidden sm:block lg:hidden px-4">
+          <Carousel
+            items={partners}
+            renderItem={renderPartnerItem}
+            keyExtractor={(item, index) => `partner-${index}`}
+            showNavigation={true}
+            showPagination={true}
+            compactPagination={true}
+            maxVisibleBullets={5}
+            slidesPerView={2.5}
+            spaceBetween={20}
+            autoplay={true}
+            autoplayDelay={2500}
+            loop={true}
+            className="partners-carousel"
+          />
         </div>
 
         {/* Desktop grid */}
-        <div className="hidden sm:grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 items-center">
+        <div className="hidden lg:grid grid-cols-4  xl:grid-cols-6 gap-5 items-center">
           {partners.map((logo, idx) => (
-            <div key={idx} className="h-20 flex items-center justify-center p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-xl ">
-              <img src={logo} alt="Партнёр" className="max-h-12  object-contain" loading="lazy" />
+            <div key={idx} className="h-30 flex items-center justify-center p-4 bg-surface-elevated dark:bg-dark-surface-elevated border border-border dark:border-dark-border rounded-xl ">
+              <img src={logo} alt="Партнёр" className="max-h-25  object-contain" loading="lazy" />
             </div>
           ))}
         </div>

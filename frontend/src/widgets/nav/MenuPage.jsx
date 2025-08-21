@@ -1,6 +1,4 @@
 import { useAppNavigation, routes } from '../../shared/lib/navigation';
-import { useTelegramAuth } from '../../features/auth';
-import { TelegramLoginButton, UserProfile } from '../../features/auth';
 import aboutImg from '../../assets/menu-page/about.png';
 import creditImg from '../../assets/menu-page/credit.png';
 import stoImg from '../../assets/menu-page/sto.png';
@@ -13,22 +11,17 @@ import washImg from '../../assets/menu-page/wash.png';
 import detailingImg from '../../assets/menu-page/detailing.png';
 import guaranteeImg from '../../assets/menu-page/guarantee.png';
 import tireImg from '../../assets/menu-page/tire.png';
+import primeWrapVideo from '../../assets/menu-page/video_1.mp4';
+import primeWrapVideo2 from '../../assets/menu-page/video_2.mp4';
+import primeWrapVideo3 from '../../assets/menu-page/video_3.mp4';
+import primeWrap from '../../assets/detailing/primeWrap.jpg';
+import { VideoCarousel, VideoPlayer } from '../../shared/ui';
 
 const MenuPage = () => {
   const { navigateTo } = useAppNavigation();
-  const {
-    isAuthenticated,
-    isLoading: authLoading,
-    handleTelegramWebAuth,
-    isTelegramWebApp
-  } = useTelegramAuth();
 
   const handleNavClick = (href) => {
     navigateTo(href);
-  };
-
-  const handleTelegramAuth = async (telegramData) => {
-    await handleTelegramWebAuth(telegramData);
   };
 
   const menuItems = [
@@ -47,36 +40,58 @@ const MenuPage = () => {
     { name: 'Админ', href: routes.admin, icon: '🔑' }
   ];
 
+  const service = {
+    title: 'Prime Wrap',
+    videos: [primeWrapVideo, primeWrapVideo2, primeWrapVideo3],
+  };
+
+  // Обработчик ошибок видео
+  const handleVideoError = (videoIndex, errorData) => {
+    console.warn(`Video error in menu at index ${videoIndex}:`, errorData);
+  };
+
+  // Fallback контент для поврежденных видео
+  const renderVideoFallback = (item) => (
+    <div className="aspect-video bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg flex items-center justify-center">
+      <div className="text-center text-text-secondary p-4">
+        <p className="mb-2 font-medium">Видео недоступно</p>
+        <p className="text-sm mb-3">Попробуйте другое видео</p>
+        {item.poster && (
+          <img 
+            src={item.poster} 
+            alt={item.title || 'Poster'} 
+            className="max-w-full max-h-32 object-contain rounded"
+          />
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="container section-padding">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-text-primary dark:text-dark-text-primary">
-          Меню
-        </h1>
-
-        {/* Авторизация */}
-        <div className="mb-6 p-4 bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg">
-          {isAuthenticated ? (
-            <UserProfile compact={true} />
-          ) : (
-            <div className="text-center">
-              {!isTelegramWebApp && (
-                <TelegramLoginButton
-                  onAuth={handleTelegramAuth}
-                  disabled={authLoading}
-                  buttonSize="medium"
-                  compact={true}
-                  className="w-full mb-2"
-                />
-              )}
-              {isTelegramWebApp && (
-                <p className="text-sm text-text-muted dark:text-dark-text-muted">
-                  Авторизация через Telegram WebApp
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Видео */}
+        {(service.videos?.length > 0 || service.video) && (
+          <div className="mb-8">
+            {service.videos?.length > 0 ? (
+              <VideoCarousel
+                items={service.videos.map((src) => ({ src, poster: primeWrap, title: service.title }))}
+                autoPlayActive={true}
+                muted={true}
+                onVideoError={handleVideoError}
+                fallbackContent={renderVideoFallback}
+              />
+            ) : (
+              <VideoPlayer
+                src={service.video}
+                poster={primeWrap}
+                title={service.title}
+                onError={handleVideoError}
+                fallbackContent={renderVideoFallback}
+              />
+            )}
+          </div>
+        )}
 
         {/* Меню в виде грид-сетки */}
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">

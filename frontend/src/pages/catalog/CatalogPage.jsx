@@ -6,6 +6,10 @@ import { VehicleFilters } from '../../features/car-catalog';
 import { CitySelector, DeliveryInfo } from '../../features/delivery';
 import { Pagination } from '../../shared/ui';
 import { MobileTopNav } from '../../widgets/nav';
+import { VideoCarousel, VideoPlayer } from '../../shared/ui';
+import primeWrapVideo from '../../assets/home/video_12.mp4';
+import primeWrapVideo2 from '../../assets/home/video_2.mp4';
+import primeWrap from '../../assets/detailing/primeWrap.jpg';
 
 const CatalogPage = () => {
   const { vehicles, loading, error, pagination, filterCars } = useCars();
@@ -24,6 +28,34 @@ const CatalogPage = () => {
       })));
     }
   }, [vehicles]);
+
+  const service = {
+    title: 'Prime Wrap',
+    videos: [primeWrapVideo, primeWrapVideo2],
+  };
+
+  // Обработчик ошибок видео
+  const handleVideoError = (videoIndex, errorData) => {
+    console.warn(`Video error in catalog at index ${videoIndex}:`, errorData);
+    // Можно добавить логику для замены поврежденного видео
+  };
+
+  // Fallback контент для поврежденных видео
+  const renderVideoFallback = (item) => (
+    <div className="aspect-video bg-surface-secondary dark:bg-dark-surface-secondary rounded-lg flex items-center justify-center">
+      <div className="text-center text-text-secondary p-4">
+        <p className="mb-2 font-medium">Видео недоступно</p>
+        <p className="text-sm mb-3">Попробуйте другое видео</p>
+        {item.poster && (
+          <img 
+            src={item.poster} 
+            alt={item.title || 'Poster'} 
+            className="max-w-full max-h-32 object-contain rounded"
+          />
+        )}
+      </div>
+    </div>
+  );
 
   // Обработчик изменения фильтров
   const handleFiltersChange = (filters) => {
@@ -102,15 +134,42 @@ const CatalogPage = () => {
       <div className="container section-padding">
         {/* Заголовок и информация о доставке */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-              <h1 className=" text-2xl m:text-3xl font-bold text-text-primary dark:text-dark-text-primary mb-4">
+          <div className="">
+              {/* <h1 className=" text-2xl m:text-3xl font-bold text-text-primary dark:text-dark-text-primary mb-4">
 			  Автомобили под заказ.
-              </h1>
+              </h1> */}
             {/* <div>
               <p className="text-text-secondary dark:text-dark-text-secondary">
                 Найдено {pagination.total} автомобилей
               </p>
             </div> */}
+			{/* Видео */}
+        	{/* Видео */}
+        	{(service.videos?.length > 0) && (
+        	  <div className="mb-8 max-w-5xl mx-auto">
+        	    {service.videos?.length > 0 ? (
+        	      <VideoCarousel
+        	        items={service.videos.map((src) => ({ src, poster: primeWrap, title: service.title }))}
+        	        autoPlayActive={true}
+        	        muted={true}
+        	        onVideoError={handleVideoError}
+        	        fallbackContent={renderVideoFallback}
+        	        autoAdvance={true}
+        	        showNavigation={true}
+        	        showPagination={true}
+        	        className="catalog-video-carousel"
+        	      />
+        	    ) : (
+        	      <VideoPlayer
+        	        src={service.video}
+        	        poster={primeWrap}
+        	        title={service.title}
+        	        onError={handleVideoError}
+        	        fallbackContent={renderVideoFallback}
+        	      />
+        	    )}
+        	  </div>
+        	)}
             
             {/* Выбор города доставки */}
             <div className="lg:w-96">

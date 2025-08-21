@@ -214,7 +214,23 @@ const Header = () => {
 
           {/* Планшетное меню */}
           <div className="flex xl:hidden items-center space-x-2">
+			{/* Авторизация */}
+			{isAuthenticated ? (
+              <UserProfile showLogoutButton={!isTelegramWebApp} />
+            ) : (
+              <div className="flex items-center gap-2">
+                {!isTelegramWebApp && (
+                  <TelegramLoginButton
+                    onAuth={handleTelegramAuth}
+                    disabled={authLoading}
+                    buttonSize="medium"
+                    compact={true}
+                  />
+                )}
+              </div>
+            )}
             <ThemeToggle className="scale-75" />
+
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="hidden md:inline-flex items-center justify-center p-2 rounded-md text-text-secondary dark:text-dark-text-secondary hover:text-text-primary dark:hover:text-dark-text-primary hover:bg-surface-secondary dark:hover:bg-dark-surface-secondary transition-colors"

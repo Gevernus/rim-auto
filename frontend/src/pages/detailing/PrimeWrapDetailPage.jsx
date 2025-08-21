@@ -256,7 +256,9 @@ const COMPANY_META = {
   'prime-wrap': {
     name: 'Prime Wrap',
     logo: primeWrap,
+	managerName: 'Альберт',
 	whatsAppUrl: 'https://wa.me/7 965 285-58-04',
+	telegramUrl: 'https://t.me/7 965 285-58-04',
 	phone: '+7 (965) 285-58-04',
   },
 };
